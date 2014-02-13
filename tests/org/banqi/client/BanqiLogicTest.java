@@ -44,7 +44,7 @@ public class BanqiLogicTest {
   private static final String R = "R"; // Red player
   private static final String B = "B"; // Black player
   private static final String S = "S"; // Board coordinate key (S0 ... S31)
-  private static final String P = "P"; // Piece key (P0 ... P32)
+  private static final String P = "P"; // Piece key (P0 ... P31)
   private static final List<Integer> INVISIBLE = new ArrayList<Integer>();
   private static final String MOVEPIECE = "movePiece"; // a move has the form: [from, to]
   private static final String TURNPIECE = "turnPiece"; // a turnOver has the form: [coordinate]
@@ -202,24 +202,22 @@ public class BanqiLogicTest {
    */
   @Test
   public void testNoPieceForRedToTurnOver() {
-    Map<String, Object> state = ImmutableMap.<String, Object>builder()
-      .put(TURN, R)
-      /* 
-       * In stead of null, I use P32 to indicate there's no piece on that square.
-       * Because null will indicate the square is not visible.
-       */
-      .put(S + 0, P + 32)
-      //Need at least one opponent's piece on board, otherwise the game is end.
-      .put(S + 30, P + 15)
-      .put(S + 31, P + 31)
-      .put(P + 15, "rsol")
-      .put(P + 31, "bsol")
-      .build();
+    Map<String, Object> state = new HashMap<String, Object>();
+    state.put(TURN, R);
+    /* 
+     * if the value of a square is null, it indicates there no piece on the square.
+     */
+   state.put(S + 0, null);
+   //Need at least one opponent's piece on board, otherwise the game is end.
+   state.put(S + 30, P + 15);
+   state.put(S + 31, P + 31);
+   state.put(P + 15, "rsol");
+   state.put(P + 31, "bsol");
     
     List<Operation> operations = ImmutableList.<Operation>of(
       new Set(TURN, B),
       new Set(TURNPIECE, S + 0),
-      new SetVisibility(P + 32));
+      new SetVisibility(null));
     
     assertHacker(move(rId, state, operations));
   }
