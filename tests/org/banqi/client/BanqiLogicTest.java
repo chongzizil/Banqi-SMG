@@ -712,7 +712,7 @@ public class BanqiLogicTest {
         .build();
 
     List<Operation> operations = ImmutableList.<Operation>of(
-      new SetTurn(rId),
+      new SetTurn(bId),
       new Set(CAPTUREPIECE, ImmutableList.of("S0", "S1")),
       new Set("S0", null),
       new Set("S1", "P0"),

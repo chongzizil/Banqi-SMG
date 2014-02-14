@@ -1,7 +1,8 @@
 package org.banqi.client;
 
 import static com.google.common.base.Preconditions.checkArgument;
-//import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 
 
 
@@ -19,6 +20,7 @@ import org.banqi.client.GameApi.SetVisibility;
 import org.banqi.client.GameApi.Shuffle;
 import org.banqi.client.GameApi.VerifyMove;
 import org.banqi.client.GameApi.VerifyMoveDone;
+import org.banqi.client.GameApi.EndGame;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -127,6 +129,42 @@ public class BanqiLogic {
     return true;
   }
   
+  String checkEndGame(ImmutableList<Optional<Piece>> pieces,
+      ImmutableList<Optional<String>> squares, int toPieceId) {
+
+    boolean hasRedPiece = false;
+    boolean hasBlackPiece = false;
+    
+    //Traverse every square of the board
+    for (Optional<String> pieceIdString : squares) {
+      //Check if there is a piece on the square
+      if (pieceIdString.isPresent()) {
+        //If there's piece on the square, check if the piece is facing up
+        int pieceId = Integer.parseInt(pieceIdString.get());
+        if (pieces.get(pieceId).isPresent()) {
+          //Check the color of the piece.
+          Piece piece = pieces.get(pieceId).get();
+          if (piece.getColor().name().equals("RED") && toPieceId != pieceId) {
+            hasRedPiece = true;
+          } else if (toPieceId != pieceId) {
+            hasBlackPiece = true;
+          }
+        } else { //There's at least one piece facing down, the game is not ending
+          return "N";
+          }
+      } 
+    }
+    
+    //Returning the winner's color
+    if (hasRedPiece && hasBlackPiece) {
+      return "N";
+    } else if (!hasRedPiece) {
+      return "B";
+    } else {
+      return "R";
+    }
+  }
+  
   List<Operation> movePieceOperation(State state, Set move) {
     ImmutableList<Optional<Piece>> pieces = state.getPieces();
     ImmutableList<Optional<String>> squares = state.getSquares();
@@ -182,13 +220,18 @@ public class BanqiLogic {
     int pieceId = Integer.parseInt(pieceIdString);
     check(!pieces.get(pieceId).isPresent());
     
-    //TODO: ENDGAME CHECK
-    
     List<Operation> expectedOperations;
     expectedOperations = Lists.newArrayList();
     expectedOperations.add(new SetTurn(state.getPlayerId(turnOfColor.getOppositeColor())));
     expectedOperations.add(new Set(TURNPIECE, S + fromCoord));
     expectedOperations.add(new SetVisibility(P + pieceId));
+    String winner = checkEndGame(pieces, squares, -1);
+    if (winner == turnOfColor.name()) {
+      expectedOperations.add(new EndGame(state.getPlayerId(turnOfColor)));
+    } else if (winner == turnOfColor.getOppositeColor().name()) {
+      expectedOperations.add(new EndGame(state.getPlayerId(turnOfColor.getOppositeColor())));
+    }
+    
     return expectedOperations;
   }
   
@@ -250,7 +293,13 @@ public class BanqiLogic {
     expectedOperations.add(new Set(CAPTUREPIECE, ImmutableList.of(S + fromCoord, S + toCoord)));
     expectedOperations.add(new Set("S" + fromCoord, null));
     expectedOperations.add(new Set("S" + toCoord, "P" + pieceFromId));
-    //TODO: I'll implement the end game later...
+    String winner = checkEndGame(pieces, squares, pieceToId);
+    if (winner == turnOfColor.name()) {
+      expectedOperations.add(new EndGame(state.getPlayerId(turnOfColor)));
+    } else if (winner == turnOfColor.getOppositeColor().name()) {
+      expectedOperations.add(new EndGame(state.getPlayerId(turnOfColor.getOppositeColor())));
+    }
+    
     return expectedOperations;
   }
   
@@ -334,7 +383,6 @@ public class BanqiLogic {
     return operations;
   }
   
-  @SuppressWarnings("unchecked")
   private State gameApiStateToState(Map<String, Object> gameApiState,
       Color turnOfColor, List<Integer> playerIds) {   
     List<Optional<Piece>> pieces = Lists.newArrayList();
