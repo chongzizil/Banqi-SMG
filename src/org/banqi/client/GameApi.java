@@ -7,54 +7,74 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.google.common.collect.ImmutableMap;
+
 public final class GameApi {
   public static final String ALL = "ALL";
   public static final String PLAYER_ID = "playerId";
   public static final String PLAYER_NAME = "playerName";
+  public static final String PLAYER_TOKENS = "playerTokens";
   public static final String PLAYER_PROFILE_PIC_URL = "playerProfilePicUrl";
 
   /** playerId for the Artificial Intelligence (AI) player. */
   public static final int AI_PLAYER_ID = 0;
+  /** playerId for a user viewing a match; a viewer can't make any moves in the game. */
+  public static final int VIEWER_ID = -1;
 
-  public static class UpdateUI extends HasEquality {
-    protected final int yourPlayerId;
+  public static class VerifyMove extends HasEquality {
     protected final List<Map<String, Object>> playersInfo;
     protected final Map<String, Object> state;
-    private final Map<String, Object> lastState;
-    private final List<Operation> lastMove;
-    private final int lastMovePlayerId;
+    protected final Map<String, Object> lastState;
 
-    public UpdateUI(int yourPlayerId, List<Map<String, Object>> playersInfo,
+    /**
+     * You should verify this lastMove is legal given lastState; some imperfect information
+     * games will need to also examine state to determine if the lastMove was legal.
+     */
+    protected final List<Operation> lastMove;
+
+    /**
+     * lastMovePlayerId can either be the ID of a player in playersInfo,
+     * or 0 for the Artificial Intelligence (AI) player.
+     */
+    protected final int lastMovePlayerId;
+
+    /**
+     * The number of tokens each player currently has in the pot (see {@link AttemptChangeTokens});
+     * The sum of values is always non-negative (i.e., the total pot can NOT be negative).
+     * If the game ends when the total pot is non-zero,
+     * the pot is given to the player with the highest score (see {@link EndGame}).
+     */
+    protected final Map<Integer, Integer> playerIdToNumberOfTokensInPot;
+
+    public VerifyMove(List<Map<String, Object>> playersInfo,
         Map<String, Object> state,
         Map<String, Object> lastState,
         List<Operation> lastMove,
-        int lastMovePlayerId) {
-      this.yourPlayerId = yourPlayerId;
+        int lastMovePlayerId,
+        Map<Integer, Integer> playerIdToNumberOfTokensInPot) {
       this.playersInfo = checkHasJsonSupportedType(playersInfo);
       this.state = checkHasJsonSupportedType(state);
       this.lastState = checkHasJsonSupportedType(lastState);
       this.lastMove = lastMove;
       this.lastMovePlayerId = checkHasJsonSupportedType(lastMovePlayerId);
+      this.playerIdToNumberOfTokensInPot = playerIdToNumberOfTokensInPot;
     }
 
     @Override
     public String getClassName() {
-      return "UpdateUI";
+      return "VerifyMove";
     }
 
     @Override
     public List<Object> getFieldsNameAndValue() {
       return Arrays.<Object>asList(
-          "yourPlayerId", yourPlayerId, "playersInfo", playersInfo, "state", state,
-          "lastState", lastState, "lastMove", lastMove, "lastMovePlayerId", lastMovePlayerId);
+          "playersInfo", playersInfo, "state", state,
+          "lastState", lastState, "lastMove", lastMove, "lastMovePlayerId", lastMovePlayerId,
+          "playerIdToNumberOfTokensInPot", playerIdToNumberOfTokensInPot);
     }
 
-    public int getYourPlayerId() {
-      return yourPlayerId;
-    }
-
-    public boolean isAiPlayer() {
-      return yourPlayerId == AI_PLAYER_ID;
+    public Map<Integer, Integer> getPlayerIdToNumberOfTokensInPot() {
+      return playerIdToNumberOfTokensInPot;
     }
 
     public List<Map<String, Object>> getPlayersInfo() {
@@ -71,10 +91,6 @@ public final class GameApi {
         playerIds.add((Integer) playerInfo.get(PLAYER_ID));
       }
       return playerIds;
-    }
-
-    public int getYourPlayerIndex() {
-      return getPlayerIds().indexOf(yourPlayerId);
     }
 
     public int getPlayerIndex(int playerId) {
@@ -94,6 +110,10 @@ public final class GameApi {
       return String.valueOf(getPlayerInfo(playerId).get(PLAYER_NAME));
     }
 
+    public int getPlayerTokens(int playerId) {
+      return (Integer) (getPlayerInfo(playerId).get(PLAYER_TOKENS));
+    }
+
     public String getPlayerProfilePicUrl(int playerId) {
       return String.valueOf(getPlayerInfo(playerId).get(PLAYER_PROFILE_PIC_URL));
     }
@@ -111,31 +131,69 @@ public final class GameApi {
     }
   }
 
-  public static class VerifyMove extends UpdateUI {
+  public static class UpdateUI extends VerifyMove {
+    /**
+     * yourPlayerId can either be the ID of a player in playersInfo,
+     * or 0 for the Artificial Intelligence (AI) player,
+     * or -1 to represent that you're VIEWING a match (i.e., you're not one of the players and
+     * therefore you cannot make moves).
+     */
+    protected final int yourPlayerId;
 
-    public VerifyMove(int yourPlayerId, List<Map<String, Object>> playersInfo,
+    public UpdateUI(int yourPlayerId, List<Map<String, Object>> playersInfo,
         Map<String, Object> state,
         Map<String, Object> lastState,
         List<Operation> lastMove,
-        int lastMovePlayerId) {
-      super(yourPlayerId, playersInfo, state, lastState, lastMove, lastMovePlayerId);
+        int lastMovePlayerId,
+        Map<Integer, Integer> playerIdToNumberOfTokensInPot) {
+      super(playersInfo, state, lastState, lastMove, lastMovePlayerId,
+          playerIdToNumberOfTokensInPot);
+      this.yourPlayerId = yourPlayerId;
     }
 
     @Override
     public String getClassName() {
-      return "VerifyMove";
+      return "UpdateUI";
     }
 
+    @Override
+    public List<Object> getFieldsNameAndValue() {
+      return Arrays.<Object>asList(
+          "yourPlayerId", yourPlayerId, "playersInfo", playersInfo, "state", state,
+          "lastState", lastState, "lastMove", lastMove, "lastMovePlayerId", lastMovePlayerId,
+          "playerIdToNumberOfTokensInPot", playerIdToNumberOfTokensInPot);
+    }
 
+    public int getYourPlayerId() {
+      return yourPlayerId;
+    }
+
+    public boolean isAiPlayer() {
+      return yourPlayerId == AI_PLAYER_ID;
+    }
+
+    public boolean isViewer() {
+      return yourPlayerId == VIEWER_ID;
+    }
+
+    public int getYourPlayerIndex() {
+      return getPlayerIds().indexOf(yourPlayerId);
+    }
   }
 
   public abstract static class Operation extends HasEquality { }
 
   public static class EndGame extends Operation {
-    private final Map<String, Integer> playerIdToScore;
+    private final Map<Integer, Integer> playerIdToScore;
 
-    public EndGame(Map<String, Integer> playerIdToScore) {
-      this.playerIdToScore = checkHasJsonSupportedType(playerIdToScore);
+    public EndGame(Map<Integer, Integer> playerIdToScore) {
+      this.playerIdToScore = ImmutableMap.copyOf(playerIdToScore);
+    }
+
+    public EndGame(int winnerPlayerId) {
+      Map<Integer, Integer> strPlayerIdToScore = new HashMap<>();
+      strPlayerIdToScore.put(winnerPlayerId, 1);
+      this.playerIdToScore = ImmutableMap.copyOf(strPlayerIdToScore);
     }
 
     @Override
@@ -148,12 +206,7 @@ public final class GameApi {
       return Arrays.<Object>asList("playerIdToScore", playerIdToScore);
     }
 
-    public EndGame(int winnerPlayerId) {
-      playerIdToScore = new HashMap<>();
-      playerIdToScore.put(String.valueOf(winnerPlayerId), 1);
-    }
-
-    public Map<String, Integer> getPlayerIdToScore() {
+    public Map<Integer, Integer> getPlayerIdToScore() {
       return playerIdToScore;
     }
   }
@@ -275,6 +328,43 @@ public final class GameApi {
     }
   }
 
+  public static class SetTurn extends Operation {
+    private final int playerId;
+    /** The number of seconds playerId will have to send MakeMove;
+     * if it is 0 then the container will decide on the time limit
+     * (or the container may decide that there is no time limit).
+     */
+    private final int numberOfSecondsForTurn;
+
+    public SetTurn(int playerId) {
+      this(playerId, 0);
+    }
+
+    public SetTurn(int playerId, int numberOfSecondsForTurn) {
+      this.playerId = playerId;
+      this.numberOfSecondsForTurn = numberOfSecondsForTurn;
+    }
+
+    @Override
+    public String getClassName() {
+      return "SetTurn";
+    }
+
+    @Override
+    public List<Object> getFieldsNameAndValue() {
+      return Arrays.<Object>asList("playerId", playerId,
+          "numberOfSecondsForTurn", numberOfSecondsForTurn);
+    }
+
+    public int getPlayerId() {
+      return playerId;
+    }
+
+    public int getNumberOfSecondsForTurn() {
+      return numberOfSecondsForTurn;
+    }
+  }
+
   public static class Delete extends Operation {
     private final String key;
 
@@ -294,6 +384,69 @@ public final class GameApi {
 
     public String getKey() {
       return key;
+    }
+  }
+
+  public static class AttemptChangeTokens extends Operation {
+    /**
+     * Map each playerId to the number of tokens that should be increased/decreased.
+     * The server will verify that the total change in tokens (in playerIdToTokenChange)
+     * is equal to minus the total change in the pot (in playerIdToNumberOfTokensInPot).
+     *
+     * For example, suppose the total pot is initially empty, i.e.,
+     * playerIdToNumberOfTokensInPot={} (see {@link VerifyMove})
+     * Then you do the operation:
+     * AttemptChangeTokens({42: -3000, 43: -2000}, {42: 3000, 43: 2000})
+     * If playerId=42 indeed has at least 3000 tokens and playerId=43 has at least 2000 tokens
+     * then the operation will succeed and the total pot will have 5000 tokens and you will have
+     * in {@link VerifyMove}:
+     * playerIdToNumberOfTokensInPot={42: 3000, 43: 2000}
+     * If one of the players does not have sufficient token then the operation will fail, and
+     * playerIdToNumberOfTokensInPot={}
+     *
+     * Assume the operation succeeded. As the game continues, playerId=43 might risk more money:
+     * AttemptChangeTokens({43: -3000}, {42: 3000, 43: 5000})
+     * and if he has enough tokens then the total pot will increase to 8000:
+     * playerIdToNumberOfTokensInPot={42: 3000, 43: 5000}
+     * When the game ends you should distribute the pot, e.g., if the game ends in a tie you could
+     * call:
+     * AttemptChangeTokens({42: 4000, 43: 4000}, {42: 0, 43:0})
+     * and then the total pot will be 0.
+     * If the game ends when the total pot is non-zero,
+     * the pot is given to the player with the highest score (see {@link EndGame}).
+     */
+    private final Map<Integer, Integer> playerIdToTokenChange;
+
+    /**
+     * The number of tokens each player currently has in the pot;
+     * The sum of values is always non-negative (i.e., the total pot can NOT be negative).
+     * When the game ends, the pot is given to the player with the highest score.
+     */
+    protected final Map<Integer, Integer> playerIdToNumberOfTokensInPot;
+
+    public AttemptChangeTokens(Map<Integer, Integer> playerIdToTokenChange,
+        Map<Integer, Integer> playerIdToNumberOfTokensInPot) {
+      this.playerIdToTokenChange = ImmutableMap.copyOf(playerIdToTokenChange);
+      this.playerIdToNumberOfTokensInPot = ImmutableMap.copyOf(playerIdToNumberOfTokensInPot);
+    }
+
+    @Override
+    public String getClassName() {
+      return "AttemptChangeTokens";
+    }
+
+    @Override
+    public List<Object> getFieldsNameAndValue() {
+      return Arrays.<Object>asList("playerIdToTokenChange", playerIdToTokenChange,
+          "playerIdToNumberOfTokensInPot", playerIdToNumberOfTokensInPot);
+    }
+
+    public Map<Integer, Integer> getPlayerIdToTokenChange() {
+      return playerIdToTokenChange;
+    }
+
+    public Map<Integer, Integer> getPlayerIdToNumberOfTokensInPot() {
+      return playerIdToNumberOfTokensInPot;
     }
   }
 
@@ -509,19 +662,20 @@ public final class GameApi {
               (Map<String, Object>) message.get("state"),
               (Map<String, Object>) message.get("lastState"),
               messageToOperationList(message.get("lastMove")),
-              (Integer) message.get("lastMovePlayerId"));
+              (Integer) message.get("lastMovePlayerId"),
+              toIntegerMap(message.get("playerIdToNumberOfTokensInPot")));
 
         case "VerifyMove":
           return new VerifyMove(
-              (Integer) message.get("yourPlayerId"),
               (List<Map<String, Object>>) message.get("playersInfo"),
               (Map<String, Object>) message.get("state"),
               (Map<String, Object>) message.get("lastState"),
               messageToOperationList(message.get("lastMove")),
-              (Integer) message.get("lastMovePlayerId"));
+              (Integer) message.get("lastMovePlayerId"),
+              toIntegerMap(message.get("playerIdToNumberOfTokensInPot")));
 
         case "EndGame":
-          return new EndGame((Map<String, Integer>) message.get("playerIdToScore"));
+          return new EndGame(toIntegerMap(message.get("playerIdToScore")));
 
         case "Set":
           return new Set((String) message.get("key"),
@@ -539,8 +693,16 @@ public final class GameApi {
               (String) message.get("key"),
               message.get("visibleToPlayerIds"));
 
+        case "SetTurn":
+          return new SetTurn((Integer) message.get("playerId"),
+              (Integer) message.get("numberOfSecondsForTurn"));
+
         case "Delete":
           return new Delete((String) message.get("key"));
+
+        case "AttemptChangeTokens":
+          return new AttemptChangeTokens(toIntegerMap(message.get("playerIdToTokenChange")),
+              toIntegerMap(message.get("playerIdToNumberOfTokensInPot")));
 
         case "Shuffle":
           return new Shuffle((List<String>) message.get("keys"));
@@ -570,6 +732,19 @@ public final class GameApi {
       }
     }
   }
+
+  static Map<Integer, Integer> toIntegerMap(Object objMap) {
+    Map<?, ?> map = (Map<?, ?>) objMap;
+    Map<Integer, Integer> result = new HashMap<>();
+    for (Object key : map.keySet()) {
+      Object value = map.get(key);
+      result.put(key instanceof Integer ? (Integer) key : Integer.parseInt(key.toString()),
+          value instanceof Integer ? (Integer) value : Integer.parseInt(value.toString()));
+    }
+    return result;
+  }
+
+
 
   /**
    * Checks the object has a JSON-supported data type, i.e.,

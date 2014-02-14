@@ -8,16 +8,18 @@ import com.google.common.collect.ImmutableList;
 /**
  * Representation of the banqi game state.
  * The game state uses these keys:
- * turn, BOARD, MOVEPIECE, TURNPIECE, CAPTUREPIECE, P0...P31
+ * P0...P31, S0...S31
  * 
  * which are mapped to these fields:
- * turn, board, movePiece, turnPiece, capturePiece, pieces
+ * pieces, squares
  */
 public class State {
   private final Color turn;
+  private final ImmutableList<Integer> playerIds;
   
   /**
-   * Note that some of the entries will have null, meaning the card is not visible to us.
+   * Note that some of the entries will have null,
+   * meaning the card is not visible to us.
    */
   private final ImmutableList<Optional<Piece>> pieces;
   
@@ -27,47 +29,34 @@ public class State {
    */
   private final ImmutableList<Optional<String>> squares;
   
-  private final Optional<MovePiece> movePiece;
-  private final Optional<TurnPiece> turnPiece;
-  private final Optional<CapturePiece> capturePiece;
-  
-  public State(Color turn,
+  public State(Color turn, ImmutableList<Integer> playerIds,
       ImmutableList<Optional<Piece>> pieces,
-      ImmutableList<Optional<String>> squares,
-      Optional<MovePiece> movePiece,
-      Optional<TurnPiece> turnPiece,
-      Optional<CapturePiece> capturePiece) {
+      ImmutableList<Optional<String>> squares) {
 
     super();
     this.turn = checkNotNull(turn);
+    this.playerIds = checkNotNull(playerIds);
     this.pieces = checkNotNull(pieces);
     this.squares = checkNotNull(squares);
-    this.movePiece = movePiece;
-    this.turnPiece = turnPiece;
-    this.capturePiece = capturePiece;
   }
 
   public Color getTurn() {
     return turn;
   }
 
+  public ImmutableList<Integer> getPlayerIds() {
+    return playerIds;
+  }
+
+  public int getPlayerId(Color color) {
+    return playerIds.get(color.ordinal());
+  }
+  
   public ImmutableList<Optional<Piece>> getPieces() {
     return pieces;
   }
   
   public ImmutableList<Optional<String>> getSquares() {
     return squares;
-  }
-  
-  public Optional<MovePiece> getMovePiece() {
-    return movePiece;
-  }
-  
-  public Optional<TurnPiece> getTurnPiece() {
-    return turnPiece;
-  }
-  
-  public Optional<CapturePiece> getCapturePiece() {
-    return capturePiece;
   }
 }
