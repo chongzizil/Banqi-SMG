@@ -25,7 +25,7 @@ public class State {
   
   /**
    * Note that some of the entries will have null,
-   * meaning there is no piece.
+   * meaning there is no piece on that square.
    */
   private final ImmutableList<Optional<String>> squares;
   

@@ -21,7 +21,12 @@ public final class GameApi {
   /** playerId for a user viewing a match; a viewer can't make any moves in the game. */
   public static final int VIEWER_ID = -1;
 
-  public static class VerifyMove extends HasEquality {
+  public interface Container {
+    void sendGameReady();
+    void sendMakeMove(List<Operation> operations);
+  }
+
+  public static class VerifyMove extends Message {
     protected final List<Map<String, Object>> playersInfo;
     protected final Map<String, Object> state;
     protected final Map<String, Object> lastState;
@@ -42,7 +47,8 @@ public final class GameApi {
      * The number of tokens each player currently has in the pot (see {@link AttemptChangeTokens});
      * The sum of values is always non-negative (i.e., the total pot can NOT be negative).
      * If the game ends when the total pot is non-zero,
-     * the pot is given to the player with the highest score (see {@link EndGame}).
+     * the pot is given to the player with the highest score (see {@link EndGame}),
+     * or if all players have the same score then the pot is distributed evenly.
      */
     protected final Map<Integer, Integer> playerIdToNumberOfTokensInPot;
 
@@ -61,7 +67,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "VerifyMove";
     }
 
@@ -152,7 +158,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "UpdateUI";
     }
 
@@ -181,7 +187,7 @@ public final class GameApi {
     }
   }
 
-  public abstract static class Operation extends HasEquality { }
+  public abstract static class Operation extends Message { }
 
   public static class EndGame extends Operation {
     private final Map<Integer, Integer> playerIdToScore;
@@ -197,7 +203,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "EndGame";
     }
 
@@ -231,7 +237,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "Set";
     }
 
@@ -270,7 +276,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "SetRandomInteger";
     }
 
@@ -310,7 +316,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "SetVisibility";
     }
 
@@ -346,7 +352,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "SetTurn";
     }
 
@@ -373,7 +379,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "Delete";
     }
 
@@ -431,7 +437,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "AttemptChangeTokens";
     }
 
@@ -458,7 +464,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "Shuffle";
     }
 
@@ -472,14 +478,14 @@ public final class GameApi {
     }
   }
 
-  public static class GameReady extends HasEquality {
+  public static class GameReady extends Message {
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "GameReady";
     }
   }
 
-  public static class MakeMove extends HasEquality {
+  public static class MakeMove extends Message {
     private final List<Operation> operations;
 
     public MakeMove(List<Operation> operations) {
@@ -487,7 +493,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "MakeMove";
     }
 
@@ -501,7 +507,7 @@ public final class GameApi {
     }
   }
 
-  public static class VerifyMoveDone extends HasEquality {
+  public static class VerifyMoveDone extends Message {
     private final int hackerPlayerId;
     private final String message;
 
@@ -517,7 +523,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "VerifyMoveDone";
     }
 
@@ -535,14 +541,14 @@ public final class GameApi {
     }
   }
 
-  public static class RequestManipulator extends HasEquality {
+  public static class RequestManipulator extends Message {
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "RequestManipulator";
     }
   }
 
-  public static class ManipulateState extends HasEquality {
+  public static class ManipulateState extends Message {
     private final Map<String, Object> state;
 
     public ManipulateState(Map<String, Object> state) {
@@ -550,7 +556,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "ManipulateState";
     }
 
@@ -564,7 +570,7 @@ public final class GameApi {
     }
   }
 
-  public static class ManipulationDone extends HasEquality {
+  public static class ManipulationDone extends Message {
     private final List<Operation> operations;
 
     public ManipulationDone(List<Operation> operations) {
@@ -572,7 +578,7 @@ public final class GameApi {
     }
 
     @Override
-    public String getClassName() {
+    public String getMessageName() {
       return "ManipulationDone";
     }
 
@@ -586,8 +592,8 @@ public final class GameApi {
     }
   }
 
-  public abstract static class HasEquality {
-    public abstract String getClassName();
+  public abstract static class Message {
+    public abstract String getMessageName();
 
     public List<Object> getFieldsNameAndValue() {
       return Arrays.asList();
@@ -595,17 +601,17 @@ public final class GameApi {
 
     @Override
     public int hashCode() {
-      return getFieldsNameAndValue().hashCode() ^ getClassName().hashCode();
+      return getFieldsNameAndValue().hashCode() ^ getMessageName().hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-      if (!(obj instanceof HasEquality)) {
+      if (!(obj instanceof Message)) {
         return false;
       }
-      HasEquality other = (HasEquality) obj;
+      Message other = (Message) obj;
       return Objects.equals(other.getFieldsNameAndValue(), getFieldsNameAndValue())
-          && Objects.equals(other.getClassName(), getClassName());
+          && Objects.equals(other.getMessageName(), getMessageName());
     }
 
     @Override
@@ -614,19 +620,19 @@ public final class GameApi {
     }
 
     private List<?> listToMessage(List<?> values) {
-      if (values.isEmpty() || !(values.get(0) instanceof HasEquality)) {
+      if (values.isEmpty() || !(values.get(0) instanceof Message)) {
         return values;
       }
       List<Object> messages = new ArrayList<>();
       for (Object operation : values) {
-        messages.add(((HasEquality) operation).toMessage());
+        messages.add(((Message) operation).toMessage());
       }
       return messages;
     }
 
     public Map<String, Object> toMessage() {
       Map<String, Object> message = new HashMap<>();
-      message.put("type", getClassName());
+      message.put("type", getMessageName());
       List<Object> fieldsNameAndValue = getFieldsNameAndValue();
       for (int i = 0; i < fieldsNameAndValue.size() / 2; i++) {
         String fieldName = (String) fieldsNameAndValue.get(2 * i);
@@ -652,7 +658,7 @@ public final class GameApi {
     }
 
     @SuppressWarnings("unchecked")
-    public static HasEquality messageToHasEquality(Map<String, Object> message) {
+    public static Message messageToHasEquality(Map<String, Object> message) {
       String type = (String) message.get("type");
       switch (type) {
         case "UpdateUI":

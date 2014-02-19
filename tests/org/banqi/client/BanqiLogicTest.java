@@ -699,12 +699,32 @@ public class BanqiLogicTest {
   }
   
   /*
-   * End the game by capturing all the opponent's pieces.
+   * If the opponent turn up the last facing-down piece on the board or capture one that
+   * all the pieces left on the board have the same color, the game is then ended.
+   * 
    */
   @Test
   public void testEndGame() {
     Map<String, Object> state = ImmutableMap.<String, Object>builder()
-        
+        .put("S0",  "P0")
+        .put("S1",  "P1")
+        .put("P0",  "rgen")
+        .put("P1",  "rcan")
+        .build();
+
+    List<Operation> operations = ImmutableList.<Operation>of(
+      new SetTurn(rId),
+      new EndGame(rId));
+
+
+    assertMoveOk(move(rId, state, operations));
+  }
+  
+  /* The end game operation is made when all the pieces in the current state
+   * have the same color, therefore this test is inappropriate and discarded.
+  @Test
+  public void testEndGameByCaputureAll() {
+    Map<String, Object> state = ImmutableMap.<String, Object>builder()
         .put("S0",  "P0")
         .put("S1",  "P1")
         .put("P0",  "rgen")
@@ -721,4 +741,5 @@ public class BanqiLogicTest {
 
     assertMoveOk(move(rId, state, operations));
   }
+  */
 }

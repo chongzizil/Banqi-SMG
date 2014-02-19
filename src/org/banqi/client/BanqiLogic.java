@@ -3,9 +3,6 @@ package org.banqi.client;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-
-
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -72,8 +69,8 @@ public class BanqiLogic {
     return false;
   }
   
-  /** Check the two coordinates are near each other. */
-  int checkFromToCoord(int from, int to) {
+  /** Check the two coordinates are near each other so that the move is legal. */
+  boolean isMoveCoordLegal(int from, int to) {
     //Transfer to two digits representation where 11 indicates row 1 column 1
     int fromCoord = (from / 8 + 1) * 10 + (from % 8 + 1);
     int toCoord = (to / 8 + 1) * 10 + (to % 8 + 1);
@@ -81,61 +78,61 @@ public class BanqiLogic {
     case  1 :
     case -1 :
     case  10:
-    case -10: return 1;
-    default: return 0; // Illegal move
+    case -10: return true;
+    default: return false; // Illegal move
     }
   }
   
-  boolean cannonCaptureCheck(ImmutableList<Optional<Piece>> pieces,
+  /** Check the cannon can do the capture move. */
+  boolean canCannonCapture(ImmutableList<Optional<Piece>> pieces,
       ImmutableList<Optional<String>> squares, int fromCoord, int toCoord) {
     int intermediatePieceCount = 0;
     //In the same row
     if (fromCoord / 8 == toCoord / 8) {
       if (fromCoord > toCoord) {
-        //Jump left
-        for (int i = fromCoord; i > toCoord; i--) {
-          if (squares.get(fromCoord).isPresent()) {
+        //Jump towards left
+        for (int i = fromCoord; i != toCoord; i--) {
+          if (squares.get(i).isPresent()) {
             intermediatePieceCount++;
           }
         }
       } else {
-        //Jump Right
-        for (int i = fromCoord; i < toCoord; i++) {
-          if (squares.get(fromCoord).isPresent()) {
+        //Jump towards Right
+        for (int i = fromCoord; i != toCoord; i++) {
+          if (squares.get(i).isPresent()) {
             intermediatePieceCount++;
           }
         }
       }
-    } else if (fromCoord % 8 == toCoord % 8) { //In the same column
+    } else { //In the same column
       if (fromCoord < toCoord) {
         //Jump Down
-        while (fromCoord < toCoord) {
-          if (squares.get(fromCoord).isPresent()) {
+        for (int i = fromCoord; i != toCoord; i += 8) {
+          if (squares.get(i).isPresent()) {
             intermediatePieceCount++;
           }
-          fromCoord += 8;
         }
       } else {
         //Jump UP
-        while (fromCoord > toCoord) {
-          if (squares.get(fromCoord).isPresent()) {
+        for (int i = fromCoord; i != toCoord; i -= 8) {
+          if (squares.get(i).isPresent()) {
             intermediatePieceCount++;
           }
-          fromCoord -= 8;
         }
       }
     }
+    
     check(intermediatePieceCount == 2, intermediatePieceCount);
     return true;
   }
   
-  String checkEndGame(ImmutableList<Optional<Piece>> pieces,
-      ImmutableList<Optional<String>> squares, int toPieceId) {
+  Color whoWinTheGame(ImmutableList<Optional<Piece>> pieces,
+      ImmutableList<Optional<String>> squares, Color turnOfColor) {
 
     boolean hasRedPiece = false;
     boolean hasBlackPiece = false;
     
-    //Traverse every square of the board
+    //Traverse every square of the board and check if all the pieces left have the same color
     for (Optional<String> pieceIdString : squares) {
       //Check if there is a piece on the square
       if (pieceIdString.isPresent()) {
@@ -144,24 +141,24 @@ public class BanqiLogic {
         if (pieces.get(pieceId).isPresent()) {
           //Check the color of the piece.
           Piece piece = pieces.get(pieceId).get();
-          if (piece.getColor().name().equals("RED") && toPieceId != pieceId) {
+          if (piece.getColor().name().equals("RED")) {
             hasRedPiece = true;
-          } else if (toPieceId != pieceId) {
+          } else if (piece.getColor().name().equals("BLACK")) {
             hasBlackPiece = true;
           }
         } else { //There's at least one piece facing down, the game is not ending
-          return "N";
+          return null;
           }
       } 
     }
     
     //Returning the winner's color
     if (hasRedPiece && hasBlackPiece) {
-      return "N";
+      return null;
     } else if (!hasRedPiece) {
-      return "B";
+      return Color.B;
     } else {
-      return "R";
+      return Color.R;
     }
   }
   
@@ -173,22 +170,27 @@ public class BanqiLogic {
     @SuppressWarnings("unchecked")
     List<String> coord = (List<String>) move.getValue();
     
-    check(coord.size() == 2);
-
+    //Check if there are exactly 2 legal coordinates and the move is legal.
+    check(coord.size() == 2, coord.size());
+    
+    checkNotNull(coord.get(0));
     int fromCoord = Integer.parseInt(coord.get(0).substring(1));
     check(checkCoord(fromCoord), fromCoord);
+    
+    checkNotNull(coord.get(1));
     int toCoord = Integer.parseInt(coord.get(1).substring(1));
     check(checkCoord(toCoord), toCoord);
     
-    check(checkFromToCoord(fromCoord, toCoord) != 0);
-    // Check there's a piece on the from square
+    check(isMoveCoordLegal(fromCoord, toCoord));
+    
+    // Check there's a piece on the from square and no piece on the to square
     check(squares.get(fromCoord).isPresent());
-    // Check there no piece on the to square
     check(!squares.get(toCoord).isPresent());
+    
     // Check the piece on the from square is facing up
-    String pieceIdString = squares.get(fromCoord).get();
-    int pieceId = Integer.parseInt(pieceIdString);
+    int pieceId = Integer.parseInt(squares.get(fromCoord).get());
     check(pieces.get(pieceId).isPresent());
+    
     // Check the color is as same as the last move's player color
     Piece fromPiece = pieces.get(pieceId).get();
     check(fromPiece.getColor().name().substring(0, 1).equals(turnOfColor.toString()));
@@ -198,8 +200,7 @@ public class BanqiLogic {
     expectedOperations.add(new SetTurn(state.getPlayerId(turnOfColor.getOppositeColor())));
     expectedOperations.add(new Set(MOVEPIECE, ImmutableList.of(S + fromCoord, S + toCoord)));
     expectedOperations.add(new Set("S" + fromCoord, null));
-    expectedOperations.add(new Set("S" + toCoord, "P" + pieceId));
-    
+    expectedOperations.add(new Set("S" + toCoord, "P" + pieceId)); 
     return expectedOperations; 
   }
   
@@ -224,14 +225,7 @@ public class BanqiLogic {
     expectedOperations = Lists.newArrayList();
     expectedOperations.add(new SetTurn(state.getPlayerId(turnOfColor.getOppositeColor())));
     expectedOperations.add(new Set(TURNPIECE, S + fromCoord));
-    expectedOperations.add(new SetVisibility(P + pieceId));
-    String winner = checkEndGame(pieces, squares, -1);
-    if (winner == turnOfColor.name()) {
-      expectedOperations.add(new EndGame(state.getPlayerId(turnOfColor)));
-    } else if (winner == turnOfColor.getOppositeColor().name()) {
-      expectedOperations.add(new EndGame(state.getPlayerId(turnOfColor.getOppositeColor())));
-    }
-    
+    expectedOperations.add(new SetVisibility(P + pieceId));    
     return expectedOperations;
   }
   
@@ -243,26 +237,26 @@ public class BanqiLogic {
     @SuppressWarnings("unchecked")
     List<String> coord = (List<String>) move.getValue();
     
-    check(coord.size() == 2);
-
+    //Check if there are exactly 2 legal coordinates.
+    check(coord.size() == 2, coord.size());
+    
+    checkNotNull(coord.get(0));
     int fromCoord = Integer.parseInt(coord.get(0).substring(1));
     check(checkCoord(fromCoord), fromCoord);
+    
+    checkNotNull(coord.get(1));
     int toCoord = Integer.parseInt(coord.get(1).substring(1));
     check(checkCoord(toCoord), toCoord);
     
-    // Check there's a piece on the from square
+    // Check there's a piece on the from square and a piece on the to square
     check(squares.get(fromCoord).isPresent());
-    
-    // Check there's a piece on the to square
     check(squares.get(toCoord).isPresent());
     
     // Check both the pieces is facing up
-    String pieceFromIdString = squares.get(fromCoord).get();
-    int pieceFromId = Integer.parseInt(pieceFromIdString);
+    int pieceFromId = Integer.parseInt(squares.get(fromCoord).get());
     check(pieces.get(pieceFromId).isPresent());
-    
-    String pieceToIdString = squares.get(toCoord).get();
-    int pieceToId = Integer.parseInt(pieceToIdString);
+
+    int pieceToId = Integer.parseInt(squares.get(toCoord).get());
     check(pieces.get(pieceToId).isPresent());
     
     // Check the color of the from piece is as same as the last move's player color
@@ -274,32 +268,41 @@ public class BanqiLogic {
     check(!toPiece.getColor().name().substring(0, 1).equals(turnOfColor.toString()));
     
     if (fromPiece.getKind().name() == "SOLDIER" && toPiece.getKind().name() == "GENERAL") {
-      check(checkFromToCoord(fromCoord, toCoord) != 0);
+      check(isMoveCoordLegal(fromCoord, toCoord));
     } else if (fromPiece.getKind().name() == "GENERAL" && toPiece.getKind().name() == "SOLDIER") {
-      check(checkFromToCoord(fromCoord, toCoord) != 0);
+      check(isMoveCoordLegal(fromCoord, toCoord));
       check(false, "General can't capture soldier");
     } else if (fromPiece.getKind().name() == "CANNON") {
-      check(cannonCaptureCheck(pieces, squares, fromCoord, toCoord));
+      check(canCannonCapture(pieces, squares, fromCoord, toCoord));
     } else {
-      check(checkFromToCoord(fromCoord, toCoord) != 0);
+      check(isMoveCoordLegal(fromCoord, toCoord));
       if (fromPiece.getKind().name() != toPiece.getKind().name()) {
         check(fromPiece.getKind().ordinal() < toPiece.getKind().ordinal());
       }
     }
     
-    List<Operation> expectedOperations;
-    expectedOperations = Lists.newArrayList();
+    List<Operation> expectedOperations = Lists.newArrayList();
     expectedOperations.add(new SetTurn(state.getPlayerId(turnOfColor.getOppositeColor())));
     expectedOperations.add(new Set(CAPTUREPIECE, ImmutableList.of(S + fromCoord, S + toCoord)));
     expectedOperations.add(new Set("S" + fromCoord, null));
-    expectedOperations.add(new Set("S" + toCoord, "P" + pieceFromId));
-    String winner = checkEndGame(pieces, squares, pieceToId);
-    if (winner == turnOfColor.name()) {
-      expectedOperations.add(new EndGame(state.getPlayerId(turnOfColor)));
-    } else if (winner == turnOfColor.getOppositeColor().name()) {
-      expectedOperations.add(new EndGame(state.getPlayerId(turnOfColor.getOppositeColor())));
-    }
+    expectedOperations.add(new Set("S" + toCoord, "P" + pieceFromId)); 
+    return expectedOperations;
+  }
+  
+  List<Operation> endGameOperation(State state) {
+    List<Operation> expectedOperations = Lists.newArrayList();
+    ImmutableList<Optional<Piece>> pieces = state.getPieces();
+    ImmutableList<Optional<String>> squares = state.getSquares();
+    Color turnOfColor = state.getTurn();
     
+    Color winnerColor = whoWinTheGame(pieces, squares, turnOfColor);
+    if (winnerColor == turnOfColor) {
+      expectedOperations.add(new SetTurn(state.getPlayerId(winnerColor)));
+      expectedOperations.add(new EndGame(state.getPlayerId(winnerColor)));
+    } else if (winnerColor == turnOfColor.getOppositeColor()) {
+      expectedOperations.add(new SetTurn(state.getPlayerId(winnerColor.getOppositeColor())));
+      expectedOperations.add(new EndGame(state.getPlayerId(winnerColor.getOppositeColor())));
+    }
     return expectedOperations;
   }
   
@@ -310,13 +313,10 @@ public class BanqiLogic {
     if (lastApiState.isEmpty()) {
       return getInitialMove(playerIds.get(0), playerIds.get(1));
     }
+    
     State lastState = gameApiStateToState(lastApiState,
         Color.values()[playerIds.indexOf(lastMovePlayerId)], playerIds);
-    
-    List<Operation> expectedOperations;
-    //Get the operation set of one of three move.
-    Set move = (Set) lastMove.get(1);
-    
+    List<Operation> expectedOperations = Lists.newArrayList();
     /*
      * 
      * There are 3 types of moves:
@@ -324,18 +324,28 @@ public class BanqiLogic {
      * 2) Turning up a face-down piece.
      * 3) Capturing a face-down piece of his/her own color.
      * 
-     */  
-    
-    if (move.getKey() == MOVEPIECE) {
-      // Moving a piece.
-      expectedOperations = movePieceOperation(lastState, move);
-    } else if (move.getKey() == TURNPIECE) {
-      // Turning a piece.
-      expectedOperations = turnPieceOperation(lastState, move);
+     * If the last player turn up the last facing down piece
+     * and hence all the pieces on the board have the same color,
+     * then the game will be end and the winner is decided.
+     * 
+     */
+    if (lastMove.get(1) instanceof Set) {
+      Set move = (Set) lastMove.get(1);
+      if (move.getKey() == MOVEPIECE) {
+        //Moving a piece
+        expectedOperations = movePieceOperation(lastState, move);
+      } else if (move.getKey() == TURNPIECE) {
+        //Turning a piece
+        expectedOperations = turnPieceOperation(lastState, move);
+      } else if (move.getKey() == CAPTUREPIECE) {
+        //Moving a piece
+        expectedOperations = capturePieceOperation(lastState, move);
+      }
     } else {
-      // Moving a piece.
-      expectedOperations = capturePieceOperation(lastState, move);
+      //Ending the game
+      expectedOperations = endGameOperation(lastState);
     }
+    
     return expectedOperations;
   }
   
@@ -349,34 +359,35 @@ public class BanqiLogic {
 
   String pieceIdToString(int pieceId) {
     checkArgument(pieceId >= 0 && pieceId < 32);
-    int color = pieceId / 16;
-    String colorString = PieceColor.values()[color].getFirstLetterLowerCase();
-    int kind = pieceId % 16 == 0 ? 0
-      : pieceId % 16 < 3 ? 1
-      : pieceId % 16 < 5 ? 2
-      : pieceId % 16 < 7 ? 3
-      : pieceId % 16 < 9 ? 4
-      : pieceId % 16 < 11 ? 5
-      : 6;
-    String kindString = Kind.values()[kind].getFirstThreeLetterLowerCase();
+    //colorId = 0 : Red, colorId = 1 : Black
+    int colorId = pieceId / 16;
+    String colorString = PieceColor.values()[colorId].getFirstLetterLowerCase();
+    int kindId = pieceId % 16 == 0 ? 0 //GENERAL
+      : pieceId % 16 < 3 ? 1 //ADVISOR
+      : pieceId % 16 < 5 ? 2 //ELEPHANT
+      : pieceId % 16 < 7 ? 3 //CHARIOT
+      : pieceId % 16 < 9 ? 4 //HORSE
+      : pieceId % 16 < 11 ? 5 //CANNON
+      : 6; //SOLDIER
+    String kindString = Kind.values()[kindId].getFirstThreeLetterLowerCase();
     return colorString + kindString;
   }
 
   List<Operation> getInitialMove(int redPlayerId, int blackPlayerId) {
     List<Operation> operations = Lists.newArrayList();
-  //The order of operations: turn, movePiece, turnPiece, capturePiece, P0...P31, S0...P31 
+    //The order of operations: turn, movePiece, turnPiece, capturePiece, P0...P31, S0...P31 
     operations.add(new SetTurn(redPlayerId));
-    // Set the pieces
+    //Set the pieces
     for (int i = 0; i < 32; i++) {
       operations.add(new Set(P + i, pieceIdToString(i)));
     }
-    // Set the board
+    //Set the board
     for (int i = 0; i < 32; i++) {
       operations.add(new Set(S + i, P + i));
     }
+    //Shuffle the pieces
     operations.add(new Shuffle(getPieces()));
-    
-    // Sets visibility
+    //Set the visibility of all pieces
     for (int i = 0; i < 32; i++) {
       operations.add(new SetVisibility(P + i, INVISIBLE));
     }
@@ -384,16 +395,14 @@ public class BanqiLogic {
   }
   
   private State gameApiStateToState(Map<String, Object> gameApiState,
-      Color turnOfColor, List<Integer> playerIds) {   
+      Color turnOfColor, List<Integer> playerIds) {
     List<Optional<Piece>> pieces = Lists.newArrayList();
     List<Optional<String>> squares = Lists.newArrayList();
    
     for (int i = 0; i < 32; i++) {
       String pieceString = (String) gameApiState.get(P + i);
-      Piece piece;
-      if (pieceString == null) {
-        piece = null;
-      } else {
+      Piece piece = null;
+      if (pieceString != null) {
         PieceColor color = PieceColor.fromFirstLetterLowerCase(pieceString.substring(0, 1));
         Kind kind = Kind.fromFirstThreeLetterLowerCase(pieceString.substring(1, 4));
         piece = new Piece(color, kind);
