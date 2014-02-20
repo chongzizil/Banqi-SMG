@@ -720,26 +720,32 @@ public class BanqiLogicTest {
     assertMoveOk(move(rId, state, operations));
   }
   
-  /* The end game operation is made when all the pieces in the current state
-   * have the same color, therefore this test is inappropriate and discarded.
+  /*
+   * If all the pieces left on the board do not have the same color,
+   * then the game is not end yet and hence any end game operation
+   * is invalid.
+   */
   @Test
-  public void testEndGameByCaputureAll() {
+  public void testIllegalEndGame() {
     Map<String, Object> state = ImmutableMap.<String, Object>builder()
         .put("S0",  "P0")
         .put("S1",  "P1")
+        .put("S2",  "P2")
         .put("P0",  "rgen")
-        .put("P1",  "bcan")
+        .put("P1",  "rcan")
+        .put("P2",  "bcan")
         .build();
 
     List<Operation> operations = ImmutableList.<Operation>of(
-      new SetTurn(bId),
-      new Set(CAPTUREPIECE, ImmutableList.of("S0", "S1")),
-      new Set("S0", null),
-      new Set("S1", "P0"),
+      new SetTurn(rId),
       new EndGame(rId));
 
 
-    assertMoveOk(move(rId, state, operations));
+    assertHacker(move(rId, state, operations));
   }
-  */
+  
+  /* 
+   * The end game operation is made when all the pieces in the current state
+   * have the same color, therefore previous test is inappropriate and discarded.
+   **/
 }
