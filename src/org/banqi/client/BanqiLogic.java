@@ -32,7 +32,7 @@ public class BanqiLogic {
   private static final String S = "S"; //Square of board key (S0...S31)
   private static final String P = "P"; //Piece key (P0...P31)
   private static final List<Integer> INVISIBLE = new ArrayList<Integer>();
-  private static final String NULL = null;
+  private static final Integer NULL = null;
   private static final String MOVEPIECE = "movePiece"; //A move has the form: [from, to]
   private static final String TURNPIECE = "turnPiece"; //A turn has the form: [coordinate]
   private static final String CAPTUREPIECE = "capturePiece"; //A capture has the form: [from, to]
@@ -92,7 +92,7 @@ public class BanqiLogic {
    * the captured exclusive.
    **/
   int computeIntermediatePieceCount(ImmutableList<Optional<Piece>> pieces,
-      ImmutableList<Optional<String>> squares,
+      ImmutableList<Optional<Integer>> squares,
       int fromCoord, int toCoord, boolean isSameRow) {
     int intermediatePieceCount = 0;
     int incr = isSameRow ? 1 : 8;
@@ -109,7 +109,7 @@ public class BanqiLogic {
   
   /** Check the cannon can do the capture move. */
   boolean canCannonCapture(ImmutableList<Optional<Piece>> pieces,
-      ImmutableList<Optional<String>> squares, int fromCoord, int toCoord) {
+      ImmutableList<Optional<Integer>> squares, int fromCoord, int toCoord) {
     int intermediatePieceCount = 0;
     //Both pieces are in the same row
     if (fromCoord / 8 == toCoord / 8) {
@@ -128,7 +128,7 @@ public class BanqiLogic {
   /** Returns the operations for moving a piece (e.g., I move a piece from S0 to S1). */
   List<Operation> getMovePieceOperation(State state, Set move) {
     ImmutableList<Optional<Piece>> pieces = state.getPieces();
-    ImmutableList<Optional<String>> squares = state.getSquares();
+    ImmutableList<Optional<Integer>> squares = state.getSquares();
     Color turnOfColor = state.getTurn();
     
     @SuppressWarnings("unchecked")
@@ -152,7 +152,7 @@ public class BanqiLogic {
     check(!squares.get(toCoord).isPresent());
     
     // Check the piece on the from square is facing up
-    int pieceId = Integer.parseInt(squares.get(fromCoord).get());
+    int pieceId = squares.get(fromCoord).get();
     check(pieces.get(pieceId).isPresent());
     
     // Check the color is as same as the last move's player color
@@ -171,7 +171,7 @@ public class BanqiLogic {
   /** Returns the operations for turning a piece (e.g., I turn a piece up at S0). */
   List<Operation> getTurnPieceOperation(State state, Set move) {
     ImmutableList<Optional<Piece>> pieces = state.getPieces();
-    ImmutableList<Optional<String>> squares = state.getSquares();
+    ImmutableList<Optional<Integer>> squares = state.getSquares();
     Color turnOfColor = state.getTurn();
     
     String coord = (String) move.getValue();
@@ -182,8 +182,7 @@ public class BanqiLogic {
     // Check there's a piece on the turn square
     check(squares.get(fromCoord).isPresent());
     // Check the piece is facing down
-    String pieceIdString = squares.get(fromCoord).get();
-    int pieceId = Integer.parseInt(pieceIdString);
+    int pieceId = squares.get(fromCoord).get();
     check(!pieces.get(pieceId).isPresent());
     
     List<Operation> expectedOperations;
@@ -197,7 +196,7 @@ public class BanqiLogic {
   /** Returns the operations for capturing a piece (e.g., I use P0 at S0 to capture P1 at S1). */
   List<Operation> getCapturePieceOperation(State state, Set move) {
     ImmutableList<Optional<Piece>> pieces = state.getPieces();
-    ImmutableList<Optional<String>> squares = state.getSquares();
+    ImmutableList<Optional<Integer>> squares = state.getSquares();
     Color turnOfColor = state.getTurn();
     
     @SuppressWarnings("unchecked")
@@ -219,10 +218,10 @@ public class BanqiLogic {
     check(squares.get(toCoord).isPresent());
     
     // Check both the pieces is facing up
-    int pieceFromId = Integer.parseInt(squares.get(fromCoord).get());
+    int pieceFromId = squares.get(fromCoord).get();
     check(pieces.get(pieceFromId).isPresent());
 
-    int pieceToId = Integer.parseInt(squares.get(toCoord).get());
+    int pieceToId = squares.get(toCoord).get();
     check(pieces.get(pieceToId).isPresent());
     
     // Check the color of the from piece is as same as the last move's player color
@@ -256,50 +255,27 @@ public class BanqiLogic {
   }
   
   /** Return the winner color if the game ends properly. */
-  Color whoWinTheGame(ImmutableList<Optional<Piece>> pieces,
-      ImmutableList<Optional<String>> squares, Color turnOfColor) {
-
-    boolean hasRedPiece = false;
-    boolean hasBlackPiece = false;
-    
-    //Traverse every square of the board and check if all the pieces left have the same color
-    for (Optional<String> pieceIdString : squares) {
-      //Check if there is a piece on the square
-      if (pieceIdString.isPresent()) {
-        //If there's piece on the square, check if the piece is facing up
-        int pieceId = Integer.parseInt(pieceIdString.get());
-        if (pieces.get(pieceId).isPresent()) {
-          //Check the color of the piece.
-          Piece piece = pieces.get(pieceId).get();
-          if (piece.getColor().name().equals("RED")) {
-            hasRedPiece = true;
-          } else if (piece.getColor().name().equals("BLACK")) {
-            hasBlackPiece = true;
-          }
-        } else { //There's at least one piece facing down, the game is not ending
-          return null;
-          }
-      } 
-    }
-    
+  Color whoWinTheGame(State state) {
+    boolean hasBlack = state.hasRedOrBlackPieces(Color.B);
+    boolean hasRed = state.hasRedOrBlackPieces(Color.R);
     //Returning the winner's color
-    if (hasRedPiece && hasBlackPiece) {
+    if (state.hasFacingDownPiece()) {
       return null;
-    } else if (!hasRedPiece) {
+    } else if (hasBlack && !hasRed) {
       return Color.B;
-    } else {
+    } else if (!hasBlack && hasRed) {
       return Color.R;
+    } else {
+      return null;
     }
   }
   
   /** Returns the operations for ending the game. */
   List<Operation> getEndGameOperation(State state) {
     List<Operation> expectedOperations = Lists.newArrayList();
-    ImmutableList<Optional<Piece>> pieces = state.getPieces();
-    ImmutableList<Optional<String>> squares = state.getSquares();
     Color turnOfColor = state.getTurn();
     
-    Color winnerColor = whoWinTheGame(pieces, squares, turnOfColor);
+    Color winnerColor = whoWinTheGame(state);
     check(winnerColor != null);
     if (winnerColor == turnOfColor) {
       expectedOperations.add(new SetTurn(state.getPlayerId(winnerColor)));
@@ -321,10 +297,10 @@ public class BanqiLogic {
       int lastMovePlayerId) {
     
     if (lastApiState.isEmpty()) {
-      return getInitialMove(playerIds.get(0), playerIds.get(1));
+      return getMoveInitial(playerIds);
     }
     
-    State lastState = gameApiStateToState(lastApiState,
+    State lastState = gameApiStateToBanqiState(lastApiState,
         Color.values()[playerIds.indexOf(lastMovePlayerId)], playerIds);
     List<Operation> expectedOperations = Lists.newArrayList();
     /*
@@ -359,7 +335,7 @@ public class BanqiLogic {
     return expectedOperations;
   }
   
-  List<String> getPieces() {
+  List<String> getPiecesKeys() {
     List<String> keys = Lists.newArrayList();
     for (int i = 0; i < 32; i++) {
       keys.add(P + i);
@@ -383,7 +359,8 @@ public class BanqiLogic {
     return colorString + kindString;
   }
 
-  List<Operation> getInitialMove(int redPlayerId, int blackPlayerId) {
+  List<Operation> getMoveInitial(List<Integer> playerIds) {
+    int redPlayerId = playerIds.get(0);
     List<Operation> operations = Lists.newArrayList();
     //The order of operations: turn, movePiece, turnPiece, capturePiece, P0...P31, S0...P31 
     operations.add(new SetTurn(redPlayerId));
@@ -396,7 +373,7 @@ public class BanqiLogic {
       operations.add(new Set(S + i, P + i));
     }
     //Shuffle the pieces
-    operations.add(new Shuffle(getPieces()));
+    operations.add(new Shuffle(getPiecesKeys()));
     //Set the visibility of all pieces
     for (int i = 0; i < 32; i++) {
       operations.add(new SetVisibility(P + i, INVISIBLE));
@@ -404,10 +381,10 @@ public class BanqiLogic {
     return operations;
   }
   
-  private State gameApiStateToState(Map<String, Object> gameApiState,
+  State gameApiStateToBanqiState(Map<String, Object> gameApiState,
       Color turnOfColor, List<Integer> playerIds) {
     List<Optional<Piece>> pieces = Lists.newArrayList();
-    List<Optional<String>> squares = Lists.newArrayList();
+    List<Optional<Integer>> squares = Lists.newArrayList();
    
     for (int i = 0; i < 32; i++) {
       String pieceString = (String) gameApiState.get(P + i);
@@ -425,7 +402,7 @@ public class BanqiLogic {
       if (pieceId == null) {
         squares.add(Optional.fromNullable(NULL));
       } else {
-        squares.add(Optional.fromNullable(pieceId.substring(1)));
+        squares.add(Optional.fromNullable(Integer.parseInt(pieceId.substring(1))));
       }
     }
     

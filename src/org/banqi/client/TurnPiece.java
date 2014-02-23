@@ -3,36 +3,30 @@ package org.banqi.client;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Arrays;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.ImmutableList;
-
 public class TurnPiece extends Equality {
-  @Nullable public static TurnPiece
-    fromTurnPieceEntryInGameState(@Nullable String movePieceEntry) {
-      if (movePieceEntry == null) {
-        return null;
-      }
-      //"S11", "S12"
-      
-      int coord = Integer.parseInt(movePieceEntry.substring(1, 3));
+  @Nullable public static TurnPiece fromTurnPieceEntryInGameState(
+      @Nullable String movePieceEntry) {
+    if (movePieceEntry == null) {
+      return null;
+    }
+    //"S01"
+    int coord = Integer.parseInt(movePieceEntry.substring(1, 3));
 
-      return new TurnPiece(coord);
+    return new TurnPiece(coord);
   }
 
-  @Nullable public static List<String>
-    toTurnPieceEntryInGameState(@Nullable MovePiece movePiece) {
-      return movePiece == null ? null : ImmutableList.of("coordinate:" + movePiece.getFromCoord());
+  @Nullable public static String toTurnPieceEntryInGameState(
+      @Nullable TurnPiece turnPiece) {
+    return turnPiece == null ? null : String.valueOf(turnPiece.getFromCoord());
   }
   
   private final int coord;
   
   public TurnPiece(int coord) {
-    checkArgument(coord % 10 > 0 && coord % 10 <= 8
-      && coord / 10 > 0 && coord / 10 <= 4);
-    
+    checkArgument(coord >= 0 && coord < 32);
     this.coord = coord;
   }
   

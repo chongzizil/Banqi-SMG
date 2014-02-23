@@ -27,11 +27,11 @@ public class State {
    * Note that some of the entries will have null,
    * meaning there is no piece on that square.
    */
-  private final ImmutableList<Optional<String>> squares;
+  private final ImmutableList<Optional<Integer>> squares;
   
   public State(Color turn, ImmutableList<Integer> playerIds,
       ImmutableList<Optional<Piece>> pieces,
-      ImmutableList<Optional<String>> squares) {
+      ImmutableList<Optional<Integer>> squares) {
 
     super();
     this.turn = checkNotNull(turn);
@@ -40,6 +40,40 @@ public class State {
     this.squares = checkNotNull(squares);
   }
 
+  public boolean hasFacingDownPiece() {
+  //Traverse every square of the board and check if all the pieces left have the same color
+    for (Optional<Integer> pieceIdString : squares) {
+      //Check if there is a piece on the square
+      if (pieceIdString.isPresent()) {
+        //If there's piece on the square, check if the piece is facing up
+        int pieceId = pieceIdString.get();
+        if (!pieces.get(pieceId).isPresent()) {
+          return true;
+        }
+      } 
+    }
+    return false;
+  }
+  
+  public boolean hasRedOrBlackPieces(Color color) {
+    //Traverse every square of the board and check if all the pieces left have the same color
+    for (Optional<Integer> pieceIdString : squares) {
+      //Check if there is a piece on the square
+      if (pieceIdString.isPresent()) {
+        //If there's piece on the square, check if the piece is facing up
+        int pieceId = pieceIdString.get();
+        if (pieces.get(pieceId).isPresent()) {
+          //Check the color of the piece.
+          Piece piece = pieces.get(pieceId).get();
+          if (piece.getColor().name().substring(0, 1).equals(color.name())) {
+            return true;
+          }
+        }
+      } 
+    }
+    return false;
+  }
+  
   public Color getTurn() {
     return turn;
   }
@@ -56,7 +90,7 @@ public class State {
     return pieces;
   }
   
-  public ImmutableList<Optional<String>> getSquares() {
+  public ImmutableList<Optional<Integer>> getSquares() {
     return squares;
   }
 }

@@ -10,33 +10,31 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 public class MovePiece extends Equality {
-  @Nullable public static MovePiece
-    fromMovePieceEntryInGameState(@Nullable List<String> movePieceEntry) {
-      if (movePieceEntry == null) {
-        return null;
-      }
-      //"S11", "S12"
-      
-      int fromCoord = Integer.parseInt(movePieceEntry.get(0).substring(1, 3));
-      int toCoord = Integer.parseInt(movePieceEntry.get(1).substring(1, 3));
+  @Nullable public static MovePiece fromMovePieceEntryInGameState(
+      @Nullable List<String> movePieceEntry) {
+    if (movePieceEntry == null) {
+      return null;
+    }
+    //"0", "S1"
+    int fromCoord = Integer.parseInt(movePieceEntry.get(0).substring(1, 3));
+    int toCoord = Integer.parseInt(movePieceEntry.get(1).substring(1, 3));
 
-      return new MovePiece(fromCoord, toCoord);
+    return new MovePiece(fromCoord, toCoord);
   }
 
-  @Nullable public static List<String>
-    toMovePieceEntryInGameState(@Nullable MovePiece movePiece) {
-      return movePiece == null ? null : ImmutableList.of("from" + movePiece.getFromCoord(),
-        "to" + movePiece.getToCoord());
+  @Nullable public static List<String> toMovePieceEntryInGameState(
+      @Nullable MovePiece movePiece) {
+    return movePiece == null ? null 
+        : ImmutableList.of(String.valueOf(movePiece.getFromCoord()),
+            String.valueOf(movePiece.getToCoord()));
   }
   
   private final int fromCoord;
   private final int toCoord;
   
   public MovePiece(int fromCoord, int toCoord) {
-    checkArgument(fromCoord % 10 > 0 && fromCoord % 10 <= 8
-      && fromCoord / 10 > 0 && fromCoord / 10 <= 4
-      && toCoord % 10 > 0 && toCoord % 10 <= 8
-      && toCoord / 10 > 0 && toCoord / 10 <= 4);
+    checkArgument(fromCoord >= 0 && fromCoord < 32
+        && toCoord >= 0 && toCoord < 32);
     
     this.fromCoord = fromCoord;
     this.toCoord = toCoord;

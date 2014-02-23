@@ -68,22 +68,22 @@ public class BanqiLogicTest {
   
   @Test
   public void testInitialMove() {
-    assertMoveOk(move(rId, emptyState, banqiLogic.getInitialMove(rId, bId)));
+    assertMoveOk(move(rId, emptyState, banqiLogic.getMoveInitial(ImmutableList.of(rId, bId))));
   }
   
   @Test
   public void testInitialMoveByWrongPlayer() {
-    assertHacker(move(bId, emptyState, banqiLogic.getInitialMove(rId, bId)));
+    assertHacker(move(bId, emptyState, banqiLogic.getMoveInitial(ImmutableList.of(rId, bId))));
   }
   
   @Test
   public void testInitialMoveFromNonEmptyState() {
-    assertHacker(move(rId, nonEmptyState, banqiLogic.getInitialMove(rId, bId)));
+    assertHacker(move(rId, nonEmptyState, banqiLogic.getMoveInitial(ImmutableList.of(rId, bId))));
   }
   
   @Test
   public void testInitialMoveWithExtraOperation() {
-    List<Operation> initialOperations = banqiLogic.getInitialMove(rId, bId);
+    List<Operation> initialOperations = banqiLogic.getMoveInitial(ImmutableList.of(rId, bId));
     initialOperations.add(new Set(TURNPIECE, ImmutableList.of("S0")));
     assertHacker(move(rId, emptyState, initialOperations));
   }
