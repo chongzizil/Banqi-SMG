@@ -19,7 +19,7 @@ public class State {
   
   /**
    * Note that some of the entries will have null,
-   * meaning the card is not visible to us.
+   * meaning the piece is not visible to us.
    */
   private final ImmutableList<Optional<Piece>> pieces;
   
@@ -41,18 +41,18 @@ public class State {
   }
 
   public boolean hasFacingDownPiece() {
-  //Traverse every square of the board and check if all the pieces left have the same color
+    //Traverse every square of the board and check if there is at least one facing-down piece
     for (Optional<Integer> pieceIdString : squares) {
       //Check if there is a piece on the square
       if (pieceIdString.isPresent()) {
-        //If there's piece on the square, check if the piece is facing up
+        //If there's piece on the square, check if the piece is facing-down
         int pieceId = pieceIdString.get();
         if (!pieces.get(pieceId).isPresent()) {
-          return true;
+          return true; //At least one facing-down piece on the board
         }
       } 
     }
-    return false;
+    return false; //There's no facing-down piece on the board
   }
   
   public boolean hasRedOrBlackPieces(Color color) {
@@ -66,12 +66,12 @@ public class State {
           //Check the color of the piece.
           Piece piece = pieces.get(pieceId).get();
           if (piece.getColor().name().substring(0, 1).equals(color.name())) {
-            return true;
+            return true; //At least one piece of that color is on the board
           }
         }
       } 
     }
-    return false;
+    return false; //There's no piece of that color on the board
   }
   
   public Color getTurn() {

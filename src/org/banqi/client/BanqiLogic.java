@@ -54,7 +54,7 @@ public class BanqiLogic {
         lastState, lastMove, verifyMove.getPlayerIds(), verifyMove.getLastMovePlayerId());
     check(expectedOperations.equals(lastMove), expectedOperations, lastMove);
     // We use SetTurn, so we don't need to check that the correct player did the move.
-    // However, we do need to check the first move is done by the white player (and then in the
+    // However, we do need to check the first move is done by the red player (and then in the
     // first MakeMove we'll send SetTurn which will guarantee the correct player send MakeMove).
     if (lastState.isEmpty()) {
       check(verifyMove.getLastMovePlayerId() == verifyMove.getPlayerIds().get(0));
@@ -62,7 +62,7 @@ public class BanqiLogic {
   }
 
   /** Check the coordinate is legal. */
-  boolean checkCoord(int coord) {
+  boolean isCoordinateLegal(int coord) {
     if (coord >= 0 && coord < 32) {
       return true;
     }
@@ -75,7 +75,7 @@ public class BanqiLogic {
    * corresponding coordinates are not checked by this method.
    **/
   boolean isMoveCoordLegal(int from, int to) {
-    //Transfer to two digits representation where 11 indicates row 1 column 1
+    //Transfer to two digits representation (e.g., 11 indicates row 1 column 1)
     int fromCoord = (from / 8 + 1) * 10 + (from % 8 + 1);
     int toCoord = (to / 8 + 1) * 10 + (to % 8 + 1);
     switch(fromCoord - toCoord) {
@@ -139,11 +139,11 @@ public class BanqiLogic {
     
     checkNotNull(coord.get(0));
     int fromCoord = Integer.parseInt(coord.get(0).substring(1));
-    check(checkCoord(fromCoord), fromCoord);
+    check(isCoordinateLegal(fromCoord), fromCoord);
     
     checkNotNull(coord.get(1));
     int toCoord = Integer.parseInt(coord.get(1).substring(1));
-    check(checkCoord(toCoord), toCoord);
+    check(isCoordinateLegal(toCoord), toCoord);
     
     check(isMoveCoordLegal(fromCoord, toCoord));
     
@@ -177,7 +177,7 @@ public class BanqiLogic {
     String coord = (String) move.getValue();
 
     int fromCoord = Integer.parseInt(coord.substring(1));
-    check(checkCoord(fromCoord), fromCoord);
+    check(isCoordinateLegal(fromCoord), fromCoord);
     
     // Check there's a piece on the turn square
     check(squares.get(fromCoord).isPresent());
@@ -207,11 +207,11 @@ public class BanqiLogic {
     
     checkNotNull(coord.get(0));
     int fromCoord = Integer.parseInt(coord.get(0).substring(1));
-    check(checkCoord(fromCoord), fromCoord);
+    check(isCoordinateLegal(fromCoord), fromCoord);
     
     checkNotNull(coord.get(1));
     int toCoord = Integer.parseInt(coord.get(1).substring(1));
-    check(checkCoord(toCoord), toCoord);
+    check(isCoordinateLegal(toCoord), toCoord);
     
     // Check there's a piece on the from square and a piece on the to square
     check(squares.get(fromCoord).isPresent());
@@ -310,9 +310,9 @@ public class BanqiLogic {
      * 2) Turning up a face-down piece.
      * 3) Capturing a face-down piece of his/her own color.
      * 
-     * If the last player turn up the last facing down piece
-     * and hence all the pieces on the board have the same color,
-     * then the game will be end and the winner is decided.
+     * If the last move turned up the last facing down piece, or captured
+     * a piece on the board and hence all the pieces on the board have
+     * the same color, then the game will be ended and the winner is decided.
      * 
      */
     if (lastMove.get(1) instanceof Set) {
@@ -331,11 +331,11 @@ public class BanqiLogic {
       //Ending the game
       expectedOperations = getEndGameOperation(lastState);
     }
-    
+
     return expectedOperations;
   }
   
-  List<String> getPiecesKeys() {
+  public List<String> getPiecesKeys() {
     List<String> keys = Lists.newArrayList();
     for (int i = 0; i < 32; i++) {
       keys.add(P + i);
@@ -343,6 +343,7 @@ public class BanqiLogic {
     return keys;
   }
 
+  /** Transform the pieceId to String (e.g., 0 to "rgen"). */
   String pieceIdToString(int pieceId) {
     checkArgument(pieceId >= 0 && pieceId < 32);
     //colorId = 0 : Red, colorId = 1 : Black

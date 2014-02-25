@@ -16,7 +16,6 @@ public class CapturePiece extends Equality {
       return null;
     }
     //"S0", "S1"
-      
     int fromCoord = Integer.parseInt(capturePieceEntry.get(0).substring(1, 3));
     int toCoord = Integer.parseInt(capturePieceEntry.get(1).substring(1, 3));
 
