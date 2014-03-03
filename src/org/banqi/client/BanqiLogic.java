@@ -91,8 +91,8 @@ public class BanqiLogic {
    * Calculate the number of pieces on the board from the capturer inclusive to
    * the captured exclusive.
    **/
-  int computeIntermediatePieceCount(ImmutableList<Optional<Piece>> pieces,
-      ImmutableList<Optional<Integer>> squares,
+  int computeIntermediatePieceCount(List<Optional<Piece>> pieces,
+      List<Optional<Integer>> squares,
       int fromCoord, int toCoord, boolean isSameRow) {
     int intermediatePieceCount = 0;
     int incr = isSameRow ? 1 : 8;
@@ -108,8 +108,8 @@ public class BanqiLogic {
   }
   
   /** Check the cannon can do the capture move. */
-  boolean canCannonCapture(ImmutableList<Optional<Piece>> pieces,
-      ImmutableList<Optional<Integer>> squares, int fromCoord, int toCoord) {
+  boolean canCannonCapture(List<Optional<Piece>> pieces,
+      List<Optional<Integer>> squares, int fromCoord, int toCoord) {
     int intermediatePieceCount = 0;
     //Both pieces are in the same row
     if (fromCoord / 8 == toCoord / 8) {
@@ -122,6 +122,31 @@ public class BanqiLogic {
     
     check(intermediatePieceCount == 2, intermediatePieceCount);
     return true;
+  }
+  
+  /** Check the cannon can do the capture move. */
+  boolean canCapture(List<Optional<Piece>> pieces,
+      List<Optional<Integer>> squares, int fromCoord, int toCoord) {
+    int pieceFromId = squares.get(fromCoord).get();
+    int pieceToId = squares.get(toCoord).get();
+    Piece fromPiece = pieces.get(pieceFromId).get();
+    Piece toPiece = pieces.get(pieceToId).get();
+    
+    if (fromPiece.getKind().name() == "SOLDIER" && toPiece.getKind().name() == "GENERAL") {
+      return isMoveCoordLegal(fromCoord, toCoord);
+    } else if (fromPiece.getKind().name() == "GENERAL" && toPiece.getKind().name() == "SOLDIER") {
+      // A general can not capture a soldier
+      return false;
+    } else if (fromPiece.getKind().name() == "CANNON") {
+      return canCannonCapture(pieces, squares, fromCoord, toCoord);
+    } else {
+      check(isMoveCoordLegal(fromCoord, toCoord));
+      if (fromPiece.getKind().name() != toPiece.getKind().name()) {
+        return (fromPiece.getKind().ordinal() < toPiece.getKind().ordinal());
+      } else {
+        return true;
+      }
+    }
   }
 
   
@@ -232,19 +257,8 @@ public class BanqiLogic {
     Piece toPiece = pieces.get(pieceToId).get();
     check(!toPiece.getColor().name().substring(0, 1).equals(turnOfColor.toString()));
     
-    if (fromPiece.getKind().name() == "SOLDIER" && toPiece.getKind().name() == "GENERAL") {
-      check(isMoveCoordLegal(fromCoord, toCoord));
-    } else if (fromPiece.getKind().name() == "GENERAL" && toPiece.getKind().name() == "SOLDIER") {
-      check(isMoveCoordLegal(fromCoord, toCoord));
-      check(false, "General can't capture soldier");
-    } else if (fromPiece.getKind().name() == "CANNON") {
-      check(canCannonCapture(pieces, squares, fromCoord, toCoord));
-    } else {
-      check(isMoveCoordLegal(fromCoord, toCoord));
-      if (fromPiece.getKind().name() != toPiece.getKind().name()) {
-        check(fromPiece.getKind().ordinal() < toPiece.getKind().ordinal());
-      }
-    }
+    // Check if the capture move is valid
+    check(canCapture(pieces, squares, fromCoord, toCoord));
     
     List<Operation> expectedOperations = Lists.newArrayList();
     expectedOperations.add(new SetTurn(state.getPlayerId(turnOfColor.getOppositeColor())));

@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -162,7 +161,7 @@ public class BanqiPresenterTest {
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.R, playerIds);
     banqiPresenter.updateUI(createUpdateUI(rId, rId, testGameOverState));
     
-    verify(mockView).setPlayerState(banqiPresenter.getBanqiBoardSetting(banqiState), getPieces());
+    verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
     verify(mockContainer).sendMakeMove(banqiLogic.getEndGameOperation(banqiState));
   }
 
@@ -173,7 +172,7 @@ public class BanqiPresenterTest {
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.B, playerIds); 
     banqiPresenter.updateUI(createUpdateUI(bId, bId, testGameOverState));
     
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getPieces());
+    verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
     verify(mockContainer).sendMakeMove(banqiLogic.getEndGameOperation(banqiState));
   }
 
@@ -184,7 +183,7 @@ public class BanqiPresenterTest {
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.R, playerIds);   
     banqiPresenter.updateUI(createUpdateUI(viewerId, rId, testGameOverState));
     
-    verify(mockView).setViewerState(getBanqiBoardSetting(banqiState), getPieces());
+    verify(mockView).setViewerState(banqiPresenter.getAllSquares(banqiState), getPieces());
   }
   
   /* Tests for turning up a piece by R. */
@@ -195,11 +194,9 @@ public class BanqiPresenterTest {
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.R, playerIds);
     banqiPresenter.updateUI(updateUI);
     banqiPresenter.pieceSelected(0);
-    banqiPresenter.finishedSelection();
     
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getInvisiblePieces());
-    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>(), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(0), new ArrayList<Integer>());
+    verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getInvisiblePieces());
+    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>());
     verify(mockContainer).sendMakeMove(
         banqiLogic.getTurnPieceOperation(banqiState, new Set(TURNPIECE, "S0")));
   }
@@ -212,32 +209,9 @@ public class BanqiPresenterTest {
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.B, playerIds);
     banqiPresenter.updateUI(updateUI);
     banqiPresenter.pieceSelected(0);
-    banqiPresenter.finishedSelection();
     
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getInvisiblePieces());
-    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>(), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(0), new ArrayList<Integer>());
-    verify(mockContainer).sendMakeMove(
-        banqiLogic.getTurnPieceOperation(banqiState, new Set(TURNPIECE, "S0")));
-  }
-  
-  /* Tests for turning up a piece by B and unselecting a piece once. */
-  @Test
-  public void testForBTurnUpAPieceAndUnselectOnce() {
-    UpdateUI updateUI = createUpdateUI(bId, bId, allFacingDownState);
-    State banqiState =
-        banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.B, playerIds);
-    banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(0);
-    banqiPresenter.pieceSelected(0);
-    banqiPresenter.pieceSelected(0);
-    banqiPresenter.finishedSelection();
-    
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getInvisiblePieces());
-    verify(mockView, times(2)).chooseNextPieceOrSquare(new ArrayList<Integer>(),
-        new ArrayList<Integer>());
-    verify(mockView, times(2)).chooseNextPieceOrSquare(Lists.newArrayList(0),
-        new ArrayList<Integer>());
+    verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getInvisiblePieces());
+    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>());
     verify(mockContainer).sendMakeMove(
         banqiLogic.getTurnPieceOperation(banqiState, new Set(TURNPIECE, "S0")));
   }
@@ -251,34 +225,10 @@ public class BanqiPresenterTest {
     banqiPresenter.updateUI(updateUI);
     banqiPresenter.pieceSelected(0);
     banqiPresenter.squareSelected(1);
-    banqiPresenter.finishedSelection();
     
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getPieces());
-    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>(), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(0), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(0), Lists.newArrayList(1));
-    verify(mockContainer).sendMakeMove(
-        banqiLogic.getMovePieceOperation(
-            banqiState, new Set(MOVEPIECE, ImmutableList.of("S0", "S1"))));
-  }
-  
-  /* Tests for moving a piece by R and try to choose two square. */
-  @Test
-  public void testForRMoveAPieceAndTryIllegalChooseTwoSquares() {
-    UpdateUI updateUI = createUpdateUI(rId, rId, allFacingUpState);
-    State banqiState =
-        banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.R, playerIds);
-    banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(0);
-    banqiPresenter.squareSelected(1);
-    banqiPresenter.squareSelected(8);
-    banqiPresenter.finishedSelection();
-    
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getPieces());
-    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>(), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(0), new ArrayList<Integer>());
-    verify(mockView, times(2)).chooseNextPieceOrSquare(
-        Lists.newArrayList(0), Lists.newArrayList(1));
+    verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
+    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>());
+    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(0));
     verify(mockContainer).sendMakeMove(
         banqiLogic.getMovePieceOperation(
             banqiState, new Set(MOVEPIECE, ImmutableList.of("S0", "S1"))));
@@ -293,12 +243,10 @@ public class BanqiPresenterTest {
     banqiPresenter.updateUI(updateUI);
     banqiPresenter.pieceSelected(31);
     banqiPresenter.squareSelected(30);
-    banqiPresenter.finishedSelection();
     
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getPieces());
-    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>(), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(31), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(31), Lists.newArrayList(30));
+    verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
+    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>());
+    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(31));
     verify(mockContainer).sendMakeMove(
         banqiLogic.getMovePieceOperation(
             banqiState, new Set(MOVEPIECE, ImmutableList.of("S31", "S30"))));
@@ -315,42 +263,11 @@ public class BanqiPresenterTest {
     banqiPresenter.pieceSelected(24);
     banqiPresenter.pieceSelected(31);
     banqiPresenter.squareSelected(30);
-    banqiPresenter.finishedSelection();
     
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getPieces());
-    verify(mockView, times(2)).chooseNextPieceOrSquare(new ArrayList<Integer>(),
-        new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(24), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(31), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(31), Lists.newArrayList(30));
-    verify(mockContainer).sendMakeMove(
-        banqiLogic.getMovePieceOperation(
-            banqiState, new Set(MOVEPIECE, ImmutableList.of("S31", "S30"))));
-  }
-  
-  /* Tests for moving a piece by R and unselecting a square once. */
-  @Test
-  public void testForBMoveAPieceAndUnselectASqaure() {
-    UpdateUI updateUI = createUpdateUI(bId, bId, allFacingUpState);
-    State banqiState =
-        banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.B, playerIds);
-    banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(24);
-    banqiPresenter.pieceSelected(24);
-    banqiPresenter.pieceSelected(31);
-    banqiPresenter.squareSelected(23);
-    banqiPresenter.squareSelected(23);
-    banqiPresenter.squareSelected(30);
-    banqiPresenter.finishedSelection();
-    
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getPieces());
-    verify(mockView, times(2)).chooseNextPieceOrSquare(new ArrayList<Integer>(),
-        new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(24), new ArrayList<Integer>());
-    verify(mockView, times(2)).chooseNextPieceOrSquare(
-        Lists.newArrayList(31), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(31), Lists.newArrayList(23));
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(31), Lists.newArrayList(30));
+    verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
+    verify(mockView, times(2)).chooseNextPieceOrSquare(new ArrayList<Integer>());
+    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(24));
+    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(31));
     verify(mockContainer).sendMakeMove(
         banqiLogic.getMovePieceOperation(
             banqiState, new Set(MOVEPIECE, ImmutableList.of("S31", "S30"))));
@@ -365,39 +282,15 @@ public class BanqiPresenterTest {
     banqiPresenter.updateUI(updateUI);
     banqiPresenter.pieceSelected(0);
     banqiPresenter.pieceSelected(17);
-    banqiPresenter.finishedSelection();
     
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getPieces());
-    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>(), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(0), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(0, 17), new ArrayList<Integer>());
+    verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
+    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>());
+    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(0));
     verify(mockContainer).sendMakeMove(
         banqiLogic.getCapturePieceOperation(
             banqiState, new Set(CAPTUREPIECE, ImmutableList.of("S0", "S8"))));
   }
-  
-  /* Tests for capturing a piece by R and try to select three pieces illegally. */
-  @Test
-  public void testForRCaptureAPieceAndTryIllegalChooseThreePieces() {
-    UpdateUI updateUI = createUpdateUI(rId, rId, allFacingUpState);
-    State banqiState =
-        banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.R, playerIds);
-    banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(0);
-    banqiPresenter.pieceSelected(17);
-    banqiPresenter.pieceSelected(31);
-    banqiPresenter.finishedSelection();
-    
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getPieces());
-    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>(), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(0), new ArrayList<Integer>());
-    verify(mockView, times(2)).chooseNextPieceOrSquare(
-        Lists.newArrayList(0, 17), new ArrayList<Integer>());
-    verify(mockContainer).sendMakeMove(
-        banqiLogic.getCapturePieceOperation(
-            banqiState, new Set(CAPTUREPIECE, ImmutableList.of("S0", "S8"))));
-  }
-  
+
   /* Tests for capturing a piece by B. */
   @Test
   public void testForBCaptureAPiece() {
@@ -407,12 +300,10 @@ public class BanqiPresenterTest {
     banqiPresenter.updateUI(updateUI);
     banqiPresenter.pieceSelected(17);
     banqiPresenter.pieceSelected(3);
-    banqiPresenter.finishedSelection();
     
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getPieces());
-    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>(), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(17), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(17, 3), new ArrayList<Integer>());
+    verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
+    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>());
+    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(17));
     verify(mockContainer).sendMakeMove(
         banqiLogic.getCapturePieceOperation(
             banqiState, new Set(CAPTUREPIECE, ImmutableList.of("S8", "S9"))));
@@ -425,18 +316,15 @@ public class BanqiPresenterTest {
     State banqiState =
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.B, playerIds);
     banqiPresenter.updateUI(updateUI);
+    banqiPresenter.pieceSelected(0);
+    banqiPresenter.pieceSelected(0);
     banqiPresenter.pieceSelected(17);
-    banqiPresenter.pieceSelected(0);
-    banqiPresenter.pieceSelected(0);
     banqiPresenter.pieceSelected(3);
-    banqiPresenter.finishedSelection();
     
-    verify(mockView).setPlayerState(getBanqiBoardSetting(banqiState), getPieces());
-    verify(mockView).chooseNextPieceOrSquare(new ArrayList<Integer>(), new ArrayList<Integer>());
-    verify(mockView, times(2)).chooseNextPieceOrSquare(
-        Lists.newArrayList(17), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(17, 0), new ArrayList<Integer>());
-    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(17, 3), new ArrayList<Integer>());
+    verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
+    verify(mockView, times(2)).chooseNextPieceOrSquare(new ArrayList<Integer>());
+    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(0));
+    verify(mockView).chooseNextPieceOrSquare(Lists.newArrayList(17));
     verify(mockContainer).sendMakeMove(
         banqiLogic.getCapturePieceOperation(
             banqiState, new Set(CAPTUREPIECE, ImmutableList.of("S8", "S9"))));
@@ -502,20 +390,7 @@ public class BanqiPresenterTest {
     }
     return state;
   }
-  
-  /** Get the board setting.  */
-  private Map<Integer, Integer> getBanqiBoardSetting(State banqiState) {
-    ImmutableList<Optional<Integer>> squares = banqiState.getSquares();
-    Map<Integer, Integer> squareMapPiece = Maps.newHashMap();
-    for (int i = 0; i < 32; i++) {
-      if (squares.get(i).isPresent()) {
-        squareMapPiece.put(i, squares.get(i).get());
-      } else {
-        squareMapPiece.put(i, null);
-      }
-    }
-    return squareMapPiece;
-  }
+
   
   private UpdateUI createUpdateUI(
       int yourPlayerId, int turnOfPlayerId, Map<String, Object> state) {

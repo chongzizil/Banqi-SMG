@@ -5,10 +5,16 @@
 *.pydevproject
 .project
 .metadata
+gwt-unitCache/
 bin/
 tmp/
+war/WEB-INF/classes/
+war/WEB-INF/lib/
+banqi_game
+war/banqi_game
 *.tmp
 *.bak
+*.class
 *.swp
 *~.nib
 local.properties

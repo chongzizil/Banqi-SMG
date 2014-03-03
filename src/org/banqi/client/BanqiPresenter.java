@@ -1,7 +1,6 @@
 package org.banqi.client;
 
 import java.util.List;
-import java.util.Map;
 
 import org.banqi.client.GameApi.Container;
 import org.banqi.client.GameApi.Operation;
@@ -9,7 +8,6 @@ import org.banqi.client.GameApi.Set;
 import org.banqi.client.GameApi.SetTurn;
 import org.banqi.client.GameApi.UpdateUI;
 
-import com.google.appengine.repackaged.com.google.api.client.util.Maps;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -26,38 +24,33 @@ public class BanqiPresenter {
     /**
      * Sets the presenter. The viewer will call certain methods on the
      * presenter, e.g., when a piece is selected ({@link #pieceSelected}),
-     * when a square is selected ({@link #squareSelected}),
-     * when selection is done ({@link #finishedSelection}) etc.
+     * when a square is selected ({@link #squareSelected}).
      * 
      * * The process of turning up a piece looks as follows to the viewer:
-     * 1) The viewer calls {@link #pieceSelected} one time to choose the piece
-     * 2) The viewer calls {@link #finishedSelection} to finalize his move
+     * 1) The viewer calls {@link #pieceSelected} one time to choose a facing-down piece
      * The process of turning up a piece looks as follows to the presenter:
      * 1) The presenter calls {@link #chooseNextPieceOrSquare} and passes the current selection.
      * 
      * * The process of moving a piece looks as follows to the viewer:
      * 1) The viewer calls {@link #pieceSelected} one time first to choose a piece
-     * and then calls {@link #squareSelected} one time to choose the square for the piece
-     * to move to.
-     * 2) The viewer calls {@link #finishedSelection} to finalize his move
+     * 2) The viewer calls {@link #squareSelected} one time to choose the square
+     *  for the piece to move to.
      * The process of moving a piece looks as follows to the presenter:
      * 1) The presenter calls {@link #chooseNextPieceOrSquare} and passes the current selection.
      * 
-     * The process of capturing a piece looks as follows to the viewer:
+     * * The process of capturing a piece looks as follows to the viewer:
      * 1) The viewer calls {@link #pieceSelected} one time first to choose the capturer piece
-     * and then calls {@link #pieceSelected} one more time to choose the captured piece
-     * 2) The viewer calls {@link #finishedSelection} to finalize his move
+     * 2) The viewer calls {@link #pieceSelected} one more time to choose the captured piece
      * The process of capturing a piece looks as follows to the presenter:
      * 1) The presenter calls {@link #chooseNextPieceOrSquare} and passes the current selection.
-     * 
      */
     void setPresenter(BanqiPresenter banqiPresenter);
 
     /** Sets the state for a viewer, i.e., not one of the players. */
-    void setViewerState(Map<Integer, Integer> squares, List<Piece> pieces);
+    void setViewerState(List<Integer> squares, List<Piece> pieces);
 
     /** Sets the state for a player (whether the player has the turn or not). */
-    void setPlayerState(Map<Integer, Integer> squares, List<Piece> pieces);
+    void setPlayerState(List<Integer> squares, List<Piece> pieces);
     
     /**
      * Asks the player to choose the next piece or square. We pass what pieces or
@@ -69,8 +62,7 @@ public class BanqiPresenter {
      * and selectedSquares = 0 or = 1; 
      * If the user selects a card from selectedCards, then it's removed from selectedCards.
      */
-    void chooseNextPieceOrSquare(List<Integer> selectedPieceIds,
-        List<Integer> selectedSquares);
+    void chooseNextPieceOrSquare(List<Integer> selectedPieceIds);
   }
 
   private final BanqiLogic banqiLogic = new BanqiLogic();
@@ -79,7 +71,6 @@ public class BanqiPresenter {
   /** A viewer doesn't have a color. */
   private Optional<Color> myColor;
   private State banqiState;
-  private List<Integer> selectedSquares;
   private List<Integer> selectedPieces;
   private static final String MOVEPIECE = "movePiece"; // A move has the form: [from, to]
   private static final String TURNPIECE = "turnPiece"; // A turn has the form: [coordinate]
@@ -100,7 +91,6 @@ public class BanqiPresenter {
         : yourPlayerIndex == 1 ? Optional.of(Color.B) : Optional
             .<Color> absent();
 
-    selectedSquares = Lists.newArrayList();
     selectedPieces = Lists.newArrayList();
 
     if (updateUI.getState().isEmpty()) {
@@ -124,7 +114,7 @@ public class BanqiPresenter {
         turnOfColor, playerIds);
 
     if (updateUI.isViewer()) {
-      view.setViewerState(getBanqiBoardSetting(banqiState), getAllPieces(banqiState));
+      view.setViewerState(getAllSquares(banqiState), getAllPieces(banqiState));
       return;
     }
     
@@ -138,7 +128,7 @@ public class BanqiPresenter {
     boolean hasBlack = banqiState.hasRedOrBlackPieces(Color.B);
     boolean hasRed = banqiState.hasRedOrBlackPieces(Color.R);
     boolean hasFacingDownPieces = banqiState.hasFacingDownPiece();
-    view.setPlayerState(getBanqiBoardSetting(banqiState), getAllPieces(banqiState));
+    view.setPlayerState(getAllSquares(banqiState), getAllPieces(banqiState));
     if (isMyTurn()) {
       if ((hasBlack ^ hasRed) && !hasFacingDownPieces) { // The game is over
         endGame();
@@ -149,18 +139,18 @@ public class BanqiPresenter {
     }
   }
   
-  /** Get the board setting. */
-  Map<Integer, Integer> getBanqiBoardSetting(State banqiState) {
+  /** Get all sqaures from the state. */
+  List<Integer> getAllSquares(State banqiState) {
     ImmutableList<Optional<Integer>> squares = banqiState.getSquares();
-    Map<Integer, Integer> squareMapPiece = Maps.newHashMap();
+    List<Integer> square = Lists.newArrayList();
     for (int i = 0; i < 32; i++) {
       if (squares.get(i).isPresent()) {
-        squareMapPiece.put(i, squares.get(i).get());
+        square.add(squares.get(i).get());
       } else {
-        squareMapPiece.put(i, null);
+        square.add(null);
       }
     }
-    return squareMapPiece;
+    return square;
   }
   
   /** Get all pieces from the state. */
@@ -182,8 +172,7 @@ public class BanqiPresenter {
   }
 
   private void chooseNextPieceOrSquare() {
-    view.chooseNextPieceOrSquare(ImmutableList.copyOf(selectedPieces),
-        ImmutableList.copyOf(selectedSquares));
+    view.chooseNextPieceOrSquare(ImmutableList.copyOf(selectedPieces));
   }
 
   /**
@@ -192,13 +181,38 @@ public class BanqiPresenter {
    */
   public void pieceSelected(int pieceId) {
     check(isMyTurn());
-    if (selectedPieces.contains(pieceId)) {
-      selectedPieces.remove((Integer) pieceId);
-    } else if (!selectedPieces.contains(pieceId) && selectedPieces.size() < 2
-        && selectedSquares.size() == 0) {
-      selectedPieces.add(pieceId);
+    List<Optional<Piece>> pieces = banqiState.getPieces();
+    List<Optional<Integer>> squares = banqiState.getSquares();
+    // Turn up a piece
+    if (!pieces.get(pieceId).isPresent()) {
+      if (selectedPieces.size() == 0) {
+        int selectedCoord = squares.indexOf(Optional.fromNullable(pieceId));
+      Set turnPiece = new Set(TURNPIECE, "S" + selectedCoord);
+      turnPiece(turnPiece);
+      }   
     }
-    chooseNextPieceOrSquare();
+     
+    if (pieces.get(pieceId).isPresent()) {
+      if (selectedPieces.contains(pieceId)) {
+        selectedPieces.remove((Integer) pieceId);
+        chooseNextPieceOrSquare();
+      } else if (selectedPieces.size() == 0) {
+        if (pieces.get(pieceId).get().getColor().name().substring(0, 1).equals(
+            myColor.get().name())) {
+          selectedPieces.add(pieceId);
+        }
+        chooseNextPieceOrSquare();
+      } else if (selectedPieces.size() == 1) {
+        int selectedFromCoord = squares.indexOf(Optional.fromNullable(selectedPieces.get(0)));
+        int selectedToCoord = squares.indexOf(Optional.fromNullable(pieceId));
+        // Check the logic to see if the capturee is legal to be chosen
+        if (banqiLogic.canCapture(pieces, squares, selectedFromCoord, selectedToCoord)) {
+          Set capturePiece = new Set(CAPTUREPIECE, ImmutableList.of("S"
+              + selectedFromCoord, "S" + selectedToCoord));
+          capturePiece(capturePiece);
+        }
+      }
+    }
   }
 
   /**
@@ -207,43 +221,21 @@ public class BanqiPresenter {
    */
   public void squareSelected(int square) {
     check(isMyTurn());
-    if (selectedSquares.contains(square)) {
-      selectedSquares.remove((Integer) square);
-    } else if (!selectedSquares.contains(square) && selectedSquares.size() < 1) {
-      selectedSquares.add(square);
-    }
-    chooseNextPieceOrSquare();
-  }
-
-  /**
-   * Finishes the piece and/or square selection process. The view can only call
-   * this method if the presenter called {@link View#chooseNextPiece} and/or
-   * called {@link View#chooseSquare} and two pieces was selected by
-   * calling {@link #cardSelected} or one piece was selected by
-   * calling {@link #cardSelected} and one or zero square was selected by
-   * calling {@link #squareSelected}.
-   */
-
-  void finishedSelection() {
-    check(isMyTurn() && !selectedPieces.isEmpty());
-    // TODO: more check
-    ImmutableList<Optional<Integer>> squares = banqiState.getSquares();
-    if (selectedPieces.size() == 1 && selectedSquares.size() == 0) {
-      int selectedCoord = squares.indexOf(Optional.fromNullable(selectedPieces.get(0)));
-      Set turnPiece = new Set(TURNPIECE, "S" + selectedCoord);
-      turnPiece(turnPiece);
-    } else if (selectedPieces.size() == 1 && selectedSquares.size() == 1) {
+    // Need to select a piece first to perform a move, otherwise need to reselect
+    if (selectedPieces.size() == 1) {
+      List<Optional<Integer>> squares = banqiState.getSquares();
       int selectedFromCoord = squares.indexOf(Optional.fromNullable(selectedPieces.get(0)));
-      int selectedToCoord = selectedSquares.get(0);
-      Set movePiece = new Set(MOVEPIECE, ImmutableList.of("S"
-          + selectedFromCoord, "S" + selectedToCoord));
-      movePiece(movePiece);
-    } else if (selectedPieces.size() == 2 && selectedSquares.size() == 0) {
-      int selectedFromCoord = squares.indexOf(Optional.fromNullable(selectedPieces.get(0)));
-      int selectedToCoord = squares.indexOf(Optional.fromNullable(selectedPieces.get(1)));
-      Set capturePiece = new Set(CAPTUREPIECE, ImmutableList.of("S"
-          + selectedFromCoord, "S" + selectedToCoord));
-      capturePiece(capturePiece);
+      int selectedToCoord = square;
+      // Only perform the move when selected a legal square, otherwise need to reselect
+      if (banqiLogic.isMoveCoordLegal(selectedFromCoord, selectedToCoord)) {
+        Set movePiece = new Set(MOVEPIECE, ImmutableList.of("S"
+            + selectedFromCoord, "S" + selectedToCoord));
+        movePiece(movePiece);
+      } else { // Reselect
+        chooseNextPieceOrSquare();
+      }
+    } else { // Reselect
+      chooseNextPieceOrSquare();
     }
   }
 
