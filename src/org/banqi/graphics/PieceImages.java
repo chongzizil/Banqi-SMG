@@ -1,18 +1,3 @@
-// Copyright 2012 Google Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// //////////////////////////////////////////////////////////////////////////////
-
 package org.banqi.graphics;
 
 import com.google.gwt.resources.client.ClientBundle;
@@ -63,4 +48,47 @@ public interface PieceImages extends ClientBundle {
 
   @Source("images/pieces/red_soldier.gif")
   ImageResource rsol();
+  
+  // HighLight images
+  @Source("images/pieces/black_general_hl.gif")
+  ImageResource bgenHighLight();
+
+  @Source("images/pieces/red_general_hl.gif")
+  ImageResource rgenHighLight();
+
+  @Source("images/pieces/black_advisor_hl.gif")
+  ImageResource badvHighLight();
+
+  @Source("images/pieces/red_advisor_hl.gif")
+  ImageResource radvHighLight();
+
+  @Source("images/pieces/black_elephant_hl.gif")
+  ImageResource beleHighLight();
+
+  @Source("images/pieces/red_elephant_hl.gif")
+  ImageResource releHighLight();
+
+  @Source("images/pieces/black_chariot_hl.gif")
+  ImageResource bchaHighLight();
+
+  @Source("images/pieces/red_chariot_hl.gif")
+  ImageResource rchaHighLight();
+
+  @Source("images/pieces/black_horse_hl.gif")
+  ImageResource bhorHighLight();
+
+  @Source("images/pieces/red_horse_hl.gif")
+  ImageResource rhorHighLight();
+
+  @Source("images/pieces/black_cannon_hl.gif")
+  ImageResource bcanHighLight();
+
+  @Source("images/pieces/red_cannon_hl.gif")
+  ImageResource rcanHighLight();
+
+  @Source("images/pieces/black_soldier_hl.gif")
+  ImageResource bsolHighLight();
+
+  @Source("images/pieces/red_soldier_hl.gif")
+  ImageResource rsolHighLight();
 }

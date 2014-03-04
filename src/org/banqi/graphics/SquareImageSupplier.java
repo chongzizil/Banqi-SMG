@@ -14,12 +14,7 @@ public class SquareImageSupplier {
   }
 
   public ImageResource getResource(SquareImage squareImage) {
-    switch (squareImage.kind) {
-      case NORMAL:
-        return getSquareImage();
-      default:
-        throw new RuntimeException("Forgot kind=" + squareImage.kind);
-    }
+      return getSquareImage();
   }
 
   public ImageResource getSquareImage() {

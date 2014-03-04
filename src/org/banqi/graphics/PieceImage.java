@@ -15,6 +15,7 @@ public final class PieceImage extends Equality {
 
   enum PieceImageKind {
     BACK,
+    HIGHLIGHT,
     NORMAL,
   }
 
@@ -23,6 +24,10 @@ public final class PieceImage extends Equality {
       return new PieceImage(PieceImageKind.BACK, null, pieceId);
     }
 
+    public static PieceImage getHighLightPieceImage(Piece piece, int pieceId) {
+      return new PieceImage(PieceImageKind.HIGHLIGHT, piece, pieceId);
+    }
+    
     public static PieceImage getPieceImage(Piece piece, int pieceId) {
       return new PieceImage(PieceImageKind.NORMAL, piece, pieceId);
     }
@@ -43,9 +48,8 @@ public final class PieceImage extends Equality {
     return Arrays.asList(kind, piece, pieceId);
   }
 
-
   private String piece2str(PieceColor color, Kind kind) {
-    return (color.ordinal() == 0 ? "r" : "b")
+    return (color.ordinal() == 0 ? "r" : "b") + "_"
         + (kind == Kind.GENERAL ? "gen"
         : kind == Kind.ADVISOR ? "adv"
         : kind == Kind.ELEPHANT ? "ele"
@@ -60,6 +64,8 @@ public final class PieceImage extends Equality {
     switch (kind) {
       case BACK:
         return "pieces/back.gif";
+      case HIGHLIGHT:
+        return "cards/" + piece2str(piece.getColor(), piece.getKind()) + "_hl.gif"; 
       case NORMAL:
         return "cards/" + piece2str(piece.getColor(), piece.getKind()) + ".gif";
       default:

@@ -62,7 +62,8 @@ public class BanqiPresenter {
      * and selectedSquares = 0 or = 1; 
      * If the user selects a card from selectedCards, then it's removed from selectedCards.
      */
-    void chooseNextPieceOrSquare(List<Integer> selectedPieceIds);
+    void chooseNextPieceOrSquare(List<Integer> squares, List<Piece> pieces,
+        List<Integer> selectedPieceIds);
   }
 
   private final BanqiLogic banqiLogic = new BanqiLogic();
@@ -172,7 +173,8 @@ public class BanqiPresenter {
   }
 
   private void chooseNextPieceOrSquare() {
-    view.chooseNextPieceOrSquare(ImmutableList.copyOf(selectedPieces));
+    view.chooseNextPieceOrSquare(getAllSquares(banqiState), getAllPieces(banqiState),
+        ImmutableList.copyOf(selectedPieces));
   }
 
   /**

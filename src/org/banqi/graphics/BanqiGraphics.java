@@ -83,7 +83,8 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   }
 
   private List<Image> createSquareAndPieceImages(List<Integer> squares,
-      List<Piece> pieces) {
+      List<Piece> pieces, List<Integer> selectedPieceIds) {
+    
     // Create all square images
     List<SquareImage> squareImages = Lists.newArrayList();
     for (int i = 0; i < 32; i++) {
@@ -93,16 +94,22 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     // Create all piece images
     List<PieceImage> pieceImages = Lists.newArrayList();
     for (int i = 0; i < 32; i++) {
-      // If there's a piece on i square, create a corresponding image
+      // If there's a piece on square i, create a corresponding image
       if (squares.get(i) != null) {
-        // The piece is facing-up
+        // If the piece is facing-up, create it's image
         if (pieces.get(squares.get(i)) != null) {
-          pieceImages.add(PieceImage.Factory.getPieceImage(
-              pieces.get(squares.get(i)), squares.get(i)));
-        } else { // The piece is facing-down
+          // If the piece is selected, create the high light image
+          if (selectedPieceIds.contains((Integer) squares.get(i))) {
+            pieceImages.add(PieceImage.Factory.getHighLightPieceImage(
+                pieces.get(squares.get(i)), squares.get(i)));
+          } else { // The piece is not high lighted
+            pieceImages.add(PieceImage.Factory.getPieceImage(
+                pieces.get(squares.get(i)), squares.get(i)));
+          }
+        } else { // The piece is facing-down, create a back image
           pieceImages.add(PieceImage.Factory.getBackOfPieceImage(squares.get(i)));
         }
-      } else {
+      } else { // There's no piece on square i
         pieceImages.add(null);
       }
     }
@@ -258,17 +265,22 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
 
   @Override
   public void setViewerState(List<Integer> squares, List<Piece> pieces) {
-    placeImages(playerArea, createSquareAndPieceImages(squares, pieces));
+    placeImages(playerArea, createSquareAndPieceImages(
+        squares, pieces, Lists.<Integer>newArrayList()));
   }
   
-
   @Override
   public void setPlayerState(List<Integer> squares, List<Piece> pieces) {
-    placeImages(playerArea, createSquareAndPieceImages(squares, pieces));
+    placeImages(playerArea, createSquareAndPieceImages(
+        squares, pieces, Lists.<Integer>newArrayList()));
   }
 
   @Override
-  public void chooseNextPieceOrSquare(List<Integer> selectedPieceIds) {
+  public void chooseNextPieceOrSquare(List<Integer> squares, List<Piece> pieces,
+      List<Integer> selectedPieceIds) {
+    // High light the selected piece
+    placeImages(playerArea, createSquareAndPieceImages(
+        squares, pieces, selectedPieceIds));
     enableClicks = true;
   }
 }

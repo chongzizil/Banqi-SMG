@@ -9,27 +9,21 @@ import org.banqi.client.Equality;
  */
 public final class SquareImage extends Equality {
 
-  enum SquareImageKind {
-    NORMAL,
-  }
-
   public static class Factory {
     public static SquareImage getSquareImage(int squareId) {
-      return new SquareImage(SquareImageKind.NORMAL, squareId);
+      return new SquareImage(squareId);
     }
   }
 
-  public final SquareImageKind kind;
   public final int squareId;
 
-  private SquareImage(SquareImageKind kind, int squareId) {
-    this.kind = kind;
+  private SquareImage(int squareId) {
     this.squareId = squareId;
   }
 
   @Override
   public Object getId() {
-    return Arrays.asList(kind, squareId);
+    return Arrays.asList(squareId);
   }
 
   @Override

@@ -19,6 +19,8 @@ public class PieceImageSupplier {
     switch (pieceImage.kind) {
       case BACK:
         return getBackOfPieceImage();
+      case HIGHLIGHT:
+        return getHighLightPieceImage(pieceImage.piece);
       case NORMAL:
         return getPieceImage(pieceImage.piece);
       default:
@@ -30,6 +32,37 @@ public class PieceImageSupplier {
     return pieceImages.back();
   }
 
+  public ImageResource getHighLightPieceImage(Piece piece) {
+    switch (piece.getColor()) {
+      case RED:
+        switch (piece.getKind()) {
+          case GENERAL: return pieceImages.rgenHighLight();
+          case ADVISOR: return pieceImages.radvHighLight();
+          case ELEPHANT: return pieceImages.releHighLight();
+          case CHARIOT: return pieceImages.rchaHighLight();
+          case HORSE: return pieceImages.rhorHighLight();
+          case CANNON: return pieceImages.rcanHighLight();
+          case SOLDIER: return pieceImages.rsolHighLight();
+          default:
+            throw new RuntimeException("Forgot kind=" + piece.getKind());
+        }
+      case BLACK:
+        switch (piece.getKind()) {
+          case GENERAL: return pieceImages.bgenHighLight();
+          case ADVISOR: return pieceImages.badvHighLight();
+          case ELEPHANT: return pieceImages.beleHighLight();
+          case CHARIOT: return pieceImages.bchaHighLight();
+          case HORSE: return pieceImages.bhorHighLight();
+          case CANNON: return pieceImages.bcanHighLight();
+          case SOLDIER: return pieceImages.bsolHighLight();
+          default:
+            throw new RuntimeException("Forgot kind=" + piece.getKind());
+        }
+      default:
+        throw new RuntimeException("Forgot color=" + piece.getColor());
+    }
+  }
+  
   public ImageResource getPieceImage(Piece piece) {
     switch (piece.getColor()) {
       case RED:

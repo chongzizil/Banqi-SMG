@@ -9,9 +9,11 @@ import org.banqi.client.GameApi.UpdateUI;
 import org.banqi.client.GameApi.VerifyMove;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -35,6 +37,9 @@ public class BanqiEntryPoint implements EntryPoint {
         banqiPresenter.updateUI(updateUI);
       }
     };
+    OtherImages otherImages = GWT.create(OtherImages.class);
+    final OtherImageSupplier otherImageSupplier = new OtherImageSupplier(otherImages);
+    
     container = new IteratingPlayerContainer(game, 2);
     BanqiGraphics banqiGraphics = new BanqiGraphics();
     banqiPresenter =
@@ -55,7 +60,16 @@ public class BanqiEntryPoint implements EntryPoint {
     DockPanel dockPanel = new DockPanel();
     dockPanel.add(banqiGraphics, DockPanel.CENTER);
     dockPanel.add(playerSelect, DockPanel.SOUTH);
-
+    // Title
+    Image titleImage = new Image(otherImageSupplier.getResource(
+        OtherImage.Factory.getTitleImage()));
+    dockPanel.add(titleImage, DockPanel.NORTH);
+    // Translation board
+    Image translationImage = new Image(otherImageSupplier.getResource(
+        OtherImage.Factory.getTranslationImage()));
+    dockPanel.add(translationImage, DockPanel.EAST);
+    
+    
     RootPanel.get("mainDiv").add(dockPanel);
     container.sendGameReady();
     container.updateUi(container.getPlayerIds().get(0));

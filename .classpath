@@ -6,8 +6,8 @@
 	<classpathentry kind="lib" path="C:/eclipse/plugins/guava-16.0.1.jar"/>
 	<classpathentry kind="lib" path="C:/eclipse/plugins/mockito-all-1.9.5.jar"/>
 	<classpathentry kind="lib" path="C:/eclipse/plugins/guava-gwt-16.0.1.jar"/>
-	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
+	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
