@@ -8,9 +8,6 @@ import org.game_api.GameApi.UpdateUI;
 import org.game_api.GameApi.VerifyMove;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.shared.GWT;
-import com.google.gwt.user.client.ui.DockPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RootPanel;
 
 /**
@@ -34,15 +31,16 @@ public class BanqiEntryPoint implements EntryPoint {
       }
     };
     
-    OtherImages otherImages = GWT.create(OtherImages.class);
-    final OtherImageSupplier otherImageSupplier = new OtherImageSupplier(otherImages);
-    
     container = new ContainerConnector(game);
     BanqiGraphics banqiGraphics = new BanqiGraphics();
     banqiPresenter = new BanqiPresenter(banqiGraphics, container);
     
+    /*
     DockPanel dockPanel = new DockPanel();
-    dockPanel.add(banqiGraphics, DockPanel.CENTER);
+    dockPanel.get("mainDiv").add(banqiGraphics, DockPanel.CENTER);
+    
+    OtherImages otherImages = GWT.create(OtherImages.class);
+    final OtherImageSupplier otherImageSupplier = new OtherImageSupplier(otherImages);
     
     // Title
     Image titleImage = new Image(otherImageSupplier.getResource(
@@ -52,9 +50,9 @@ public class BanqiEntryPoint implements EntryPoint {
     Image translationImage = new Image(otherImageSupplier.getResource(
         OtherImage.Factory.getTranslationImage()));
     dockPanel.add(translationImage, DockPanel.EAST);
+    */
     
-    
-    RootPanel.get("mainDiv").add(dockPanel);
+    RootPanel.get("mainDiv").add(banqiGraphics);
     container.sendGameReady();
   }
 }
