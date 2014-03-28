@@ -9,13 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.banqi.client.GameApi.Operation;
-import org.banqi.client.GameApi.Set;
-import org.banqi.client.GameApi.SetVisibility;
-import org.banqi.client.GameApi.VerifyMove;
-import org.banqi.client.GameApi.VerifyMoveDone;
-import org.banqi.client.GameApi.EndGame;
-import org.banqi.client.GameApi.SetTurn;
+import org.game_api.GameApi.Operation;
+import org.game_api.GameApi.Set;
+import org.game_api.GameApi.SetVisibility;
+import org.game_api.GameApi.VerifyMove;
+import org.game_api.GameApi.VerifyMoveDone;
+import org.game_api.GameApi.EndGame;
+import org.game_api.GameApi.SetTurn;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,8 +48,8 @@ public class BanqiLogicTest {
   private static final String TURNPIECE = "turnPiece";
   //A capture has the form: [fromCoordinate, toCoordinate]
   private static final String CAPTUREPIECE = "capturePiece";
-  private final int rId = 7;
-  private final int bId = 47;
+  private final String rId = "7";
+  private final String bId = "47";
   private final Map<String, Object> rInfo =
       ImmutableMap.<String, Object>of(PLAYER_ID, rId);
   private final Map<String, Object> bInfo =
@@ -61,9 +61,9 @@ public class BanqiLogicTest {
       ImmutableMap.<String, Object>of("k", "v");
   
   private VerifyMove move(
-      int lastMovePlayerId, Map<String, Object> lastState, List<Operation> lastMove) {
+      String lastMovePlayerId, Map<String, Object> lastState, List<Operation> lastMove) {
     return new VerifyMove(playersInfo, emptyState,
-        lastState, lastMove, lastMovePlayerId, ImmutableMap.<Integer, Integer>of());
+        lastState, lastMove, lastMovePlayerId, ImmutableMap.<String, Integer>of());
   }
   
   @Test

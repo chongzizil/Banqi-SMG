@@ -1,4 +1,4 @@
-package org.banqi.client;
+package org.game_api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +12,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONBoolean;
+import com.google.gwt.json.client.JSONNull;
+import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONString;
+import com.google.gwt.json.client.JSONValue;
 
 public final class GameApi {
   public static final String ALL = "ALL";
@@ -21,9 +29,9 @@ public final class GameApi {
   public static final String PLAYER_PROFILE_PIC_URL = "playerProfilePicUrl";
 
   /** playerId for the Artificial Intelligence (AI) player. */
-  public static final int AI_PLAYER_ID = 0;
+  public static final String AI_PLAYER_ID = "0";
   /** playerId for a user viewing a match; a viewer can't make any moves in the game. */
-  public static final int VIEWER_ID = -1;
+  public static final String VIEWER_ID = "-1";
 
   public interface Container {
     void sendGameReady();
@@ -36,31 +44,81 @@ public final class GameApi {
     void sendUpdateUI(UpdateUI updateUI);
   }
 
+  public static class ContainerConnector implements Container {
+
+    private final Game game;
+
+    public ContainerConnector(Game game) {
+      this.game = game;
+      injectEventListener(this);
+    }
+
+    @Override
+    public void sendGameReady() {
+      GameReady gameReady = new GameReady();
+      postMessageToParent(GameApiJsonHelper.getJsonString(gameReady));
+    }
+
+    @Override
+    public void sendVerifyMoveDone(VerifyMoveDone verifyMoveDone) {
+      postMessageToParent(GameApiJsonHelper.getJsonString(verifyMoveDone));
+    }
+
+    @Override
+    public void sendMakeMove(List<Operation> operations) {
+      MakeMove makeMove = new MakeMove(operations);
+      postMessageToParent(GameApiJsonHelper.getJsonString(makeMove));
+    }
+
+    public static native void postMessageToParent(String message) /*-{
+      $wnd.parent.postMessage(JSON.parse(message), "*");
+    }-*/;
+
+    public void eventListner(String message) {
+      Message messageObj = GameApiJsonHelper.getMessageObject(message);
+      if (messageObj instanceof UpdateUI) {
+        game.sendUpdateUI((UpdateUI) messageObj);
+      } else if (messageObj instanceof VerifyMove) {
+        game.sendVerifyMove((VerifyMove) messageObj);
+      }
+    }
+
+    private native void injectEventListener(ContainerConnector containerConnector) /*-{
+      function postMessageListener(e) {
+        var str = JSON.stringify(e.data);
+        var c = containerConnector;
+        c.@org.game_api.GameApi.ContainerConnector::eventListner(Ljava/lang/String;)(str);
+      }
+      $wnd.addEventListener("message", postMessageListener, false);
+    }-*/;
+
+  }
+
   /**
    * A container for games that can iterates over all the players and send them Game API messages.
    */
   public static class IteratingPlayerContainer implements Container {
     private final Game game;
     private final List<Map<String, Object>> playersInfo = Lists.newArrayList();
-    private final List<Integer> playerIds;
-    private int updateUiPlayerId = 0;
+    private final List<String> playerIds;
+    private String updateUiPlayerId;
     private GameState gameState = new GameState();
     private GameState lastGameState = null;
     private List<Operation> lastMove = null;
-    private int lastMovePlayerId = 0;
+    private String lastMovePlayerId;
 
     public IteratingPlayerContainer(Game game, int numberOfPlayers) {
       this.game = game;
-      List<Integer> playerIds = Lists.newArrayList();
+      List<String> playerIds = Lists.newArrayList();
       for (int i = 0; i < numberOfPlayers; i++) {
-        int playerId = 42 + i;
+        String playerId = String.valueOf(42 + i);
         playerIds.add(playerId);
         playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId));
       }
       this.playerIds = ImmutableList.copyOf(playerIds);
     }
 
-    public List<Integer> getPlayerIds() {
+    public List<String> getPlayerIds() {
       return playerIds;
     }
 
@@ -68,7 +126,7 @@ public final class GameApi {
     public void sendGameReady() {
     }
 
-    public void updateUi(int yourPlayerId) {
+    public void updateUi(String yourPlayerId) {
       updateUiPlayerId = yourPlayerId;
       game.sendUpdateUI(new UpdateUI(yourPlayerId, playersInfo,
           gameState.getStateForPlayerId(yourPlayerId),
@@ -83,7 +141,7 @@ public final class GameApi {
       lastGameState = gameState.copy();
       gameState.makeMove(operations);
       // Verify the move on all players
-      for (int playerId : playerIds) {
+      for (String playerId : playerIds) {
         game.sendVerifyMove(new VerifyMove(playersInfo,
             gameState.getStateForPlayerId(playerId),
             lastGameState.getStateForPlayerId(playerId), lastMove, lastMovePlayerId,
@@ -94,7 +152,7 @@ public final class GameApi {
 
     @Override
     public void sendVerifyMoveDone(VerifyMoveDone verifyMoveDone) {
-      if (verifyMoveDone.getHackerPlayerId() != 0) {
+      if (verifyMoveDone.getHackerPlayerId() != null) {
         throw new RuntimeException("Found a hacker! verifyMoveDone=" + verifyMoveDone);
       }
     }
@@ -103,7 +161,7 @@ public final class GameApi {
   public static class GameState {
     private final Map<String, Object> state = Maps.newHashMap();
     private final Map<String, Object> visibleTo = Maps.newHashMap();
-    private Map<Integer, Integer> playerIdToNumberOfTokensInPot = Maps.newHashMap();
+    private Map<String, Integer> playerIdToNumberOfTokensInPot = Maps.newHashMap();
 
     public GameState copy() {
       GameState result = new GameState();
@@ -112,19 +170,18 @@ public final class GameApi {
       return result;
     }
 
-    public Map<Integer, Integer> getPlayerIdToNumberOfTokensInPot() {
+    public Map<String, Integer> getPlayerIdToNumberOfTokensInPot() {
       return playerIdToNumberOfTokensInPot;
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> getStateForPlayerId(int playerId) {
+    public Map<String, Object> getStateForPlayerId(String playerId) {
       Map<String, Object> result = Maps.newHashMap();
-      Integer playerIdInteger = playerId;
       for (String key : state.keySet()) {
         Object visibleToPlayers = visibleTo.get(key);
         Object value = null;
         if (visibleToPlayers.equals(ALL)
-            || ((List<Integer>) visibleToPlayers).contains(playerIdInteger)) {
+            || ((List<Integer>) visibleToPlayers).contains(playerId)) {
           value = state.get(key);
         }
         result.put(key, value);
@@ -206,7 +263,7 @@ public final class GameApi {
      * lastMovePlayerId can either be the ID of a player in playersInfo,
      * or 0 for the Artificial Intelligence (AI) player.
      */
-    protected final int lastMovePlayerId;
+    protected final String lastMovePlayerId;
 
     /**
      * The number of tokens each player currently has in the pot (see {@link AttemptChangeTokens});
@@ -215,14 +272,14 @@ public final class GameApi {
      * the pot is given to the player with the highest score (see {@link EndGame}),
      * or if all players have the same score then the pot is distributed evenly.
      */
-    protected final Map<Integer, Integer> playerIdToNumberOfTokensInPot;
+    protected final Map<String, Integer> playerIdToNumberOfTokensInPot;
 
     public VerifyMove(List<Map<String, Object>> playersInfo,
         Map<String, Object> state,
         Map<String, Object> lastState,
         List<Operation> lastMove,
-        int lastMovePlayerId,
-        Map<Integer, Integer> playerIdToNumberOfTokensInPot) {
+        String lastMovePlayerId,
+        Map<String, Integer> playerIdToNumberOfTokensInPot) {
       this.playersInfo = checkHasJsonSupportedType(playersInfo);
       this.state = checkHasJsonSupportedType(state);
       this.lastState = checkHasJsonSupportedType(lastState);
@@ -244,7 +301,7 @@ public final class GameApi {
           "playerIdToNumberOfTokensInPot", playerIdToNumberOfTokensInPot);
     }
 
-    public Map<Integer, Integer> getPlayerIdToNumberOfTokensInPot() {
+    public Map<String, Integer> getPlayerIdToNumberOfTokensInPot() {
       return playerIdToNumberOfTokensInPot;
     }
 
@@ -256,36 +313,36 @@ public final class GameApi {
       return state;
     }
 
-    public List<Integer> getPlayerIds() {
-      List<Integer> playerIds = new ArrayList<>();
+    public List<String> getPlayerIds() {
+      List<String> playerIds = new ArrayList<>();
       for (Map<String, Object> playerInfo : getPlayersInfo()) {
-        playerIds.add((Integer) playerInfo.get(PLAYER_ID));
+        playerIds.add((String) playerInfo.get(PLAYER_ID));
       }
       return playerIds;
     }
 
-    public int getPlayerIndex(int playerId) {
+    public int getPlayerIndex(String playerId) {
       return getPlayerIds().indexOf(playerId);
     }
 
-    public Map<String, Object> getPlayerInfo(int playerId) {
+    public Map<String, Object> getPlayerInfo(String playerId) {
       for (Map<String, Object> playerInfo : getPlayersInfo()) {
-        if (playerId == (Integer) playerInfo.get(PLAYER_ID)) {
+        if (playerId.equals(playerInfo.get(PLAYER_ID))) {
           return playerInfo;
         }
       }
       return null;
     }
 
-    public String getPlayerName(int playerId) {
+    public String getPlayerName(String playerId) {
       return String.valueOf(getPlayerInfo(playerId).get(PLAYER_NAME));
     }
 
-    public int getPlayerTokens(int playerId) {
+    public int getPlayerTokens(String playerId) {
       return (Integer) (getPlayerInfo(playerId).get(PLAYER_TOKENS));
     }
 
-    public String getPlayerProfilePicUrl(int playerId) {
+    public String getPlayerProfilePicUrl(String playerId) {
       return String.valueOf(getPlayerInfo(playerId).get(PLAYER_PROFILE_PIC_URL));
     }
 
@@ -297,7 +354,7 @@ public final class GameApi {
       return lastMove;
     }
 
-    public int getLastMovePlayerId() {
+    public String getLastMovePlayerId() {
       return lastMovePlayerId;
     }
   }
@@ -305,18 +362,18 @@ public final class GameApi {
   public static class UpdateUI extends VerifyMove {
     /**
      * yourPlayerId can either be the ID of a player in playersInfo,
-     * or 0 for the Artificial Intelligence (AI) player,
-     * or -1 to represent that you're VIEWING a match (i.e., you're not one of the players and
+     * or "0" for the Artificial Intelligence (AI) player,
+     * or "-1" to represent that you're VIEWING a match (i.e., you're not one of the players and
      * therefore you cannot make moves).
      */
-    protected final int yourPlayerId;
+    protected final String yourPlayerId;
 
-    public UpdateUI(int yourPlayerId, List<Map<String, Object>> playersInfo,
+    public UpdateUI(String yourPlayerId, List<Map<String, Object>> playersInfo,
         Map<String, Object> state,
         Map<String, Object> lastState,
         List<Operation> lastMove,
-        int lastMovePlayerId,
-        Map<Integer, Integer> playerIdToNumberOfTokensInPot) {
+        String lastMovePlayerId,
+        Map<String, Integer> playerIdToNumberOfTokensInPot) {
       super(playersInfo, state, lastState, lastMove, lastMovePlayerId,
           playerIdToNumberOfTokensInPot);
       this.yourPlayerId = yourPlayerId;
@@ -335,16 +392,16 @@ public final class GameApi {
           "playerIdToNumberOfTokensInPot", playerIdToNumberOfTokensInPot);
     }
 
-    public int getYourPlayerId() {
+    public String getYourPlayerId() {
       return yourPlayerId;
     }
 
     public boolean isAiPlayer() {
-      return yourPlayerId == AI_PLAYER_ID;
+      return yourPlayerId.equals(AI_PLAYER_ID);
     }
 
     public boolean isViewer() {
-      return yourPlayerId == VIEWER_ID;
+      return yourPlayerId.equals(VIEWER_ID);
     }
 
     public int getYourPlayerIndex() {
@@ -355,14 +412,14 @@ public final class GameApi {
   public abstract static class Operation extends Message { }
 
   public static class EndGame extends Operation {
-    private final Map<Integer, Integer> playerIdToScore;
+    private final Map<String, Integer> playerIdToScore;
 
-    public EndGame(Map<Integer, Integer> playerIdToScore) {
+    public EndGame(Map<String, Integer> playerIdToScore) {
       this.playerIdToScore = ImmutableMap.copyOf(playerIdToScore);
     }
 
-    public EndGame(int winnerPlayerId) {
-      Map<Integer, Integer> strPlayerIdToScore = new HashMap<>();
+    public EndGame(String winnerPlayerId) {
+      Map<String, Integer> strPlayerIdToScore = new HashMap<>();
       strPlayerIdToScore.put(winnerPlayerId, 1);
       this.playerIdToScore = ImmutableMap.copyOf(strPlayerIdToScore);
     }
@@ -377,7 +434,7 @@ public final class GameApi {
       return Arrays.<Object>asList("playerIdToScore", playerIdToScore);
     }
 
-    public Map<Integer, Integer> getPlayerIdToScore() {
+    public Map<String, Integer> getPlayerIdToScore() {
       return playerIdToScore;
     }
   }
@@ -391,7 +448,7 @@ public final class GameApi {
       this(key, value, ALL);
     }
 
-    public Set(String key, Object value, List<Integer> visibleToPlayerIds) {
+    public Set(String key, Object value, List<String> visibleToPlayerIds) {
       this(key, value, (Object) visibleToPlayerIds);
     }
 
@@ -471,11 +528,11 @@ public final class GameApi {
       this(key, ALL);
     }
 
-    public SetVisibility(String key, List<Integer> visibleToPlayerIds) {
+    public SetVisibility(String key, List<String> visibleToPlayerIds) {
       this(key, (Object) visibleToPlayerIds);
     }
 
-    private SetVisibility(String key, Object visibleToPlayerIds) {
+    public SetVisibility(String key, Object visibleToPlayerIds) {
       this.key = key;
       this.visibleToPlayerIds = checkHasJsonSupportedType(visibleToPlayerIds);
     }
@@ -500,18 +557,18 @@ public final class GameApi {
   }
 
   public static class SetTurn extends Operation {
-    private final int playerId;
+    private final String playerId;
     /** The number of seconds playerId will have to send MakeMove;
      * if it is 0 then the container will decide on the time limit
      * (or the container may decide that there is no time limit).
      */
     private final int numberOfSecondsForTurn;
 
-    public SetTurn(int playerId) {
+    public SetTurn(String playerId) {
       this(playerId, 0);
     }
 
-    public SetTurn(int playerId, int numberOfSecondsForTurn) {
+    public SetTurn(String playerId, int numberOfSecondsForTurn) {
       this.playerId = playerId;
       this.numberOfSecondsForTurn = numberOfSecondsForTurn;
     }
@@ -527,7 +584,7 @@ public final class GameApi {
           "numberOfSecondsForTurn", numberOfSecondsForTurn);
     }
 
-    public int getPlayerId() {
+    public String getPlayerId() {
       return playerId;
     }
 
@@ -586,17 +643,17 @@ public final class GameApi {
      * If the game ends when the total pot is non-zero,
      * the pot is given to the player with the highest score (see {@link EndGame}).
      */
-    private final Map<Integer, Integer> playerIdToTokenChange;
+    private final Map<String, Integer> playerIdToTokenChange;
 
     /**
      * The number of tokens each player currently has in the pot;
      * The sum of values is always non-negative (i.e., the total pot can NOT be negative).
      * When the game ends, the pot is given to the player with the highest score.
      */
-    protected final Map<Integer, Integer> playerIdToNumberOfTokensInPot;
+    protected final Map<String, Integer> playerIdToNumberOfTokensInPot;
 
-    public AttemptChangeTokens(Map<Integer, Integer> playerIdToTokenChange,
-        Map<Integer, Integer> playerIdToNumberOfTokensInPot) {
+    public AttemptChangeTokens(Map<String, Integer> playerIdToTokenChange,
+        Map<String, Integer> playerIdToNumberOfTokensInPot) {
       this.playerIdToTokenChange = ImmutableMap.copyOf(playerIdToTokenChange);
       this.playerIdToNumberOfTokensInPot = ImmutableMap.copyOf(playerIdToNumberOfTokensInPot);
     }
@@ -612,11 +669,11 @@ public final class GameApi {
           "playerIdToNumberOfTokensInPot", playerIdToNumberOfTokensInPot);
     }
 
-    public Map<Integer, Integer> getPlayerIdToTokenChange() {
+    public Map<String, Integer> getPlayerIdToTokenChange() {
       return playerIdToTokenChange;
     }
 
-    public Map<Integer, Integer> getPlayerIdToNumberOfTokensInPot() {
+    public Map<String, Integer> getPlayerIdToNumberOfTokensInPot() {
       return playerIdToNumberOfTokensInPot;
     }
   }
@@ -673,16 +730,16 @@ public final class GameApi {
   }
 
   public static class VerifyMoveDone extends Message {
-    private final int hackerPlayerId;
+    private final String hackerPlayerId;
     private final String message;
 
     /** Move is verified, i.e., no hacker found. */
     public VerifyMoveDone() {
-      this(0, null);
+      this(null, null);
     }
 
     /** Hacker found! */
-    public VerifyMoveDone(int hackerPlayerId, String message) {
+    public VerifyMoveDone(String hackerPlayerId, String message) {
       this.hackerPlayerId = hackerPlayerId;
       this.message = message;
     }
@@ -697,7 +754,7 @@ public final class GameApi {
       return Arrays.<Object>asList("hackerPlayerId", hackerPlayerId, "message", message);
     }
 
-    public int getHackerPlayerId() {
+    public String getHackerPlayerId() {
       return hackerPlayerId;
     }
 
@@ -828,12 +885,12 @@ public final class GameApi {
       switch (type) {
         case "UpdateUI":
           return new UpdateUI(
-              (Integer) message.get("yourPlayerId"),
+              (String) message.get("yourPlayerId"),
               (List<Map<String, Object>>) message.get("playersInfo"),
               (Map<String, Object>) message.get("state"),
               (Map<String, Object>) message.get("lastState"),
               messageToOperationList(message.get("lastMove")),
-              (Integer) message.get("lastMovePlayerId"),
+              (String) message.get("lastMovePlayerId"),
               toIntegerMap(message.get("playerIdToNumberOfTokensInPot")));
 
         case "VerifyMove":
@@ -842,7 +899,7 @@ public final class GameApi {
               (Map<String, Object>) message.get("state"),
               (Map<String, Object>) message.get("lastState"),
               messageToOperationList(message.get("lastMove")),
-              (Integer) message.get("lastMovePlayerId"),
+              (String) message.get("lastMovePlayerId"),
               toIntegerMap(message.get("playerIdToNumberOfTokensInPot")));
 
         case "EndGame":
@@ -865,7 +922,7 @@ public final class GameApi {
               message.get("visibleToPlayerIds"));
 
         case "SetTurn":
-          return new SetTurn((Integer) message.get("playerId"),
+          return new SetTurn((String) message.get("playerId"),
               (Integer) message.get("numberOfSecondsForTurn"));
 
         case "Delete":
@@ -886,7 +943,7 @@ public final class GameApi {
 
         case "VerifyMoveDone":
           return new VerifyMoveDone(
-              (Integer) message.get("hackerPlayerId"),
+              (String) message.get("hackerPlayerId"),
               (String) message.get("message"));
 
         case "RequestManipulator":
@@ -904,12 +961,12 @@ public final class GameApi {
     }
   }
 
-  static Map<Integer, Integer> toIntegerMap(Object objMap) {
+  static Map<String, Integer> toIntegerMap(Object objMap) {
     Map<?, ?> map = (Map<?, ?>) objMap;
-    Map<Integer, Integer> result = new HashMap<>();
+    Map<String, Integer> result = new HashMap<>();
     for (Object key : map.keySet()) {
       Object value = map.get(key);
-      result.put(key instanceof Integer ? (Integer) key : Integer.parseInt(key.toString()),
+      result.put(key.toString(),
           value instanceof Integer ? (Integer) value : Integer.parseInt(value.toString()));
     }
     return result;
@@ -924,7 +981,7 @@ public final class GameApi {
    * or the object is a Map and the keys are String and the values have JSON-supported data types.
    * @return the given object.
    */
-  static <T> T checkHasJsonSupportedType(T object) {
+  public static <T> T checkHasJsonSupportedType(T object) {
     if (object == null) {
       return object;
     }
@@ -953,6 +1010,155 @@ public final class GameApi {
     }
     throw new IllegalArgumentException(
         "The object doesn't have a JSON-supported data type! object=" + object);
+  }
+
+  public static final class GameApiJsonHelper {
+    private GameApiJsonHelper() { }
+
+    private static final List<String> INTEGER_MAP_NAMES = ImmutableList.<String>of(
+        "playerIdToNumberOfTokensInPot", "playerIdToTokenChange", "playerIdToScore");
+
+    public static String getJsonString(Message messageObject) {
+      Map<String, Object> messageMap = messageObject.toMessage();
+      return getJsonStringFromMap(messageMap);
+    }
+
+    public static String getJsonStringFromMap(Map<String, Object> map) {
+      return getJsonObject(map).toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getJsonObject(Map<String, Object> messageMap) {
+      JSONObject jsonObj = new JSONObject();
+      for (Map.Entry<String, Object> entry : messageMap.entrySet()) {
+        JSONValue jsonVal = null;
+        if (entry.getValue() == null) {
+          jsonVal = JSONNull.getInstance();
+        } else if (entry.getValue() instanceof Boolean) {
+          jsonVal = JSONBoolean.getInstance((Boolean) entry.getValue());
+        } else if (entry.getValue() instanceof Integer) {
+          jsonVal = new JSONNumber((Integer) entry.getValue());
+        } else if (entry.getValue() instanceof String) {
+          jsonVal = new JSONString((String) entry.getValue());
+        } else if (entry.getValue() instanceof List) {
+          jsonVal = getJsonArray((List<Object>) entry.getValue());
+        } else if (entry.getValue() instanceof Map) {
+          if (INTEGER_MAP_NAMES.contains(entry.getKey())) {
+            jsonVal = getJsonObjectFromIntegerMap((Map<String, Integer>) entry.getValue());
+          } else {
+            jsonVal = getJsonObject((Map<String, Object>) entry.getValue());
+          }
+        } else {
+          throw new IllegalStateException("Invalid object encountered");
+        }
+        jsonObj.put(entry.getKey(), jsonVal);
+      }
+      return jsonObj;
+    }
+
+    public static JSONObject getJsonObjectFromIntegerMap(Map<String, Integer> messageMap) {
+      JSONObject jsonObj = new JSONObject();
+      for (Map.Entry<String, Integer> entry: messageMap.entrySet()) {
+        jsonObj.put(entry.getKey().toString(), new JSONNumber(entry.getValue()));
+      }
+      return jsonObj;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static JSONArray getJsonArray(List<Object> messageList) {
+      JSONArray jsonArr = new JSONArray();
+      int index = 0;
+      for (Object object : messageList) {
+        if (object == null) {
+          jsonArr.set(index++, JSONNull.getInstance());
+        } else if (object instanceof Boolean) {
+          jsonArr.set(index++, JSONBoolean.getInstance((Boolean) object));
+        } else if (object instanceof Integer) {
+          jsonArr.set(index++, new JSONNumber((Integer) object));
+        } else if (object instanceof String) {
+          jsonArr.set(index++, new JSONString((String) object));
+        } else if (object instanceof List) {
+          jsonArr.set(index++, getJsonArray((List<Object>) object));
+        } else if (object instanceof Map) {
+          jsonArr.set(index++, getJsonObject((Map<String, Object>) object));
+        } else {
+          throw new IllegalStateException("Invalid object encountered");
+        }
+      }
+      return jsonArr;
+    }
+
+    public static Message getMessageObject(String jsonString) {
+      return Message.messageToHasEquality(getMapObject(jsonString));
+    }
+
+    public static Map<String, Object> getMapObject(String jsonString) {
+      JSONValue jsonVal = JSONParser.parseStrict(jsonString);
+      JSONObject jsonObj = jsonVal.isObject();
+      if (jsonObj == null) {
+        throw new IllegalStateException("JSONObject expected");
+      }
+      return getMapFromJsonObject(jsonObj);
+    }
+
+    public static Map<String, Object> getMapFromJsonObject(JSONObject jsonObj) {
+      Map<String, Object> map = new HashMap<String, Object>();
+      for (String key : jsonObj.keySet()) {
+        JSONValue jsonVal = jsonObj.get(key);
+        if (jsonVal instanceof JSONNull) {
+          map.put(key, null);
+        } else if (jsonVal instanceof JSONBoolean) {
+          map.put(key, ((JSONBoolean) jsonVal).booleanValue());
+        } else if (jsonVal instanceof JSONNumber) {
+          map.put(key, new Integer((int) ((JSONNumber) jsonVal).doubleValue()));
+        } else if (jsonVal instanceof JSONString) {
+          map.put(key, ((JSONString) jsonVal).stringValue());
+        } else if (jsonVal instanceof JSONArray) {
+          map.put(key, getListFromJsonArray((JSONArray) jsonVal));
+        } else if (jsonVal instanceof JSONObject) {
+          if (INTEGER_MAP_NAMES.contains(key)) {
+            map.put(key, getIntegerMapFromJsonObject((JSONObject) jsonVal));
+          } else {
+            map.put(key, getMapFromJsonObject((JSONObject) jsonVal));
+          }
+        } else {
+          throw new IllegalStateException("Invalid JSONValue encountered");
+        }
+      }
+      return map;
+    }
+
+    public static Map<Integer, Integer> getIntegerMapFromJsonObject(JSONObject jsonObj) {
+      Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+      for (String key : jsonObj.keySet()) {
+        JSONValue jsonVal = jsonObj.get(key);
+        map.put(Integer.parseInt(key), new Integer((int) ((JSONNumber) jsonVal).doubleValue()));
+      }
+      return map;
+    }
+
+    private static Object getListFromJsonArray(JSONArray jsonArr) {
+      List<Object> list = new ArrayList<Object>();
+      for (int i = 0; i < jsonArr.size(); i++) {
+        JSONValue jsonVal = jsonArr.get(i);
+        if (jsonVal instanceof JSONNull) {
+          list.add(null);
+        } else if (jsonVal instanceof JSONBoolean) {
+          list.add(((JSONBoolean) jsonVal).booleanValue());
+        } else if (jsonVal instanceof JSONNumber) {
+          list.add(new Integer((int) ((JSONNumber) jsonVal).doubleValue()));
+        } else if (jsonVal instanceof JSONString) {
+          list.add(((JSONString) jsonVal).stringValue());
+        } else if (jsonVal instanceof JSONArray) {
+          list.add(getListFromJsonArray((JSONArray) jsonVal));
+        } else if (jsonVal instanceof JSONObject) {
+          list.add(getMapFromJsonObject((JSONObject) jsonVal));
+        } else {
+          throw new IllegalStateException("Invalid JSONValue encountered");
+        }
+      }
+      return list;
+    }
   }
 
   private GameApi() { }

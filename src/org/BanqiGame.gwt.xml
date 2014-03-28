@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module rename-to='banqi_game'>
+  
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
   <inherits name='com.google.common.collect.Collect'/>
@@ -17,7 +18,10 @@
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.banqi.graphics.BanqiEntryPoint'/>
 
+  <add-linker name='xsiframe' />
+  <inherits name='com.google.gwt.json.JSON'/>
+
   <!-- Specify the paths for translatable code                    -->
-  <source path='client'/>
-  <source path='graphics'/>
+  <source path='banqi'/>
+  <source path='game_api'/>
 </module>

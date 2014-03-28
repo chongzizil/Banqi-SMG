@@ -2,26 +2,22 @@ package org.banqi.graphics;
 
 import org.banqi.client.BanqiLogic;
 import org.banqi.client.BanqiPresenter;
-import org.banqi.client.GameApi;
-import org.banqi.client.GameApi.Game;
-import org.banqi.client.GameApi.IteratingPlayerContainer;
-import org.banqi.client.GameApi.UpdateUI;
-import org.banqi.client.GameApi.VerifyMove;
+import org.game_api.GameApi.Game;
+import org.game_api.GameApi.ContainerConnector;
+import org.game_api.GameApi.UpdateUI;
+import org.game_api.GameApi.VerifyMove;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class BanqiEntryPoint implements EntryPoint {
-  IteratingPlayerContainer container;
+  ContainerConnector container;
   BanqiPresenter banqiPresenter;
 
   @Override
@@ -37,29 +33,17 @@ public class BanqiEntryPoint implements EntryPoint {
         banqiPresenter.updateUI(updateUI);
       }
     };
+    
     OtherImages otherImages = GWT.create(OtherImages.class);
     final OtherImageSupplier otherImageSupplier = new OtherImageSupplier(otherImages);
     
-    container = new IteratingPlayerContainer(game, 2);
+    container = new ContainerConnector(game);
     BanqiGraphics banqiGraphics = new BanqiGraphics();
-    banqiPresenter =
-        new BanqiPresenter(banqiGraphics, container);
-    final ListBox playerSelect = new ListBox();
-    playerSelect.addItem("RedPlayer");
-    playerSelect.addItem("BlackPlayer");
-    playerSelect.addItem("Viewer");
-    playerSelect.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
-        int selectedIndex = playerSelect.getSelectedIndex();
-        int playerId = selectedIndex == 2 ? GameApi.VIEWER_ID
-            : container.getPlayerIds().get(selectedIndex);
-        container.updateUi(playerId);
-      }
-    });
+    banqiPresenter = new BanqiPresenter(banqiGraphics, container);
+    
     DockPanel dockPanel = new DockPanel();
     dockPanel.add(banqiGraphics, DockPanel.CENTER);
-    dockPanel.add(playerSelect, DockPanel.SOUTH);
+    
     // Title
     Image titleImage = new Image(otherImageSupplier.getResource(
         OtherImage.Factory.getTitleImage()));
@@ -72,6 +56,5 @@ public class BanqiEntryPoint implements EntryPoint {
     
     RootPanel.get("mainDiv").add(dockPanel);
     container.sendGameReady();
-    container.updateUi(container.getPlayerIds().get(0));
   }
 }

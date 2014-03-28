@@ -10,14 +10,14 @@ import java.util.Map;
 
 import org.banqi.client.Piece.Kind;
 import org.banqi.client.Piece.PieceColor;
-import org.banqi.client.GameApi.Operation;
-import org.banqi.client.GameApi.Set;
-import org.banqi.client.GameApi.SetTurn;
-import org.banqi.client.GameApi.SetVisibility;
-import org.banqi.client.GameApi.Shuffle;
-import org.banqi.client.GameApi.VerifyMove;
-import org.banqi.client.GameApi.VerifyMoveDone;
-import org.banqi.client.GameApi.EndGame;
+import org.game_api.GameApi.Operation;
+import org.game_api.GameApi.Set;
+import org.game_api.GameApi.SetTurn;
+import org.game_api.GameApi.SetVisibility;
+import org.game_api.GameApi.Shuffle;
+import org.game_api.GameApi.VerifyMove;
+import org.game_api.GameApi.VerifyMoveDone;
+import org.game_api.GameApi.EndGame;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -307,8 +307,8 @@ public class BanqiLogic {
    * getCapturePieceOperation, getEndGameOperation.
    */
   List<Operation> getExpectedOperations(
-      Map<String, Object> lastApiState, List<Operation> lastMove, List<Integer> playerIds,
-      int lastMovePlayerId) {
+      Map<String, Object> lastApiState, List<Operation> lastMove, List<String> playerIds,
+      String lastMovePlayerId) {
     
     if (lastApiState.isEmpty()) {
       return getMoveInitial(playerIds);
@@ -374,8 +374,8 @@ public class BanqiLogic {
     return colorString + kindString;
   }
 
-  List<Operation> getMoveInitial(List<Integer> playerIds) {
-    int redPlayerId = playerIds.get(0);
+  List<Operation> getMoveInitial(List<String> playerIds) {
+    String redPlayerId = playerIds.get(0);
     List<Operation> operations = Lists.newArrayList();
     //The order of operations: turn, movePiece, turnPiece, capturePiece, P0...P31, S0...P31 
     operations.add(new SetTurn(redPlayerId));
@@ -397,7 +397,7 @@ public class BanqiLogic {
   }
   
   State gameApiStateToBanqiState(Map<String, Object> gameApiState,
-      Color turnOfColor, List<Integer> playerIds) {
+      Color turnOfColor, List<String> playerIds) {
     List<Optional<Piece>> pieces = Lists.newArrayList();
     List<Optional<Integer>> squares = Lists.newArrayList();
    

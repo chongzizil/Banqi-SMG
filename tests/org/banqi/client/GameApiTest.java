@@ -9,23 +9,24 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.banqi.client.GameApi.AttemptChangeTokens;
-import org.banqi.client.GameApi.EndGame;
-import org.banqi.client.GameApi.GameReady;
-import org.banqi.client.GameApi.Message;
-import org.banqi.client.GameApi.MakeMove;
-import org.banqi.client.GameApi.ManipulateState;
-import org.banqi.client.GameApi.ManipulationDone;
-import org.banqi.client.GameApi.Operation;
-import org.banqi.client.GameApi.RequestManipulator;
-import org.banqi.client.GameApi.Set;
-import org.banqi.client.GameApi.SetRandomInteger;
-import org.banqi.client.GameApi.SetTurn;
-import org.banqi.client.GameApi.SetVisibility;
-import org.banqi.client.GameApi.Shuffle;
-import org.banqi.client.GameApi.UpdateUI;
-import org.banqi.client.GameApi.VerifyMove;
-import org.banqi.client.GameApi.VerifyMoveDone;
+import org.game_api.GameApi;
+import org.game_api.GameApi.AttemptChangeTokens;
+import org.game_api.GameApi.EndGame;
+import org.game_api.GameApi.GameReady;
+import org.game_api.GameApi.Message;
+import org.game_api.GameApi.MakeMove;
+import org.game_api.GameApi.ManipulateState;
+import org.game_api.GameApi.ManipulationDone;
+import org.game_api.GameApi.Operation;
+import org.game_api.GameApi.RequestManipulator;
+import org.game_api.GameApi.Set;
+import org.game_api.GameApi.SetRandomInteger;
+import org.game_api.GameApi.SetTurn;
+import org.game_api.GameApi.SetVisibility;
+import org.game_api.GameApi.Shuffle;
+import org.game_api.GameApi.UpdateUI;
+import org.game_api.GameApi.VerifyMove;
+import org.game_api.GameApi.VerifyMoveDone;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -36,7 +37,7 @@ import com.google.common.collect.Lists;
 
 @RunWith(JUnit4.class)
 public class GameApiTest {
-  Map<String, Object> strToObj = ImmutableMap.<String, Object>of("playerId", 3);
+  Map<String, Object> strToObj = ImmutableMap.<String, Object>of("playerId", "3");
   ImmutableList<Map<String, Object>> playersInfo =
       ImmutableList.<Map<String, Object>>of(strToObj, strToObj);
   Map<String, Object> state = ImmutableMap.<String, Object>of("key", 34, "key2", "dsf");
@@ -47,24 +48,26 @@ public class GameApiTest {
 
   List<Message> messages =
       Arrays.<Message>asList(
-          new UpdateUI(42, playersInfo, state, lastState, operations, 12, ImmutableMap.of(42, 1)),
-          new VerifyMove(playersInfo, state, lastState, operations, 23, ImmutableMap.of(42, 33)),
+          new UpdateUI("42", playersInfo, state, lastState, operations,
+              "12", ImmutableMap.of("42", 1)),
+          new VerifyMove(playersInfo, state, lastState, operations,
+              "23", ImmutableMap.of("42", 33)),
           set, setRandomInteger,
-          new EndGame(32),
-          new EndGame(ImmutableMap.of(42, -1232, 43, -5454)),
+          new EndGame("32"),
+          new EndGame(ImmutableMap.of("42", -1232, "43", -5454)),
           new SetVisibility("sd"),
           new Shuffle(Lists.newArrayList("xzc", "zxc")),
           new GameReady(),
           new MakeMove(operations),
           new VerifyMoveDone(),
-          new VerifyMoveDone(23, "asd"),
+          new VerifyMoveDone("23", "asd"),
           new RequestManipulator(),
           new ManipulateState(state),
           new ManipulationDone(operations),
-          new SetTurn(41),
-          new SetTurn(41, 23),
-          new AttemptChangeTokens(ImmutableMap.of(42, -1232, 43, -5454),
-              ImmutableMap.of(42, 1232, 43, 5454))
+          new SetTurn("41"),
+          new SetTurn("41", 23),
+          new AttemptChangeTokens(ImmutableMap.of("42", -1232, "43", -5454),
+              ImmutableMap.of("42", 1232, "43", 5454))
           );
 
   @Test

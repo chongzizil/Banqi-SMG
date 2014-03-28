@@ -15,7 +15,7 @@ import com.google.common.collect.ImmutableList;
  */
 public class State {
   private final Color turn;
-  private final ImmutableList<Integer> playerIds;
+  private final ImmutableList<String> playerIds;
   
   /**
    * Note that some of the entries will have null,
@@ -29,7 +29,7 @@ public class State {
    */
   private final ImmutableList<Optional<Integer>> squares;
   
-  public State(Color turn, ImmutableList<Integer> playerIds,
+  public State(Color turn, ImmutableList<String> playerIds,
       ImmutableList<Optional<Piece>> pieces,
       ImmutableList<Optional<Integer>> squares) {
 
@@ -78,11 +78,11 @@ public class State {
     return turn;
   }
 
-  public ImmutableList<Integer> getPlayerIds() {
+  public ImmutableList<String> getPlayerIds() {
     return playerIds;
   }
 
-  public int getPlayerId(Color color) {
+  public String getPlayerId(Color color) {
     return playerIds.get(color.ordinal());
   }
   

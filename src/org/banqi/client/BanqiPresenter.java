@@ -2,11 +2,11 @@ package org.banqi.client;
 
 import java.util.List;
 
-import org.banqi.client.GameApi.Container;
-import org.banqi.client.GameApi.Operation;
-import org.banqi.client.GameApi.Set;
-import org.banqi.client.GameApi.SetTurn;
-import org.banqi.client.GameApi.UpdateUI;
+import org.game_api.GameApi.Container;
+import org.game_api.GameApi.Operation;
+import org.game_api.GameApi.Set;
+import org.game_api.GameApi.SetTurn;
+import org.game_api.GameApi.UpdateUI;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -85,8 +85,8 @@ public class BanqiPresenter {
 
   /** Updates the presenter and the view with the state in updateUI. */
   public void updateUI(UpdateUI updateUI) {
-    List<Integer> playerIds = updateUI.getPlayerIds();
-    int yourPlayerId = updateUI.getYourPlayerId();
+    List<String> playerIds = updateUI.getPlayerIds();
+    String yourPlayerId = updateUI.getYourPlayerId();
     int yourPlayerIndex = updateUI.getPlayerIndex(yourPlayerId);
     myColor = yourPlayerIndex == 0 ? Optional.of(Color.R)
         : yourPlayerIndex == 1 ? Optional.of(Color.B) : Optional
@@ -263,7 +263,7 @@ public class BanqiPresenter {
     container.sendMakeMove(banqiLogic.getEndGameOperation(banqiState));
   }
 
-  private void sendInitialMove(List<Integer> playerIds) {
+  private void sendInitialMove(List<String> playerIds) {
     container.sendMakeMove(banqiLogic.getMoveInitial(playerIds));
   }
 
