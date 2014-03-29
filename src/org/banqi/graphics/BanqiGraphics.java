@@ -1,10 +1,15 @@
 package org.banqi.graphics;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.banqi.client.Piece;
 import org.banqi.client.BanqiPresenter;
 
+import com.allen_sauer.gwt.dnd.client.PickupDragController;
+import com.allen_sauer.gwt.dnd.client.drop.AbsolutePositionDropController;
+import com.allen_sauer.gwt.dnd.client.drop.DropController;
+import com.allen_sauer.gwt.dnd.client.drop.SimpleDropController;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -119,141 +124,33 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   
   private void placeImages(HorizontalPanel playerArea, List<Image> images) {
     playerArea.clear();
-    
     AbsolutePanel board = new AbsolutePanel();
     board.setSize("800px", "400px");
-    board.add(images.get(0), 0, 0);
     
-    //Row1
-    if (images.get(32) != null) {
-      board.add(images.get(32), 0, 0);
-    }
-    board.add(images.get(1), 100, 0);
-    if (images.get(33) != null) {
-      board.add(images.get(33), 100, 0);
-    }
-    board.add(images.get(2), 200, 0);
-    if (images.get(34) != null) {
-      board.add(images.get(34), 200, 0);
-    }
-    board.add(images.get(3), 300, 0);
-    if (images.get(35) != null) {
-      board.add(images.get(35), 300, 0);
-    }
-    board.add(images.get(4), 400, 0);
-    if (images.get(36) != null) {
-      board.add(images.get(36), 400, 0);
-    }
-    board.add(images.get(5), 500, 0);
-    if (images.get(37) != null) {
-      board.add(images.get(37), 500, 0);
-    }
-    board.add(images.get(6), 600, 0);
-    if (images.get(38) != null) {
-      board.add(images.get(38), 600, 0);
-    }
-    board.add(images.get(7), 700, 0);
-    if (images.get(39) != null) {
-      board.add(images.get(39), 700, 0);
-    }
-    //Row2
-    board.add(images.get(8), 0, 100);
-    if (images.get(40) != null) {
-      board.add(images.get(40), 0, 100);
-    }
-    board.add(images.get(9), 100, 100);
-    if (images.get(41) != null) {
-      board.add(images.get(41), 100, 100);
-    }
-    board.add(images.get(10), 200, 100);
-    if (images.get(42) != null) {
-      board.add(images.get(42), 200, 100);
-    }
-    board.add(images.get(11), 300, 100);
-    if (images.get(43) != null) {
-      board.add(images.get(43), 300, 100);
-    }
-    board.add(images.get(12), 400, 100);
-    if (images.get(44) != null) {
-      board.add(images.get(44), 400, 100);
-    }
-    board.add(images.get(13), 500, 100);
-    if (images.get(45) != null) {
-      board.add(images.get(45), 500, 100);
-    }
-    board.add(images.get(14), 600, 100);
-    if (images.get(46) != null) {
-      board.add(images.get(46), 600, 100);
-    }
-    board.add(images.get(15), 700, 100);
-    if (images.get(47) != null) {
-      board.add(images.get(47), 700, 100);
-    } 
-    //Row3
-    board.add(images.get(16), 0, 200);
-    if (images.get(48) != null) {
-      board.add(images.get(48), 0, 200);
-    }
-    board.add(images.get(17), 100, 200);
-    if (images.get(49) != null) {
-      board.add(images.get(49), 100, 200);
-    }
-    board.add(images.get(18), 200, 200);
-    if (images.get(50) != null) {
-      board.add(images.get(50), 200, 200);
-    }
-    board.add(images.get(19), 300, 200);
-    if (images.get(51) != null) {
-      board.add(images.get(51), 300, 200);
-    }
-    board.add(images.get(20), 400, 200);
-    if (images.get(52) != null) {
-      board.add(images.get(52), 400, 200);
-    }
-    board.add(images.get(21), 500, 200);
-    if (images.get(53) != null) {
-      board.add(images.get(53), 500, 200);
-    }
-    board.add(images.get(22), 600, 200);
-    if (images.get(54) != null) {
-      board.add(images.get(54), 600, 200);
-    }
-    board.add(images.get(23), 700, 200);
-    if (images.get(55) != null) {
-      board.add(images.get(55), 700, 200);
-    }
-    //Row4
-    board.add(images.get(24), 0, 300);
-    if (images.get(56) != null) {
-      board.add(images.get(56), 0, 300);
-    }
-    board.add(images.get(25), 100, 300);
-    if (images.get(57) != null) {
-      board.add(images.get(57), 100, 300);
-    }
-    board.add(images.get(26), 200, 300);
-    if (images.get(58) != null) {
-      board.add(images.get(58), 200, 300);
-    }
-    board.add(images.get(27), 300, 300);
-    if (images.get(59) != null) {
-      board.add(images.get(59), 300, 300);
-    }
-    board.add(images.get(28), 400, 300);
-    if (images.get(60) != null) {
-      board.add(images.get(60), 400, 300);
-    }
-    board.add(images.get(29), 500, 300);
-    if (images.get(61) != null) {
-      board.add(images.get(61), 500, 300);
-    }
-    board.add(images.get(30), 600, 300);
-    if (images.get(62) != null) {
-      board.add(images.get(62), 600, 300);
-    }
-    board.add(images.get(31), 700, 300);
-    if (images.get(63) != null) {
-      board.add(images.get(63), 700, 300);
+    AbsolutePositionDropController dropController;
+    PickupDragController dragCtrl = new PickupDragController(board, false);
+    //DropController dropCtrl = new AbsolutePositionDropController(board);
+    //dragCtrl.registerDropController(dropCtrl);
+    dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
+    dragCtrl.setBehaviorMultipleSelection(false);
+    dragCtrl.setBehaviorDragStartSensitivity(1);
+    //List<DropController> squareDropCtrlList = new ArrayList<DropController>();
+    //List<DropController> pieceDropCtrlList = new ArrayList<DropController>();
+    
+    for (int i = 0; i < 32; i++) {
+      int squareIndex = i;
+      int pieceIndex = i + 32;
+      int xCoord = (i % 8) * 100;
+      int yCoord = (i / 8) * 100;
+      board.add(images.get(squareIndex), xCoord, yCoord);
+
+      dragCtrl.registerDropController(new BanqiDropController(images.get(squareIndex)));
+      
+      if (images.get(pieceIndex) != null) {
+        board.add(images.get(pieceIndex), xCoord, yCoord);
+        dragCtrl.makeDraggable(images.get(pieceIndex));
+        dragCtrl.registerDropController(new BanqiDropController(images.get(squareIndex)));
+      }
     }
     playerArea.add(board);
   }
