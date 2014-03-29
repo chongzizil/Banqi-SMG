@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,6 @@ import org.game_api.GameApi.VerifyMove;
 import org.game_api.GameApi.VerifyMoveDone;
 import org.game_api.GameApi.EndGame;
 import org.game_api.GameApi.SetTurn;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -334,10 +334,10 @@ public class BanqiLogicTest {
    * 
    * Test capture.
    * 
-   * {   |P1 |   |   |   |   |   |   }
-   * {P3 |P0 |P4 |   |   |   |   |   }
-   * {   |P2 |   |   |   |   |   |   }
-   * {   |   |   |   |   |   |   |P31} 
+   * {   |P1 |   |   |   |   |   |   } 7
+   * {P3 |P0 |P4 |   |   |   |   |   } 15
+   * {   |P2 |   |   |   |   |   |   } 23
+   * {   |   |   |   |   |   |   |P31} 31
    * 
    * 
    **/

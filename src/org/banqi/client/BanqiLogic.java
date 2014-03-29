@@ -149,7 +149,6 @@ public class BanqiLogic {
     }
   }
 
-  
   /** Returns the operations for moving a piece (e.g., I move a piece from S0 to S1). */
   List<Operation> getMovePieceOperation(State state, Set move) {
     ImmutableList<Optional<Piece>> pieces = state.getPieces();

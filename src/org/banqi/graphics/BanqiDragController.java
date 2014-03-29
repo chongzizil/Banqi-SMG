@@ -20,9 +20,11 @@ public class BanqiDragController extends PickupDragController {
         restoreSelectedWidgetsLocation();
       }
     } else {
+      context.selectedWidgets.get(0);
+      context.dropController = null;
       context.dropController.onDrop(context);
       context.dropController.onLeave(context);
-      context.dropController = null;
+      
     }
 
     if (!getBehaviorDragProxy()) {

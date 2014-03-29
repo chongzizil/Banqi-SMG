@@ -1,6 +1,5 @@
 package org.banqi.graphics;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.banqi.client.Piece;
@@ -36,6 +35,13 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   private final PieceImageSupplier pieceImageSupplier;
   private final SquareImageSupplier squareImageSupplier;
   private BanqiPresenter presenter;
+  AbsolutePanel board = new AbsolutePanel();
+  //board.setSize("800px", "400px");
+  private AbsolutePositionDropController dropController;
+  private PickupDragController dragCtrl = new PickupDragController(board, false);
+  //dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
+  //dragCtrl.setBehaviorMultipleSelection(false);
+  //dragCtrl.setBehaviorDragStartSensitivity(1);
 
   public BanqiGraphics() {
     PieceImages pieceImages = GWT.create(PieceImages.class);
@@ -50,6 +56,10 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       List<PieceImage> pieceImages,
       List<Integer> squares,
       final List<Piece> pieces) {
+    dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
+    dragCtrl.setBehaviorMultipleSelection(false);
+    dragCtrl.setBehaviorDragStartSensitivity(1);
+    
     List<Image> res = Lists.newArrayList();
     // Add click handler to each square image
     for (SquareImage img : squareImages) {
@@ -63,6 +73,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
             }
           }
         });
+      dragCtrl.registerDropController(new BanqiDropController(image, presenter, imgFinal.squareId));
       res.add(image);
     }
     
@@ -79,6 +90,9 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
             }
           }
         });
+        dragCtrl.makeDraggable(image);
+        dragCtrl.registerDropController(
+            new BanqiDropController(image, presenter, imgFinal.pieceId));
         res.add(image);
       } else {
         res.add(null);
@@ -124,16 +138,16 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   
   private void placeImages(HorizontalPanel playerArea, List<Image> images) {
     playerArea.clear();
-    AbsolutePanel board = new AbsolutePanel();
+    //AbsolutePanel board = new AbsolutePanel();
     board.setSize("800px", "400px");
     
-    AbsolutePositionDropController dropController;
-    PickupDragController dragCtrl = new PickupDragController(board, false);
+    //AbsolutePositionDropController dropController;
+    //PickupDragController dragCtrl = new PickupDragController(board, false);
     //DropController dropCtrl = new AbsolutePositionDropController(board);
     //dragCtrl.registerDropController(dropCtrl);
-    dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
-    dragCtrl.setBehaviorMultipleSelection(false);
-    dragCtrl.setBehaviorDragStartSensitivity(1);
+    //dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
+    //dragCtrl.setBehaviorMultipleSelection(false);
+    //dragCtrl.setBehaviorDragStartSensitivity(1);
     //List<DropController> squareDropCtrlList = new ArrayList<DropController>();
     //List<DropController> pieceDropCtrlList = new ArrayList<DropController>();
     
@@ -143,13 +157,12 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       int xCoord = (i % 8) * 100;
       int yCoord = (i / 8) * 100;
       board.add(images.get(squareIndex), xCoord, yCoord);
-
-      dragCtrl.registerDropController(new BanqiDropController(images.get(squareIndex)));
+      //dragCtrl.registerDropController(new BanqiDropController(images.get(squareIndex)));
       
       if (images.get(pieceIndex) != null) {
         board.add(images.get(pieceIndex), xCoord, yCoord);
-        dragCtrl.makeDraggable(images.get(pieceIndex));
-        dragCtrl.registerDropController(new BanqiDropController(images.get(squareIndex)));
+        //dragCtrl.makeDraggable(images.get(pieceIndex));
+        //ZZZdragCtrl.registerDropController(new BanqiDropController(images.get(squareIndex)));
       }
     }
     playerArea.add(board);
