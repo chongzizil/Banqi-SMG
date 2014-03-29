@@ -54,7 +54,7 @@ public class StateExplorerImpl implements StateExplorer {
                 possibleMoveFromPosition.add(endPos);
               }
             }
-          } else if (endRow == startRow - 1 || endRow == startRow + 1){
+          } else if (endRow == startRow - 1 || endRow == startRow + 1) {
             possibleMoveFromPosition.add(endPos);
           }
         }

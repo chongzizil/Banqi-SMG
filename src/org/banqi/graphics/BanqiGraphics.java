@@ -2,9 +2,17 @@ package org.banqi.graphics;
 
 import java.util.List;
 
+import org.banqi.client.BanqiPresenter.Dropper;
+import org.banqi.client.MovePiece;
 import org.banqi.client.Piece;
 import org.banqi.client.BanqiPresenter;
+import org.banqi.client.Position;
+import org.banqi.client.State;
+import org.banqi.client.StateExplorerImpl;
 
+import com.allen_sauer.gwt.dnd.client.DragHandler;
+import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
+import com.allen_sauer.gwt.dnd.client.DragStartEvent;
 import com.allen_sauer.gwt.dnd.client.PickupDragController;
 import com.allen_sauer.gwt.dnd.client.drop.AbsolutePositionDropController;
 import com.allen_sauer.gwt.dnd.client.drop.DropController;
@@ -42,6 +50,8 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   //dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
   //dragCtrl.setBehaviorMultipleSelection(false);
   //dragCtrl.setBehaviorDragStartSensitivity(1);
+  
+  
 
   public BanqiGraphics() {
     PieceImages pieceImages = GWT.create(PieceImages.class);
@@ -56,6 +66,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       List<PieceImage> pieceImages,
       List<Integer> squares,
       final List<Piece> pieces) {
+    dragCtrl.addDragHandler(presenter.initializeDragHandler());
     dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
     dragCtrl.setBehaviorMultipleSelection(false);
     dragCtrl.setBehaviorDragStartSensitivity(1);
@@ -186,11 +197,22 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   }
 
   @Override
-  public void chooseNextPieceOrSquare(List<Integer> squares, List<Piece> pieces,
-      List<Integer> selectedPieceIds) {
+  public void chooseNextPieceOrSquare(List<Integer> squares,
+      List<Piece> pieces, List<Integer> selectedPieceIds) {
     // High light the selected piece
-    placeImages(playerArea, createSquareAndPieceImages(
-        squares, pieces, selectedPieceIds));
+    placeImages(playerArea,
+        createSquareAndPieceImages(squares, pieces, selectedPieceIds));
     enableClicks = true;
   }
+  
+  @Override
+  public Position getPosition(Image image) {
+    for (int i = 0; i < 32; i++) {
+      if (board.getWidget(i + 32).equals(image)) {
+        return new Position((i / 8) + 1, (i % 8) + 1);
+      }
+    }
+    return null;
+  }
+
 }

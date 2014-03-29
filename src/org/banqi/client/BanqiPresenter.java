@@ -8,9 +8,13 @@ import org.game_api.GameApi.Set;
 import org.game_api.GameApi.SetTurn;
 import org.game_api.GameApi.UpdateUI;
 
+import com.allen_sauer.gwt.dnd.client.DragHandler;
+import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
+import com.allen_sauer.gwt.dnd.client.DragStartEvent;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.gwt.user.client.ui.Image;
 
 /**
  * The presenter that controls the banqi graphics. We use the MVP pattern: the
@@ -20,6 +24,10 @@ import com.google.common.collect.Lists;
  */
 public class BanqiPresenter {
 
+  public interface Dropper {
+    void onDrop(Position pos);
+  }
+  
   public interface View {
     /**
      * Sets the presenter. The viewer will call certain methods on the
@@ -52,6 +60,15 @@ public class BanqiPresenter {
     /** Sets the state for a player (whether the player has the turn or not). */
     void setPlayerState(List<Integer> squares, List<Piece> pieces);
     
+    /** Initialize the behavior of a widget being dragged. */
+    //DragHandler initializeDragHandler();
+
+    /** Initialize the behavior of a widget bieng dropped. */
+    //Dropper initializeDropHandler();
+    
+    /** Find the board position associated with an image. */
+    Position getPosition(Image image);
+    
     /**
      * Asks the player to choose the next piece or square. We pass what pieces or
      * squares are selected (e.g., select a facing up piece one time and a unoccupied
@@ -76,6 +93,11 @@ public class BanqiPresenter {
   private static final String MOVEPIECE = "movePiece"; // A move has the form: [from, to]
   private static final String TURNPIECE = "turnPiece"; // A turn has the form: [coordinate]
   private static final String CAPTUREPIECE = "capturePiece"; // A capture has the form: [from, to]
+  
+  private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
+  private Position moveFrom = null;
+  private Position moveTo = null;
+  private java.util.Set<MovePiece> possibleMoves;
 
   public BanqiPresenter(View view, Container container) {
     this.view = view;
@@ -113,7 +135,7 @@ public class BanqiPresenter {
     }
     banqiState = banqiLogic.gameApiStateToBanqiState(updateUI.getState(),
         turnOfColor, playerIds);
-
+    
     if (updateUI.isViewer()) {
       view.setViewerState(getAllSquares(banqiState), getAllPieces(banqiState));
       return;
@@ -266,10 +288,85 @@ public class BanqiPresenter {
   private void sendInitialMove(List<String> playerIds) {
     container.sendMakeMove(banqiLogic.getMoveInitial(playerIds));
   }
-
+  
   private void check(boolean val) {
     if (!val) {
       throw new IllegalArgumentException();
     }
   }
+
+  
+  public DragHandler initializeDragHandler() { 
+    return new DragHandlerAdapter() {
+      @Override
+      public void onDragStart(DragStartEvent event) {
+        Position startPos = view.getPosition((Image) event.getContext().draggable);
+        event.getContext().desiredDraggableX = (startPos.getCol() - 1) * 100;
+        event.getContext().desiredDraggableY = (startPos.getRow() - 1) * 100;
+        if (!isMyTurn()) {
+          return;
+        }
+        if (moveTo == null) {
+          moveFrom = startPos;
+          if (possibleMoves != null) {
+            for (MovePiece move : possibleMoves) {
+              Position to = new Position((move.getToCoord() / 8) + 1,
+                  (move.getToCoord() % 8) + 1);
+              //TODO:
+              //view.setHighlighted(to.getRow(), to.getCol(), false);
+            }
+          }
+          java.util.Set<MovePiece> possibleMoves = stateExplorer.getPossibleMovesFromPosition(
+              banqiState, moveFrom);
+          for (MovePiece move : possibleMoves) {
+            Position to = new Position((move.getToCoord() / 8) + 1,
+                (move.getToCoord() % 8) + 1);
+          //TODO:
+            //view.setHighlighted(to.getRow(), to.getCol(), false);
+          }
+        }
+      }
+    };
+  }
+  
+  Dropper initializeDropHandler() {
+    return new Dropper() {
+      @Override
+      public void onDrop(Position pos) {
+        if (!isMyTurn()) {
+          return;
+        }
+        if (moveTo == null) {
+          moveTo = pos;
+          int fromCoord = moveFrom.getRow() * 8 + moveFrom.getCol() - 1;
+          int toCoord = moveTo.getRow() * 8 + moveTo.getCol() - 1;
+          MovePiece move = new MovePiece(fromCoord, toCoord);
+          if (possibleMoves.contains(move)) {
+            if (possibleMoves != null) {
+              for (MovePiece m : possibleMoves) {
+                Position to = new Position((m.getToCoord() / 8) + 1,
+                    (m.getToCoord() % 8) + 1);
+                //view.setHighlighted(to.getRow(), to.getCol(), false);
+              }
+            }
+            moveFrom = null;
+            moveTo = null;
+            possibleMoves = null;
+          } else {
+            if (possibleMoves != null) {
+              for (MovePiece m : possibleMoves) {
+                Position to = new Position((m.getToCoord() / 8) + 1,
+                    (m.getToCoord() % 8) + 1);
+                //view.setHighlighted(to.getRow(), to.getCol(), false);
+              }
+            }
+            moveFrom = null;
+            moveTo = null;
+            possibleMoves = null;
+          }
+        }
+      }
+    };
+  }
+  
 }
