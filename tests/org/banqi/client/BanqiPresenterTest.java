@@ -103,8 +103,8 @@ public class BanqiPresenterTest {
    * 
    * {P0  |    |    |    |    |    |    |    }
    * rgen 
-   * {P17 |P3  |    |    |    |    |    |    }
-   * badv rele
+   * {P17 |P3  |P10 |    |    |    |    |    }
+   * badv rele rcan
    * {    |    |    |    |    |    |    |    }
    * 
    * {P24 |    |    |    |    |    |    |P31 } 
@@ -115,6 +115,7 @@ public class BanqiPresenterTest {
     .put(0, 0)
     .put(8, 17)
     .put(9, 3)
+    .put(10, 10)
     .put(24, 24)
     .put(31, 31)
     .build();
@@ -302,6 +303,26 @@ public class BanqiPresenterTest {
     verify(mockContainer).sendMakeMove(
         banqiLogic.getCapturePieceOperation(
             banqiState, new Set(CAPTUREPIECE, ImmutableList.of("S0", "S8"))));
+  }
+  
+  /* Tests for cannon capturing a piece by R. */
+  @Test
+  public void testForRCannonCaptureAPiece() {
+    UpdateUI updateUI = createUpdateUI(rId, rId, allFacingUpState);
+    State banqiState =
+        banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.R, playerIds);
+    banqiPresenter.updateUI(updateUI);
+    banqiPresenter.pieceSelected(10);
+    banqiPresenter.pieceSelected(17);
+    
+    verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
+    verify(mockView).chooseNextPieceOrSquare(banqiPresenter.getAllSquares(banqiState),
+        banqiPresenter.getAllPieces(banqiState), new ArrayList<Integer>());
+    verify(mockView).chooseNextPieceOrSquare(banqiPresenter.getAllSquares(banqiState),
+        banqiPresenter.getAllPieces(banqiState), Lists.newArrayList(10));
+    verify(mockContainer).sendMakeMove(
+        banqiLogic.getCapturePieceOperation(
+            banqiState, new Set(CAPTUREPIECE, ImmutableList.of("S10", "S8"))));
   }
 
   /* Tests for capturing a piece by B. */

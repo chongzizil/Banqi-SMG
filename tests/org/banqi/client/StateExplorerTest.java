@@ -102,6 +102,12 @@ public class StateExplorerTest {
     Set<Position> possibleStartPositions = new HashSet<Position>();
     possibleStartPositions.add(new Position(4, 1));
     assertEquals(stateExplorer.getPossibleStartPositions(state), possibleStartPositions);
+    
+    List<Integer> t = stateExplorer.convertFromPosToIndex(
+        stateExplorer.getPossibleStartPositions(state));
+    System.out.print("testCapture:");
+    System.out.println(stateExplorer.getPossibleStartPositions(state));
+    System.out.println(t);
   }
 
   
@@ -134,6 +140,12 @@ public class StateExplorerTest {
     Set<Position> possibleStartPositions = new HashSet<Position>();
     possibleStartPositions.add(new Position(2, 2));
     assertEquals(stateExplorer.getPossibleStartPositions(state), possibleStartPositions);
+    
+    List<Integer> t = stateExplorer.convertFromPosToIndex(
+        stateExplorer.getPossibleStartPositions(state));
+    System.out.print("testCannon:");
+    System.out.println(stateExplorer.getPossibleStartPositions(state));
+    System.out.println(t);
   }
   
   /*
@@ -141,7 +153,7 @@ public class StateExplorerTest {
    * Test cannon capture.
    * 
    * {P0 |P1 |P2 |P3 |P4 |P5 |P6 |P7 }
-   * {P8 |   |   |   |   |   |   |   }
+   * {P8 |   |P10|   |   |   |   |   }
    * {P16|   |   |   |   |   |   |   }
    * {P24|   |   |   |   |   |   |   } 
    * 
@@ -160,17 +172,19 @@ public class StateExplorerTest {
     gameApiState.put("S6",  "P6");
     gameApiState.put("S7",  "P7");
     gameApiState.put("S8",  "P8");
+    gameApiState.put("S10",  "P10");
     gameApiState.put("S16", "P16");
     gameApiState.put("S24", "P24");
     gameApiState.put("P0",  "rcan");
-    gameApiState.put("P1",  null);
+    gameApiState.put("P1",  "bsol");
     gameApiState.put("P2",  null);
-    gameApiState.put("P3",  null);
+    gameApiState.put("P3",  "bsol");
     gameApiState.put("P4",  null);
     gameApiState.put("P5",  null);
     gameApiState.put("P6",  null);
     gameApiState.put("P7",  null);
     gameApiState.put("P8",  null);
+    gameApiState.put("P10", null);
     gameApiState.put("P16", null);
     gameApiState.put("P24", null);
 
@@ -178,6 +192,12 @@ public class StateExplorerTest {
     
     Set<Position> possibleStartPositions = new HashSet<Position>();
     assertEquals(stateExplorer.getPossibleStartPositions(state), possibleStartPositions);
+    
+    List<Integer> t = stateExplorer.convertFromPosToIndex(
+        stateExplorer.getPossibleStartPositions(state));
+    System.out.print("testRedCannonCanNotCapture:");
+    System.out.println(stateExplorer.getPossibleStartPositions(state));
+    System.out.println(t);
   }
   
   @Test
@@ -192,17 +212,19 @@ public class StateExplorerTest {
     gameApiState.put("S6",  "P6");
     gameApiState.put("S7",  "P7");
     gameApiState.put("S8",  "P8");
+    gameApiState.put("S10", "P10");
     gameApiState.put("S16", "P16");
     gameApiState.put("S24", "P24");
     gameApiState.put("P0",  "rcan");
-    gameApiState.put("P1",  null);
-    gameApiState.put("P2",  "bsol");
+    gameApiState.put("P1",  "bsol");
+    gameApiState.put("P2",  "rcan");
     gameApiState.put("P3",  null);
     gameApiState.put("P4",  null);
     gameApiState.put("P5",  null);
     gameApiState.put("P6",  null);
     gameApiState.put("P7",  null);
     gameApiState.put("P8",  null);
+    gameApiState.put("P10", null);
     gameApiState.put("P16", null);
     gameApiState.put("P24", null);
 
@@ -210,6 +232,66 @@ public class StateExplorerTest {
     
     Set<Position> possibleStartPositions = new HashSet<Position>();
     possibleStartPositions.add(new Position(1, 1));
-    assertEquals(stateExplorer.getPossibleStartPositions(state), possibleStartPositions);
+    //assertEquals(stateExplorer.getPossibleStartPositions(state), possibleStartPositions);
+    
+    List<Integer> t = stateExplorer.convertFromPosToIndex(
+        stateExplorer.getPossibleStartPositions(state));
+    System.out.print("testRedCannonCanCapture:");
+    System.out.println(stateExplorer.getPossibleStartPositions(state));
+    System.out.println(t);
   }
+  
+  /*
+   * 
+   * Test cannon capture.
+   * 
+   * {P0 |P1 |P2 |P3 |P4 |P5 |P6 |P7 }
+   * {P8 |P9 |P10|P11|   |   |   |   }
+   * {P16|P17|P18|   |   |   |   |   }
+   * {P24|   |   |   |   |   |   |   } 
+   * 
+   * 
+   **/
+  
+  @Test
+  public void newTest() {
+    Map<String, Object> gameApiState = new HashMap<String, Object>();
+    gameApiState.put("S0",  "P0");
+    gameApiState.put("S1",  "P1");
+    gameApiState.put("S2",  "P2");
+    gameApiState.put("S7",  "P7");
+    gameApiState.put("S8",  "P8");
+    gameApiState.put("S9",  "P9");
+    gameApiState.put("S10", "P10");
+    gameApiState.put("S16", "P16");
+    gameApiState.put("S17", "P17");
+    gameApiState.put("S18", "P18");
+    gameApiState.put("P0",  "rgen");
+    gameApiState.put("P1",  "radv");
+    gameApiState.put("P2",  null);
+    gameApiState.put("P7",  "rcha");
+    gameApiState.put("P8",  "rcha");
+    gameApiState.put("P9",  "rele");
+    gameApiState.put("P10", null);
+    gameApiState.put("P16", null);
+    gameApiState.put("P17", null);
+    gameApiState.put("P18", null);
+    gameApiState.put("P16", null);
+    gameApiState.put("P24", null);
+
+    State state = banqiLogic.gameApiStateToBanqiState(gameApiState, turnOfColor, playerIds);
+    
+    Set<Position> possibleStartPositions = new HashSet<Position>();
+    possibleStartPositions.add(new Position(1, 1));
+    List<Integer> t = stateExplorer.convertFromPosToIndex(
+        stateExplorer.getPossibleStartPositions(state));
+    System.out.print("test:");
+    System.out.println(stateExplorer.getPossibleStartPositions(state));
+    System.out.println(t);
+    
+    //assertEquals(stateExplorer.getPossibleStartPositions(state), possibleStartPositions);
+  }
+  
+  
+  
 }

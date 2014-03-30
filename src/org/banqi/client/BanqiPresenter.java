@@ -8,9 +8,9 @@ import org.game_api.GameApi.Set;
 import org.game_api.GameApi.SetTurn;
 import org.game_api.GameApi.UpdateUI;
 
-import com.allen_sauer.gwt.dnd.client.DragHandler;
-import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
-import com.allen_sauer.gwt.dnd.client.DragStartEvent;
+//import com.allen_sauer.gwt.dnd.client.DragHandler;
+//import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
+//import com.allen_sauer.gwt.dnd.client.DragStartEvent;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -94,10 +94,10 @@ public class BanqiPresenter {
   private static final String TURNPIECE = "turnPiece"; // A turn has the form: [coordinate]
   private static final String CAPTUREPIECE = "capturePiece"; // A capture has the form: [from, to]
   
-  private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
-  private Position moveFrom = null;
-  private Position moveTo = null;
-  private java.util.Set<MovePiece> possibleMoves;
+  //private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
+  //private Position moveFrom = null;
+  //private Position moveTo = null;
+  //private java.util.Set<MovePiece> possibleMoves;
 
   public BanqiPresenter(View view, Container container) {
     this.view = view;
@@ -285,6 +285,10 @@ public class BanqiPresenter {
     container.sendMakeMove(banqiLogic.getEndGameOperation(banqiState));
   }
 
+  public State getState() {
+    return this.banqiState;
+  }
+  
   private void sendInitialMove(List<String> playerIds) {
     container.sendMakeMove(banqiLogic.getMoveInitial(playerIds));
   }
@@ -294,8 +298,8 @@ public class BanqiPresenter {
       throw new IllegalArgumentException();
     }
   }
-
   
+  /*
   public DragHandler initializeDragHandler() { 
     return new DragHandlerAdapter() {
       @Override
@@ -368,5 +372,6 @@ public class BanqiPresenter {
       }
     };
   }
+  */
   
 }

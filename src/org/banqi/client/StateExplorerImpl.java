@@ -1,6 +1,8 @@
 package org.banqi.client;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.google.common.base.Optional;
@@ -49,8 +51,10 @@ public class StateExplorerImpl implements StateExplorer {
           if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
             // If the piece is facing up, check if the capture can be perform
             if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-              if (banqiLogic.canCapture(pieces, squares,
-                  (convertCoord(startRow, startCol)), (convertCoord(endRow, endCol)))) {
+              if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
+                  getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
+                  pieces, squares, (convertCoord(startRow, startCol)),
+                  (convertCoord(endRow, endCol)))) {
                 possibleMoveFromPosition.add(endPos);
               }
             }
@@ -68,8 +72,10 @@ public class StateExplorerImpl implements StateExplorer {
         if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
           // If the piece is facing up, check if the capture can be perform
           if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-            if (banqiLogic.canCapture(pieces, squares,
-                (convertCoord(startRow, startCol)), (convertCoord(endRow, endCol)))) {
+            if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
+                getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
+                pieces, squares, (convertCoord(startRow, startCol)),
+                (convertCoord(endRow, endCol)))) {
               possibleMoveFromPosition.add(endPos);
             }
           }
@@ -89,8 +95,10 @@ public class StateExplorerImpl implements StateExplorer {
         if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
           // If the piece is facing up, check if the capture can be perform
           if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-            if (banqiLogic.canCapture(pieces, squares,
-                (convertCoord(startRow, startCol)), (convertCoord(endRow, endCol)))) {
+            if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
+                getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
+                pieces, squares, (convertCoord(startRow, startCol)),
+                (convertCoord(endRow, endCol)))) {
               possibleMoveFromPosition.add(up);
             }
           }
@@ -106,8 +114,13 @@ public class StateExplorerImpl implements StateExplorer {
         if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
           // If the piece is facing up, check if the capture can be perform
           if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-            if (banqiLogic.canCapture(pieces, squares,
-                (convertCoord(startRow, startCol)), (convertCoord(endRow, endCol)))) {
+            if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
+                getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
+                pieces, squares, (convertCoord(startRow, startCol)),
+                (convertCoord(endRow, endCol)))) {
+              Piece.PieceColor pieceColor = piece.getColor();
+              Piece.PieceColor targetColor = pieces.get(squares.
+                  get(convertCoord(endRow, endCol)).get()).get().getColor();
               possibleMoveFromPosition.add(down);
             }
           }
@@ -123,8 +136,10 @@ public class StateExplorerImpl implements StateExplorer {
         if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
           // If the piece is facing up, check if the capture can be perform
           if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-            if (banqiLogic.canCapture(pieces, squares,
-                (convertCoord(startRow, startCol)), (convertCoord(endRow, endCol)))) {
+            if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
+                getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
+                pieces, squares, (convertCoord(startRow, startCol)),
+                (convertCoord(endRow, endCol)))) {
               possibleMoveFromPosition.add(left);
             }
           }
@@ -140,8 +155,10 @@ public class StateExplorerImpl implements StateExplorer {
         if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
           // If the piece is facing up, check if the capture can be perform
           if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-            if (banqiLogic.canCapture(pieces, squares,
-                (convertCoord(startRow, startCol)), (convertCoord(endRow, endCol)))) {
+            if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
+                getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
+                pieces, squares, (convertCoord(startRow, startCol)),
+                (convertCoord(endRow, endCol)))) {
               possibleMoveFromPosition.add(right);
             }
           }
@@ -165,19 +182,23 @@ public class StateExplorerImpl implements StateExplorer {
     ImmutableList<Optional<Integer>> squares = state.getSquares();
     Color turnOfColor = state.getTurn();
     // Check all pieces on the board
-    for (Optional<Piece> piece: pieces) {
-      // If a piece is on board and the color is same as the turn of
-      // color, than continue to check if it can make move
-      if (piece.isPresent() && piece.get().getColor().name().substring(0, 1).
-          equals(turnOfColor.toString())) {
-        int piecePos = squares.get(pieces.indexOf(piece)).get();
-        int row = (piecePos / 8) + 1;
-        int col = (piecePos % 8) + 1;
-        Position currentPos = new Position(row, col);
-        if (!getPossibleMovesFromPosition(state, currentPos).isEmpty()) {
-          startPositions.add(currentPos); 
-        }
+    int index = 0;
+    for (Optional<Integer> square: squares) { 
+      if (square.isPresent()) {
+        if (pieces.get(square.get()).isPresent()) {
+          Piece piece = pieces.get(square.get()).get();
+          if (piece.getColor().name().substring(0, 1).equals(turnOfColor.toString())) {
+            int piecePos = index;
+            int row = (piecePos / 8) + 1;
+            int col = (piecePos % 8) + 1;
+            Position currentPos = new Position(row, col);
+            if (!getPossibleMovesFromPosition(state, currentPos).isEmpty()) {
+              startPositions.add(currentPos); 
+            }
+          }
+        } 
       }
+      index++;
     }
     return startPositions;
   }
@@ -185,5 +206,16 @@ public class StateExplorerImpl implements StateExplorer {
   // Convert the row(1-4)/col(1-8) coordinate to gameApi coodinate(0-31)
   public int convertCoord(int row, int col) {
     return ((row - 1) * 8 + col) - 1;
+  }
+  
+  public List<Integer> convertFromPosToIndex(Set<Position> possibleStartPositions) {
+    List<Integer> possibleStartIndexOfSquares = new ArrayList<Integer>();
+    for (Position pos: possibleStartPositions) {
+      int row = pos.getRow();
+      int col = pos.getCol();
+      int index = convertCoord(row, col);
+      possibleStartIndexOfSquares.add(index);
+    }
+    return possibleStartIndexOfSquares;
   }
 }

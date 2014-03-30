@@ -1,6 +1,9 @@
 package org.banqi.graphics;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.banqi.client.BanqiPresenter.Dropper;
 import org.banqi.client.MovePiece;
@@ -10,6 +13,7 @@ import org.banqi.client.Position;
 import org.banqi.client.State;
 import org.banqi.client.StateExplorerImpl;
 
+import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.DragHandler;
 import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
 import com.allen_sauer.gwt.dnd.client.DragStartEvent;
@@ -38,6 +42,8 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
 
   @UiField
   HorizontalPanel playerArea;
+  @UiField
+  GameCss css;
   
   private boolean enableClicks = false;
   private final PieceImageSupplier pieceImageSupplier;
@@ -45,13 +51,14 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   private BanqiPresenter presenter;
   AbsolutePanel board = new AbsolutePanel();
   //board.setSize("800px", "400px");
-  private AbsolutePositionDropController dropController;
-  private PickupDragController dragCtrl = new PickupDragController(board, false);
+  
   //dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
   //dragCtrl.setBehaviorMultipleSelection(false);
   //dragCtrl.setBehaviorDragStartSensitivity(1);
-  
-  
+  private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
+  private Position moveFrom = null;
+  private Position moveTo = null;
+  private java.util.Set<MovePiece> possibleMoves;
 
   public BanqiGraphics() {
     PieceImages pieceImages = GWT.create(PieceImages.class);
@@ -66,10 +73,10 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       List<PieceImage> pieceImages,
       List<Integer> squares,
       final List<Piece> pieces) {
-    dragCtrl.addDragHandler(presenter.initializeDragHandler());
-    dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
-    dragCtrl.setBehaviorMultipleSelection(false);
-    dragCtrl.setBehaviorDragStartSensitivity(1);
+    //dragCtrl.addDragHandler(initializeDragHandler());
+    //dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
+    //dragCtrl.setBehaviorMultipleSelection(false);
+    //dragCtrl.setBehaviorDragStartSensitivity(1);
     
     List<Image> res = Lists.newArrayList();
     // Add click handler to each square image
@@ -84,7 +91,8 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
             }
           }
         });
-      dragCtrl.registerDropController(new BanqiDropController(image, presenter, imgFinal.squareId));
+      //dragCtrl.registerDropController(new BanqiDropController
+        //(image, presenter, imgFinal.squareId));
       res.add(image);
     }
     
@@ -101,9 +109,9 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
             }
           }
         });
-        dragCtrl.makeDraggable(image);
-        dragCtrl.registerDropController(
-            new BanqiDropController(image, presenter, imgFinal.pieceId));
+        //dragCtrl.makeDraggable(image);
+        //dragCtrl.registerDropController(
+        //    new BanqiDropController(image, presenter, imgFinal.pieceId));
         res.add(image);
       } else {
         res.add(null);
@@ -149,9 +157,15 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   
   private void placeImages(HorizontalPanel playerArea, List<Image> images) {
     playerArea.clear();
+    //AbsolutePositionDropController dropController;
+    PickupDragController dragCtrl = new PickupDragController(board, false);
     //AbsolutePanel board = new AbsolutePanel();
     board.setSize("800px", "400px");
     
+    dragCtrl.addDragHandler(initializeDragHandler());
+    dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
+    dragCtrl.setBehaviorMultipleSelection(false);
+    dragCtrl.setBehaviorDragStartSensitivity(1);
     //AbsolutePositionDropController dropController;
     //PickupDragController dragCtrl = new PickupDragController(board, false);
     //DropController dropCtrl = new AbsolutePositionDropController(board);
@@ -161,19 +175,76 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     //dragCtrl.setBehaviorDragStartSensitivity(1);
     //List<DropController> squareDropCtrlList = new ArrayList<DropController>();
     //List<DropController> pieceDropCtrlList = new ArrayList<DropController>();
+    Set<Position> possibleStartPositions = stateExplorer.getPossibleStartPositions(
+        presenter.getState());
+    List<Integer> possibleStartIndexOfSquare = convertFromPosToIndex(possibleStartPositions);
     
     for (int i = 0; i < 32; i++) {
-      int squareIndex = i;
-      int pieceIndex = i + 32;
+      final int squareIndex = i;
+      final int pieceIndex = i + 32;
       int xCoord = (i % 8) * 100;
       int yCoord = (i / 8) * 100;
       board.add(images.get(squareIndex), xCoord, yCoord);
-      //dragCtrl.registerDropController(new BanqiDropController(images.get(squareIndex)));
+      BanqiDropController target;
+      /*
+      dragCtrl.registerDropController(new SimpleDropController(images.get(squareIndex)) {
+        @Override
+        public void onDrop(DragContext context) {
+            Position startPos = getPosition((Image) context.draggable);
+            if (startPos == null) {
+                return;
+            }
+            int indexOfdropper = stateExplorer.convertCoord(startPos.getRow(), startPos.getCol());
+            super.onDrop(context);
+            //dropper.onDrop(new Position(row, col));
+
+            //int startX = (startPos.getCol() - 1) * 100;
+            //int startY = (startPos.getRow() - 1) * 100;
+            int indexOfTarget = squareIndex;
+            System.out.println(indexOfdropper);
+            System.out.println(indexOfTarget);
+            presenter.pieceSelected(indexOfdropper);
+            presenter.squareSelected(indexOfTarget);
+        }
+      });
+      */
       
       if (images.get(pieceIndex) != null) {
         board.add(images.get(pieceIndex), xCoord, yCoord);
-        //dragCtrl.makeDraggable(images.get(pieceIndex));
-        //ZZZdragCtrl.registerDropController(new BanqiDropController(images.get(squareIndex)));
+        if (possibleStartIndexOfSquare.contains(pieceIndex - 32)) {
+          dragCtrl.makeDraggable(images.get(pieceIndex));
+        }
+        target = new BanqiDropController(images.get(pieceIndex),
+            presenter, board, squareIndex, true);
+        dragCtrl.registerDropController(target);
+        /*
+        dragCtrl.registerDropController(new SimpleDropController(images.get(squareIndex)) {
+          @Override
+          public void onDrop(DragContext context) {
+              Position startPos = getPosition((Image) context.draggable);
+              if (startPos == null) {
+                  return;
+              }
+              int indexOfdropper = stateExplorer.convertCoord(startPos.getRow(), startPos.getCol());
+              super.onDrop(context);
+              //dropper.onDrop(new Position(row, col));
+
+              int startX = (startPos.getCol() - 1) * 100;
+              int startY = (startPos.getRow() - 1) * 100;
+              int indexOfTarget = squareIndex;
+              System.out.println(indexOfdropper);
+              System.out.println(indexOfTarget);
+              presenter.pieceSelected(indexOfdropper);
+              presenter.pieceSelected(indexOfTarget);
+          }
+        });
+        */
+        
+        //dragCtrl.registerDropController(new BanqiDropController(images.get(squareIndex)));
+      } else {
+        target = new BanqiDropController(images.get(squareIndex),
+            presenter, board, squareIndex, false);
+        dragCtrl.registerDropController(target);
       }
     }
     playerArea.add(board);
@@ -207,12 +278,98 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   
   @Override
   public Position getPosition(Image image) {
-    for (int i = 0; i < 32; i++) {
-      if (board.getWidget(i + 32).equals(image)) {
-        return new Position((i / 8) + 1, (i % 8) + 1);
-      }
-    }
-    return null;
+    int top = image.getAbsoluteTop();
+    int left = image.getAbsoluteLeft();
+    int row = (image.getAbsoluteTop() / 100) + 1;
+    int col = (image.getAbsoluteLeft() / 100) + 1;
+    return new Position(row, col);
   }
 
+  public List<Integer> convertFromPosToIndex(Set<Position> possibleStartPositions) {
+    List<Integer> possibleStartIndexOfSquares = new ArrayList<Integer>();
+    for (Position pos: possibleStartPositions) {
+      int row = pos.getRow();
+      int col = pos.getCol();
+      int index = stateExplorer.convertCoord(row, col);
+      possibleStartIndexOfSquares.add(index);
+    }
+    return possibleStartIndexOfSquares;
+  }
+  
+  public DragHandler initializeDragHandler() { 
+    return new DragHandlerAdapter() {
+      @Override
+      public void onDragStart(DragStartEvent event) {
+        Position startPos = getPosition((Image) event.getContext().draggable);
+        //event.getContext().desiredDraggableX = (startPos.getCol() - 1) * 100;
+        //event.getContext().desiredDraggableY = (startPos.getRow() - 1) * 100;
+        int indexOfdropper = stateExplorer.convertCoord(startPos.getRow(), startPos.getCol());
+        presenter.pieceSelected(indexOfdropper);
+        //if (!isMyTurn()) {
+        //  return;
+        //}
+        /*
+        if (moveTo == null) {
+          moveFrom = startPos;
+          if (possibleMoves != null) {
+            for (MovePiece move : possibleMoves) {
+              Position to = new Position((move.getToCoord() / 8) + 1,
+                  (move.getToCoord() % 8) + 1);
+              //TODO:
+              //view.setHighlighted(to.getRow(), to.getCol(), false);
+            }
+          }
+          java.util.Set<MovePiece> possibleMoves = stateExplorer.getPossibleMovesFromPosition(
+              presenter.getState(), moveFrom);
+          for (MovePiece move : possibleMoves) {
+            Position to = new Position((move.getToCoord() / 8) + 1,
+                (move.getToCoord() % 8) + 1);
+          //TODO:
+            //view.setHighlighted(to.getRow(), to.getCol(), false);
+          }
+          
+        }*/
+      }
+    };
+  }
+  
+  /*
+  Dropper initializeDropHandler() {
+    return new Dropper() {
+      @Override
+      public void onDrop(Position pos) {
+        if (moveTo == null) {
+          moveTo = pos;
+          int fromCoord = moveFrom.getRow() * 8 + moveFrom.getCol() - 1;
+          int toCoord = moveTo.getRow() * 8 + moveTo.getCol() - 1;
+          MovePiece move = new MovePiece(fromCoord, toCoord);
+          if (possibleMoves.contains(move)) {
+            if (possibleMoves != null) {
+              for (MovePiece m : possibleMoves) {
+                Position to = new Position((m.getToCoord() / 8) + 1,
+                    (m.getToCoord() % 8) + 1);
+                //view.setHighlighted(to.getRow(), to.getCol(), false);
+              }
+            }
+            moveFrom = null;
+            moveTo = null;
+            possibleMoves = null;
+          } else {
+            if (possibleMoves != null) {
+              for (MovePiece m : possibleMoves) {
+                Position to = new Position((m.getToCoord() / 8) + 1,
+                    (m.getToCoord() % 8) + 1);
+                //view.setHighlighted(to.getRow(), to.getCol(), false);
+              }
+            }
+            moveFrom = null;
+            moveTo = null;
+            possibleMoves = null;
+          }
+        }
+      }
+    };
+  }
+  */
+  
 }

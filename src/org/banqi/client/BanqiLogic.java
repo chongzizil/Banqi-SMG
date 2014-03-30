@@ -120,7 +120,10 @@ public class BanqiLogic {
           computeIntermediatePieceCount(pieces, squares, fromCoord, toCoord, false);
     }
     
-    check(intermediatePieceCount == 2, intermediatePieceCount);
+    //check(intermediatePieceCount == 2, intermediatePieceCount);
+    if (intermediatePieceCount != 2) {
+      return false;
+    }
     return true;
   }
   
