@@ -1,27 +1,16 @@
 package org.banqi.graphics;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.banqi.client.BanqiPresenter.Dropper;
-import org.banqi.client.MovePiece;
+import org.banqi.client.Color;
 import org.banqi.client.Piece;
 import org.banqi.client.BanqiPresenter;
 import org.banqi.client.Position;
 import org.banqi.client.State;
 import org.banqi.client.StateExplorerImpl;
 
-import com.allen_sauer.gwt.dnd.client.DragContext;
-import com.allen_sauer.gwt.dnd.client.DragEndEvent;
-import com.allen_sauer.gwt.dnd.client.DragHandler;
-import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
-import com.allen_sauer.gwt.dnd.client.DragStartEvent;
-import com.allen_sauer.gwt.dnd.client.PickupDragController;
-import com.allen_sauer.gwt.dnd.client.drop.AbsolutePositionDropController;
-import com.allen_sauer.gwt.dnd.client.drop.DropController;
-import com.allen_sauer.gwt.dnd.client.drop.SimpleDropController;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -51,7 +40,6 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   private final SquareImageSupplier squareImageSupplier;
   private BanqiPresenter presenter;
   AbsolutePanel board = new AbsolutePanel();
-  Position dragger;
 
   private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
   //private Position moveFrom = null;
@@ -146,14 +134,14 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   
   private void placeImages(HorizontalPanel playerArea, List<Image> images) {
     playerArea.clear();
-    ////PickupDragController dragCtrl = new PickupDragController(board, false);
     board.setSize("800px", "400px");
     
+    // Initialize the drag controller
     BanqiDragController dragCtrl = new BanqiDragController(board, false, presenter);
-    ////dragCtrl.addDragHandler(initializeDragHandler());
     dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
     dragCtrl.setBehaviorMultipleSelection(false);
     dragCtrl.setBehaviorDragStartSensitivity(1);
+    // Get all possible start positions
     Set<Position> possibleStartPositions = stateExplorer.getPossibleStartPositions(
         presenter.getState());
     List<Integer> possibleStartIndexOfSquare = convertFromPosToIndex(possibleStartPositions);
@@ -163,20 +151,31 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       final int pieceIndex = i + 32;
       int xCoord = (i % 8) * 100;
       int yCoord = (i / 8) * 100;
+      // Add the square image
       board.add(images.get(squareIndex), xCoord, yCoord);
       BanqiDropController target;
       
       if (images.get(pieceIndex) != null) {
+        // If the piece exist in square i, add its image
         board.add(images.get(pieceIndex), xCoord, yCoord);
-        if (possibleStartIndexOfSquare.contains(pieceIndex - 32)) {
-          dragCtrl.makeDraggable(images.get(pieceIndex));
+        // Get the state
+        State state = presenter.getState();
+        // Get the turn color and player color (or null if it's viewer)
+        Color turnColor = state.getTurn();
+        Color myColor = presenter.getMyColor();
+        // If the it's the player's turn, add the possible start position's piece
+        // to drag controller, thus the player can perform drag on the valid pieces only.
+        if (myColor != null && myColor.name().equals(turnColor.name())) {
+          if (possibleStartIndexOfSquare.contains(pieceIndex - 32)) {
+            dragCtrl.makeDraggable(images.get(pieceIndex));
+          }
         }
-        target = new BanqiDropController(images.get(pieceIndex),
-            presenter, board, squareIndex, true);
+        // Register all pieces to the drag controller
+        target = new BanqiDropController(images.get(pieceIndex), presenter, true);
         dragCtrl.registerDropController(target);
       } else {
-        target = new BanqiDropController(images.get(squareIndex),
-            presenter, board, squareIndex, false);
+        // Register squares with no pieces inside to the drag controller
+        target = new BanqiDropController(images.get(squareIndex), presenter, false);
         dragCtrl.registerDropController(target);
       }
     }
@@ -209,15 +208,13 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     enableClicks = true;
   }
   
-  @Override
   public Position getPosition(Image image) {
-    int top = image.getAbsoluteTop();
-    int left = image.getAbsoluteLeft();
     int row = (image.getAbsoluteTop() / 100) + 1;
     int col = (image.getAbsoluteLeft() / 100) + 1;
     return new Position(row, col);
   }
 
+  /** Convert from Position (row/col base) to index base (0-31) */
   public List<Integer> convertFromPosToIndex(Set<Position> possibleStartPositions) {
     List<Integer> possibleStartIndexOfSquares = new ArrayList<Integer>();
     for (Position pos: possibleStartPositions) {
@@ -227,13 +224,5 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       possibleStartIndexOfSquares.add(index);
     }
     return possibleStartIndexOfSquares;
-  }
-  
-  public void setDragger(Position pos) {
-    dragger = pos;
-  }
-  
-  public Position getDragger() {
-    return dragger;
   }
 }

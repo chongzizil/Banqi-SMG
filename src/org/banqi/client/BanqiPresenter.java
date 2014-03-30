@@ -14,7 +14,6 @@ import org.game_api.GameApi.UpdateUI;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.gwt.user.client.ui.Image;
 
 /**
  * The presenter that controls the banqi graphics. We use the MVP pattern: the
@@ -67,7 +66,7 @@ public class BanqiPresenter {
     //Dropper initializeDropHandler();
     
     /** Find the board position associated with an image. */
-    Position getPosition(Image image);
+    //Position getPosition(Image image);
     
     /**
      * Asks the player to choose the next piece or square. We pass what pieces or
@@ -289,6 +288,16 @@ public class BanqiPresenter {
     return this.banqiState;
   }
   
+  public Color getMyColor() {
+    // Is a player
+    if (this.myColor.isPresent()) {
+      return this.myColor.get();
+    } else {
+      // Is a viewer
+      return null;
+    }
+  }
+  
   private void sendInitialMove(List<String> playerIds) {
     container.sendMakeMove(banqiLogic.getMoveInitial(playerIds));
   }
@@ -298,80 +307,4 @@ public class BanqiPresenter {
       throw new IllegalArgumentException();
     }
   }
-  
-  /*
-  public DragHandler initializeDragHandler() { 
-    return new DragHandlerAdapter() {
-      @Override
-      public void onDragStart(DragStartEvent event) {
-        Position startPos = view.getPosition((Image) event.getContext().draggable);
-        event.getContext().desiredDraggableX = (startPos.getCol() - 1) * 100;
-        event.getContext().desiredDraggableY = (startPos.getRow() - 1) * 100;
-        if (!isMyTurn()) {
-          return;
-        }
-        if (moveTo == null) {
-          moveFrom = startPos;
-          if (possibleMoves != null) {
-            for (MovePiece move : possibleMoves) {
-              Position to = new Position((move.getToCoord() / 8) + 1,
-                  (move.getToCoord() % 8) + 1);
-              //TODO:
-              //view.setHighlighted(to.getRow(), to.getCol(), false);
-            }
-          }
-          java.util.Set<MovePiece> possibleMoves = stateExplorer.getPossibleMovesFromPosition(
-              banqiState, moveFrom);
-          for (MovePiece move : possibleMoves) {
-            Position to = new Position((move.getToCoord() / 8) + 1,
-                (move.getToCoord() % 8) + 1);
-          //TODO:
-            //view.setHighlighted(to.getRow(), to.getCol(), false);
-          }
-        }
-      }
-    };
-  }
-  
-  Dropper initializeDropHandler() {
-    return new Dropper() {
-      @Override
-      public void onDrop(Position pos) {
-        if (!isMyTurn()) {
-          return;
-        }
-        if (moveTo == null) {
-          moveTo = pos;
-          int fromCoord = moveFrom.getRow() * 8 + moveFrom.getCol() - 1;
-          int toCoord = moveTo.getRow() * 8 + moveTo.getCol() - 1;
-          MovePiece move = new MovePiece(fromCoord, toCoord);
-          if (possibleMoves.contains(move)) {
-            if (possibleMoves != null) {
-              for (MovePiece m : possibleMoves) {
-                Position to = new Position((m.getToCoord() / 8) + 1,
-                    (m.getToCoord() % 8) + 1);
-                //view.setHighlighted(to.getRow(), to.getCol(), false);
-              }
-            }
-            moveFrom = null;
-            moveTo = null;
-            possibleMoves = null;
-          } else {
-            if (possibleMoves != null) {
-              for (MovePiece m : possibleMoves) {
-                Position to = new Position((m.getToCoord() / 8) + 1,
-                    (m.getToCoord() % 8) + 1);
-                //view.setHighlighted(to.getRow(), to.getCol(), false);
-              }
-            }
-            moveFrom = null;
-            moveTo = null;
-            possibleMoves = null;
-          }
-        }
-      }
-    };
-  }
-  */
-  
 }
