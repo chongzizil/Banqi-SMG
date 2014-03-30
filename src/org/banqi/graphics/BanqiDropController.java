@@ -33,6 +33,7 @@ public class BanqiDropController extends SimpleDropController {
   public void onDrop(DragContext context) {
     Position dropper = getPosition((Image) context.draggable);
     Position target = getPosition((Image) image);
+
     int indexOfTarget = stateExplorer.convertCoord(target.getRow(), target.getCol());
     int indexOfdropper = stateExplorer.convertCoord(dropper.getRow(), dropper.getCol());
     //presenter.pieceSelected(indexOfdropper);
