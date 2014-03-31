@@ -2,26 +2,26 @@ package org.banqi.graphics;
 
 import org.banqi.client.BanqiLogic;
 import org.banqi.client.BanqiPresenter;
-import org.game_api.GameApi;
+//import org.game_api.GameApi;
 import org.game_api.GameApi.Game;
 import org.game_api.GameApi.ContainerConnector;
-import org.game_api.GameApi.IteratingPlayerContainer;
+//import org.game_api.GameApi.IteratingPlayerContainer;
 import org.game_api.GameApi.UpdateUI;
 import org.game_api.GameApi.VerifyMove;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.client.ui.DockPanel;
-import com.google.gwt.user.client.ui.ListBox;
+//import com.google.gwt.event.dom.client.ChangeEvent;
+//import com.google.gwt.event.dom.client.ChangeHandler;
+//import com.google.gwt.user.client.ui.DockPanel;
+//import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class BanqiEntryPoint implements EntryPoint {
-  //ContainerConnector container;
-  IteratingPlayerContainer container;
+  ContainerConnector container;
+  //IteratingPlayerContainer container;
   BanqiPresenter banqiPresenter;
 
   @Override
@@ -38,12 +38,12 @@ public class BanqiEntryPoint implements EntryPoint {
       }
     };
     
-    //container = new ContainerConnector(game);
-    container = new IteratingPlayerContainer(game, 2);
+    container = new ContainerConnector(game);
+    //container = new IteratingPlayerContainer(game, 2);
     BanqiGraphics banqiGraphics = new BanqiGraphics();
     banqiPresenter = new BanqiPresenter(banqiGraphics, container);
     
-    /////////////////////////////////////////
+    /*/////////////////////////////////////////
     final ListBox playerSelect = new ListBox();
     playerSelect.addItem("RedPlayer");
     playerSelect.addItem("BlackPlayer");
@@ -60,7 +60,7 @@ public class BanqiEntryPoint implements EntryPoint {
     DockPanel dockPanel = new DockPanel();
     dockPanel.add(banqiGraphics, DockPanel.CENTER);
     dockPanel.add(playerSelect, DockPanel.SOUTH);
-    /////////////////////////////////////////
+    /////////////////////////////////////////*/
     
     /*
     DockPanel dockPanel = new DockPanel();
@@ -79,12 +79,12 @@ public class BanqiEntryPoint implements EntryPoint {
     dockPanel.add(translationImage, DockPanel.EAST);
     */
     
-    RootPanel.get("mainDiv").add(dockPanel);
-    container.sendGameReady();
-    container.updateUi(container.getPlayerIds().get(0));
+    //RootPanel.get("mainDiv").add(dockPanel);
+    //container.sendGameReady();
+    //container.updateUi(container.getPlayerIds().get(0));
     
     // New
-    //RootPanel.get("mainDiv").add(banqiGraphics);
-    //container.sendGameReady();
+    RootPanel.get("mainDiv").add(banqiGraphics);
+    container.sendGameReady();
   }
 }
