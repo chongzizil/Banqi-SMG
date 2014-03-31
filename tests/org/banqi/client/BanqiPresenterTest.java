@@ -5,7 +5,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -196,7 +195,7 @@ public class BanqiPresenterTest {
     State banqiState =
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.R, playerIds);
     banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(0);
+    banqiPresenter.pieceSelected(0, false);
     
     verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getInvisiblePieces());
     verify(mockView).chooseNextPieceOrSquare(banqiPresenter.getAllSquares(banqiState),
@@ -212,7 +211,7 @@ public class BanqiPresenterTest {
     State banqiState =
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.B, playerIds);
     banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(0);
+    banqiPresenter.pieceSelected(0, false);
     
     verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getInvisiblePieces());
     verify(mockView).chooseNextPieceOrSquare(banqiPresenter.getAllSquares(banqiState),
@@ -228,8 +227,8 @@ public class BanqiPresenterTest {
     State banqiState =
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.R, playerIds);
     banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(0);
-    banqiPresenter.squareSelected(1);
+    banqiPresenter.pieceSelected(0, false);
+    banqiPresenter.squareSelected(1, false);
     
     verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
     verify(mockView).chooseNextPieceOrSquare(banqiPresenter.getAllSquares(banqiState),
@@ -248,8 +247,8 @@ public class BanqiPresenterTest {
     State banqiState =
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.B, playerIds);
     banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(31);
-    banqiPresenter.squareSelected(30);
+    banqiPresenter.pieceSelected(31, false);
+    banqiPresenter.squareSelected(30, false);
     
     verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
     verify(mockView).chooseNextPieceOrSquare(banqiPresenter.getAllSquares(banqiState),
@@ -268,10 +267,10 @@ public class BanqiPresenterTest {
     State banqiState =
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.B, playerIds);
     banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(24);
-    banqiPresenter.pieceSelected(24);
-    banqiPresenter.pieceSelected(31);
-    banqiPresenter.squareSelected(30);
+    banqiPresenter.pieceSelected(24, false);
+    banqiPresenter.pieceSelected(24, false);
+    banqiPresenter.pieceSelected(31, false);
+    banqiPresenter.squareSelected(30, false);
     
     verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
     verify(mockView, times(2)).chooseNextPieceOrSquare(banqiPresenter.getAllSquares(banqiState),
@@ -292,8 +291,8 @@ public class BanqiPresenterTest {
     State banqiState =
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.R, playerIds);
     banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(0);
-    banqiPresenter.pieceSelected(17);
+    banqiPresenter.pieceSelected(0, false);
+    banqiPresenter.pieceSelected(17, false);
     
     verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
     verify(mockView).chooseNextPieceOrSquare(banqiPresenter.getAllSquares(banqiState),
@@ -312,8 +311,8 @@ public class BanqiPresenterTest {
     State banqiState =
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.R, playerIds);
     banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(10);
-    banqiPresenter.pieceSelected(17);
+    banqiPresenter.pieceSelected(10, false);
+    banqiPresenter.pieceSelected(17, false);
     
     verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
     verify(mockView).chooseNextPieceOrSquare(banqiPresenter.getAllSquares(banqiState),
@@ -332,8 +331,8 @@ public class BanqiPresenterTest {
     State banqiState =
         banqiLogic.gameApiStateToBanqiState(updateUI.getState(), Color.B, playerIds);
     banqiPresenter.updateUI(updateUI);
-    banqiPresenter.pieceSelected(17);
-    banqiPresenter.pieceSelected(3);
+    banqiPresenter.pieceSelected(17, false);
+    banqiPresenter.pieceSelected(3, false);
     
     verify(mockView).setPlayerState(banqiPresenter.getAllSquares(banqiState), getPieces());
     verify(mockView).chooseNextPieceOrSquare(banqiPresenter.getAllSquares(banqiState),

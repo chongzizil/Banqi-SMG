@@ -38,7 +38,7 @@ public class BanqiDragController extends PickupDragController {
     List<Optional<Integer>> squares = state.getSquares();
     // Get the dragger's piece ID and perform presenter.pieceSelected(pieceId)
     int pieceId = squares.get(indexOfdropper).get();
-    presenter.pieceSelected(pieceId);
+    presenter.pieceSelected(pieceId, true);
 
   }
   

@@ -10,11 +10,16 @@ import org.banqi.client.BanqiPresenter;
 import org.banqi.client.Position;
 import org.banqi.client.State;
 import org.banqi.client.StateExplorerImpl;
+import org.banqi.sounds.GameSounds;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.dom.client.AudioElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.media.client.Audio;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -40,6 +45,10 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   private final SquareImageSupplier squareImageSupplier;
   private BanqiPresenter presenter;
   AbsolutePanel board = new AbsolutePanel();
+  private PieceMovingAnimation animation;
+  private Audio pieceDown;
+  private Audio pieceCaptured;
+  List<Image> allImages;
 
   private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
   //private Position moveFrom = null;
@@ -47,12 +56,26 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   //private java.util.Set<MovePiece> possibleMoves;
 
   public BanqiGraphics() {
+    GameSounds gameSounds = GWT.create(GameSounds.class);
     PieceImages pieceImages = GWT.create(PieceImages.class);
     SquareImages squareImages = GWT.create(SquareImages.class);
     this.pieceImageSupplier = new PieceImageSupplier(pieceImages);
     this.squareImageSupplier = new SquareImageSupplier(squareImages);
     BanqiGraphicsUiBinder uiBinder = GWT.create(BanqiGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
+    
+    if (Audio.isSupported()) {
+      pieceDown = Audio.createIfSupported();
+      pieceDown.addSource(gameSounds.pieceDownMp3().getSafeUri()
+                      .asString(), AudioElement.TYPE_MP3);
+      pieceDown.addSource(gameSounds.pieceDownWav().getSafeUri()
+                      .asString(), AudioElement.TYPE_WAV);
+      pieceCaptured = Audio.createIfSupported();
+      pieceCaptured.addSource(gameSounds.pieceCapturedMp3().getSafeUri()
+                      .asString(), AudioElement.TYPE_MP3);
+      pieceCaptured.addSource(gameSounds.pieceCapturedWav().getSafeUri()
+                      .asString(), AudioElement.TYPE_WAV);
+}
   }
 
   private List<Image> createImages(List<SquareImage> squareImages,
@@ -69,7 +92,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
           @Override
           public void onClick(ClickEvent event) {
             if (enableClicks) {
-              presenter.squareSelected(imgFinal.squareId); //squareId
+              presenter.squareSelected(imgFinal.squareId, false); //squareId
             }
           }
         });
@@ -85,7 +108,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
           @Override
           public void onClick(ClickEvent event) {
             if (enableClicks) {
-              presenter.pieceSelected(imgFinal.pieceId); //piceeId
+              presenter.pieceSelected(imgFinal.pieceId, false); //piceeId
             }
           }
         });
@@ -94,6 +117,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
         res.add(null);
       }
     }
+    allImages = res;
     return res;
   }
 
@@ -214,7 +238,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     return new Position(row, col);
   }
 
-  /** Convert from Position (row/col base) to index base (0-31) */
+  /** Convert from Position (row/col base) to index base (0-31). */
   public List<Integer> convertFromPosToIndex(Set<Position> possibleStartPositions) {
     List<Integer> possibleStartIndexOfSquares = new ArrayList<Integer>();
     for (Position pos: possibleStartPositions) {
@@ -225,4 +249,59 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     }
     return possibleStartIndexOfSquares;
   }
+  
+  @Override
+  public void animateMove(List<Optional<Integer>> squares, List <Optional<Piece>> pieces,
+      int startCoord, int endCoord, boolean isMove, boolean isCapture) {
+    
+    int startId = squares.get(startCoord).get();
+    int endId = isMove ? endCoord : squares.get(endCoord).get();
+    
+    Image startImage = allImages.get(startCoord + 32);
+    Image endImage = isMove ? allImages.get(endId) : allImages.get(endCoord + 32);
+    PieceImage startImg;
+    ImageResource startRes;
+    ImageResource endRes;
+    
+    // If first piece is facing up
+    if (pieces.get(startId).isPresent()) {
+      startImg = PieceImage.Factory.getPieceImage(
+          pieces.get(startId).get(), startId);
+      startRes = pieceImageSupplier.getResource(startImg);
+    } else {
+      startImg = PieceImage.Factory.getBackOfPieceImage(
+          squares.get(startCoord).get());
+      startRes = pieceImageSupplier.getResource(startImg);
+    }
+    
+    
+    // If the second selected is a square
+    if (isMove) {
+      SquareImage endImg;
+      Piece endPiece = pieces.get(endId).get();
+      int endSquareId = endId;
+      endImg = SquareImage.Factory.getSquareImage(endId);
+      endRes = squareImageSupplier.getResource(endImg);
+    } else {
+      PieceImage endImg;
+      if (pieces.get(endId).isPresent()) {
+        endImg = PieceImage.Factory.getPieceImage(
+            pieces.get(endId).get(), endId);
+        endRes = pieceImageSupplier.getResource(endImg);
+      } else {
+        endImg = PieceImage.Factory.getBackOfPieceImage(
+            squares.get(endCoord).get());
+        endRes = pieceImageSupplier.getResource(endImg);
+      }
+    }
+ 
+    ImageResource transformImage = null;
+
+    animation = new PieceMovingAnimation(startImage, endImage, startRes,
+        endRes, endRes, isCapture ? pieceCaptured
+            : pieceDown);
+    animation.run(1000);
+  }
+  
+  
 }

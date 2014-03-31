@@ -8,6 +8,9 @@ import org.game_api.GameApi.Set;
 import org.game_api.GameApi.SetTurn;
 import org.game_api.GameApi.UpdateUI;
 
+
+
+
 //import com.allen_sauer.gwt.dnd.client.DragHandler;
 //import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
 //import com.allen_sauer.gwt.dnd.client.DragStartEvent;
@@ -59,6 +62,9 @@ public class BanqiPresenter {
     /** Sets the state for a player (whether the player has the turn or not). */
     void setPlayerState(List<Integer> squares, List<Piece> pieces);
     
+    void animateMove(List<Optional<Integer>> squares, List<Optional<Piece>> pieces,
+        int startCoord, int endCoord, boolean isMove, boolean isCapture);
+    
     /** Initialize the behavior of a widget being dragged. */
     //DragHandler initializeDragHandler();
 
@@ -88,6 +94,7 @@ public class BanqiPresenter {
   /** A viewer doesn't have a color. */
   private Optional<Color> myColor;
   private State banqiState;
+  private boolean isDnd;
   private List<Integer> selectedPieces;
   private static final String MOVEPIECE = "movePiece"; // A move has the form: [from, to]
   private static final String TURNPIECE = "turnPiece"; // A turn has the form: [coordinate]
@@ -202,7 +209,8 @@ public class BanqiPresenter {
    * Adds/remove the piece from the {@link #selectedPieces}. The view can only
    * call this method if the presenter called {@link View#chooseNextPiece}.
    */
-  public void pieceSelected(int pieceId) {
+  public void pieceSelected(int pieceId, boolean isDnd) {
+    this.isDnd = isDnd;
     check(isMyTurn());
     List<Optional<Piece>> pieces = banqiState.getPieces();
     List<Optional<Integer>> squares = banqiState.getSquares();
@@ -211,6 +219,11 @@ public class BanqiPresenter {
       if (selectedPieces.size() == 0) {
         int selectedCoord = squares.indexOf(Optional.fromNullable(pieceId));
       Set turnPiece = new Set(TURNPIECE, "S" + selectedCoord);
+      //****************** make a move ******************//
+      if (!isDnd) {
+        view.animateMove(squares, pieces, selectedCoord,
+            selectedCoord, false, false);
+      }
       turnPiece(turnPiece);
       }   
     }
@@ -232,6 +245,11 @@ public class BanqiPresenter {
         if (banqiLogic.canCapture(pieces, squares, selectedFromCoord, selectedToCoord)) {
           Set capturePiece = new Set(CAPTUREPIECE, ImmutableList.of("S"
               + selectedFromCoord, "S" + selectedToCoord));
+          //****************** make a move ******************//
+          if (!isDnd) {
+            view.animateMove(squares, pieces, selectedFromCoord,
+                selectedToCoord, false, true);
+          }
           capturePiece(capturePiece);
         }
       }
@@ -242,17 +260,24 @@ public class BanqiPresenter {
    * Adds/remove the square from the {@link #selectedSquares}. The view can only call
    * this method if the presenter called {@link View#chooseSquare}.
    */
-  public void squareSelected(int square) {
+  public void squareSelected(int square, boolean isDnd) {
+    this.isDnd = isDnd;
     check(isMyTurn());
     // Need to select a piece first to perform a move, otherwise need to reselect
     if (selectedPieces.size() == 1) {
       List<Optional<Integer>> squares = banqiState.getSquares();
+      List<Optional<Piece>> pieces = banqiState.getPieces();
       int selectedFromCoord = squares.indexOf(Optional.fromNullable(selectedPieces.get(0)));
       int selectedToCoord = square;
       // Only perform the move when selected a legal square, otherwise need to reselect
       if (banqiLogic.isMoveCoordLegal(selectedFromCoord, selectedToCoord)) {
         Set movePiece = new Set(MOVEPIECE, ImmutableList.of("S"
             + selectedFromCoord, "S" + selectedToCoord));
+        //****************** make a move ******************//
+        if (!isDnd) {
+          view.animateMove(squares, pieces, selectedFromCoord,
+            selectedToCoord, true, false);
+        }
         movePiece(movePiece);
       } else { // Reselect
         chooseNextPieceOrSquare();

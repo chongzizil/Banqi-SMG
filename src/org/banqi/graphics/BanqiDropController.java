@@ -39,9 +39,9 @@ public class BanqiDropController extends SimpleDropController {
     // Otherwise perform presenter.squareSelected(squareId).
     if (isPiece) {
       int pieceId = squares.get(squareId).get();
-      presenter.pieceSelected(pieceId);
+      presenter.pieceSelected(pieceId, true);
     } else {
-      presenter.squareSelected(squareId);
+      presenter.squareSelected(squareId, true);
     }
   }
 
