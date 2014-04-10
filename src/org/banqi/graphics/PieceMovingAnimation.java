@@ -6,7 +6,6 @@ package org.banqi.graphics;
  */
 
 import com.google.gwt.animation.client.Animation;
-import com.google.gwt.media.client.Audio;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Image;
@@ -17,12 +16,11 @@ public class PieceMovingAnimation extends Animation {
   ImageResource piece, transform;
   int startX, startY, startWidth, startHeight;
   int endX, endY;
-  Audio soundAtEnd;
   boolean cancelled;
 
   public PieceMovingAnimation(Image startImage, Image endImage,
       ImageResource startRes, ImageResource endRes,
-      ImageResource blankRes, Audio sfx) {
+      ImageResource blankRes) {
     start = startImage;
     end = endImage;
     piece = startRes;
@@ -34,7 +32,6 @@ public class PieceMovingAnimation extends Animation {
     startHeight = startImage.getHeight();
     endX = panel.getWidgetLeft(end);
     endY = panel.getWidgetTop(end);
-    soundAtEnd = sfx;
     cancelled = false;
 
     start.setResource(blankRes);
@@ -69,9 +66,6 @@ public class PieceMovingAnimation extends Animation {
   @Override
   protected void onComplete() {
     if (!cancelled) {
-      if (soundAtEnd != null) {
-        soundAtEnd.play();
-      }
       end.setResource(transform);
       panel.remove(moving);
     }

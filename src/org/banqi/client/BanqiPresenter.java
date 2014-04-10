@@ -62,8 +62,12 @@ public class BanqiPresenter {
     /** Sets the state for a player (whether the player has the turn or not). */
     void setPlayerState(List<Integer> squares, List<Piece> pieces);
     
+    /** Set the sound of the move. */
+    void makeSound(boolean isCapture);
+    
+    /** Set the animation of the move. */
     void animateMove(List<Optional<Integer>> squares, List<Optional<Piece>> pieces,
-        int startCoord, int endCoord, boolean isMove, boolean isCapture);
+        int startCoord, int endCoord, boolean isMove);
     
     /** Initialize the behavior of a widget being dragged. */
     //DragHandler initializeDragHandler();
@@ -222,8 +226,9 @@ public class BanqiPresenter {
       //****************** make a move ******************//
       if (!isDnd) {
         view.animateMove(squares, pieces, selectedCoord,
-            selectedCoord, false, false);
+            selectedCoord, false);
       }
+      view.makeSound(false);
       turnPiece(turnPiece);
       }   
     }
@@ -248,8 +253,9 @@ public class BanqiPresenter {
           //****************** make a move ******************//
           if (!isDnd) {
             view.animateMove(squares, pieces, selectedFromCoord,
-                selectedToCoord, false, true);
+                selectedToCoord, false);
           }
+          view.makeSound(true);
           capturePiece(capturePiece);
         }
       }
@@ -276,8 +282,9 @@ public class BanqiPresenter {
         //****************** make a move ******************//
         if (!isDnd) {
           view.animateMove(squares, pieces, selectedFromCoord,
-            selectedToCoord, true, false);
+            selectedToCoord, true);
         }
+        view.makeSound(false);
         movePiece(movePiece);
       } else { // Reselect
         chooseNextPieceOrSquare();

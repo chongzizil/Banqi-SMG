@@ -46,6 +46,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   private BanqiPresenter presenter;
   AbsolutePanel board = new AbsolutePanel();
   private PieceMovingAnimation animation;
+  private PieceSound sound;
   private Audio pieceDown;
   private Audio pieceCaptured;
   List<Image> allImages;
@@ -251,8 +252,14 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   }
   
   @Override
+  public void makeSound(boolean isCapture) {
+    sound = new PieceSound(isCapture ? pieceCaptured : pieceDown);
+    sound.run(50);
+  }
+  
+  @Override
   public void animateMove(List<Optional<Integer>> squares, List <Optional<Piece>> pieces,
-      int startCoord, int endCoord, boolean isMove, boolean isCapture) {
+      int startCoord, int endCoord, boolean isMove) {
     
     int startId = squares.get(startCoord).get();
     int endId = isMove ? endCoord : squares.get(endCoord).get();
@@ -298,8 +305,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     ImageResource transformImage = null;
 
     animation = new PieceMovingAnimation(startImage, endImage, startRes,
-        endRes, endRes, isCapture ? pieceCaptured
-            : pieceDown);
+        endRes, endRes);
     animation.run(1000);
   }
   
