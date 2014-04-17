@@ -1,11 +1,12 @@
 package org.banqi.graphics;
 
 /*
- * Copy from https://code.google.com/p/nyu-gaming-course-2013/source/-
+ * Copied from https://code.google.com/p/nyu-gaming-course-2013/source/-
  * browse/trunk/eclipse/src/org/simongellis/hw5/PieceMovingAnimation.java
  */
 
 import com.google.gwt.animation.client.Animation;
+import com.google.gwt.media.client.Audio;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Image;
@@ -16,11 +17,12 @@ public class PieceMovingAnimation extends Animation {
   ImageResource piece, transform;
   int startX, startY, startWidth, startHeight;
   int endX, endY;
+  Audio audio;
   boolean cancelled;
-
+  
   public PieceMovingAnimation(Image startImage, Image endImage,
       ImageResource startRes, ImageResource endRes,
-      ImageResource blankRes) {
+      ImageResource blankRes, Audio sfx, boolean isDnd) {
     start = startImage;
     end = endImage;
     piece = startRes;
@@ -32,12 +34,17 @@ public class PieceMovingAnimation extends Animation {
     startHeight = startImage.getHeight();
     endX = panel.getWidgetLeft(end);
     endY = panel.getWidgetTop(end);
+    audio = sfx;
     cancelled = false;
+    
 
     start.setResource(blankRes);
     moving = new Image(startRes);
     moving.setPixelSize(startWidth, startHeight);
     panel.add(moving, startX, startY);
+
+
+    playAudio(audio);
   }
 
   @Override
@@ -68,6 +75,12 @@ public class PieceMovingAnimation extends Animation {
     if (!cancelled) {
       end.setResource(transform);
       panel.remove(moving);
+    }
+  }
+  
+  private void playAudio(Audio audio) {
+    if (audio != null) {
+      audio.play();
     }
   }
 }

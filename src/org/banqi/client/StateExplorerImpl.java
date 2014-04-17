@@ -10,15 +10,17 @@ import com.google.common.collect.ImmutableList;
 
 public class StateExplorerImpl implements StateExplorer {
   BanqiLogic banqiLogic = new BanqiLogic();
-  
+
   @Override
-  public Set<MovePiece> getPossibleMoves(State state) {
-    Set<MovePiece> possibleMoves = new HashSet<MovePiece>();
+  public Set<Move> getPossibleMoves(BanqiState state) {
+    Set<Move> possibleMoves = new HashSet<Move>();
     Set<Position> possibleStartMoves = new HashSet<Position>();
+
     possibleStartMoves = getPossibleStartPositions(state);
-    for (Position p: possibleStartMoves) {
-      Set<MovePiece> possibleMovesOfP = getPossibleMovesFromPosition(state, p);
-      for (MovePiece move: possibleMovesOfP) {
+    for (Position startPostion : possibleStartMoves) {
+      Set<Move> possibleMovesOfP = getPossibleMovesFromPosition(state,
+          startPostion);
+      for (Move move : possibleMovesOfP) {
         possibleMoves.add(move);
       }
     }
@@ -26,196 +28,205 @@ public class StateExplorerImpl implements StateExplorer {
   }
 
   @Override
-  public Set<MovePiece> getPossibleMovesFromPosition(State state, Position start) {
-    Set<MovePiece> moves = new HashSet<MovePiece>();
+  public Set<Move> getPossibleMovesFromPosition(BanqiState state, Position start) {
+    Set<Move> moves = new HashSet<Move>();
     Set<Position> possibleMoveFromPosition = new HashSet<Position>();
-    ImmutableList<Optional<Piece>> pieces = state.getPieces();
-    ImmutableList<Optional<Integer>> squares = state.getSquares();
+    ImmutableList<Optional<Piece>> cells = state.getCells();
     int startRow = start.getRow();
     int startCol = start.getCol();
     int endRow = 0;
     int endCol = 0;
-    Piece piece = pieces.get(squares.get(convertCoord(startRow, startCol)).get()).get();
-    /* 
-     * Get all possible end position for the piece can verify each of them.
-     * If the piece is a cannon, then its possible end position is any square
-     * of the same row or same column, otherwise is any square next to its position
+    Piece piece = cells.get(convertToIndex(startRow, startCol)).get();
+    /*
+     * Get all possible end position for the piece can verify each of them. If
+     * the piece is a cannon, then its possible end position is any square of
+     * the same row or same column, otherwise is any square next to its position
      */
-    if (piece.getKind().name().equals("CANNON")) {
+    if (piece.getKind() == Piece.Kind.CANNON) {
       for (int i = 1; i <= 4; i++) {
         if (i != startRow) {
           endRow = i;
           endCol = startCol;
           Position endPos = new Position(endRow, endCol);
-          // If there's a piece in the end position
-          if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
-            // If the piece is facing up, check if the capture can be perform
-            if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-              if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
-                  getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
-                  pieces, squares, (convertCoord(startRow, startCol)),
-                  (convertCoord(endRow, endCol)))) {
+
+          // If the piece is not facing down
+          if (cells.get(convertToIndex(endRow, endCol)).isPresent()) {
+            // If the piece is in the cell and facing up
+            if (cells.get(convertToIndex(endRow, endCol)).get().getKind() != Piece.Kind.EMPTY) {
+              if (!cells.get(convertToIndex(endRow, endCol)).get()
+                  .getPieceColor().name().equals(piece.getPieceColor().name())
+                  && banqiLogic.canCapture(cells,
+                      (convertToIndex(startRow, startCol)),
+                      (convertToIndex(endRow, endCol)))) {
                 possibleMoveFromPosition.add(endPos);
               }
             }
-          } else if (endRow == startRow - 1 || endRow == startRow + 1) {
-            possibleMoveFromPosition.add(endPos);
           }
         }
       }
       for (int j = 1; j <= 8; j++) {
         if (j != startCol) {
-        endRow = startRow;
-        endCol = j;
-        Position endPos = new Position(endRow, endCol);
-        // If there's a piece in the end position
-        if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
-          // If the piece is facing up, check if the capture can be perform
-          if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-            if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
-                getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
-                pieces, squares, (convertCoord(startRow, startCol)),
-                (convertCoord(endRow, endCol)))) {
-              possibleMoveFromPosition.add(endPos);
+          endRow = startRow;
+          endCol = j;
+          Position endPos = new Position(endRow, endCol);
+
+          // If the piece is not facing down
+          if (cells.get(convertToIndex(endRow, endCol)).isPresent()) {
+            // If the piece is in the cell and facing up
+            if (cells.get(convertToIndex(endRow, endCol)).get().getKind() != Piece.Kind.EMPTY) {
+              if (!cells.get(convertToIndex(endRow, endCol)).get()
+                  .getPieceColor().name().equals(piece.getPieceColor().name())
+                  && banqiLogic.canCapture(cells,
+                      (convertToIndex(startRow, startCol)),
+                      (convertToIndex(endRow, endCol)))) {
+                possibleMoveFromPosition.add(endPos);
+              }
             }
-          }
-        } else if (endCol == startCol - 1 || endCol == startCol + 1) {
-          possibleMoveFromPosition.add(endPos);
           }
         }
       }
-    } else {
-      endRow = 0;
-      endCol = 0;
-      if (startRow != 1) {
-        endRow = startRow - 1;
-        endCol = startCol;
-        Position up = new Position(endRow, endCol);
-        // If there's a piece in the end position
-        if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
-          // If the piece is facing up, check if the capture can be perform
-          if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-            if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
-                getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
-                pieces, squares, (convertCoord(startRow, startCol)),
-                (convertCoord(endRow, endCol)))) {
-              possibleMoveFromPosition.add(up);
-            }
+    }
+    endRow = 0;
+    endCol = 0;
+    if (startRow != 1) {
+      endRow = startRow - 1;
+      endCol = startCol;
+      Position up = new Position(endRow, endCol);
+
+      // If the piece is not facing down
+      if (cells.get(convertToIndex(endRow, endCol)).isPresent()) {
+        // If the piece is in the cell and facing up
+        if (cells.get(convertToIndex(endRow, endCol)).get().getKind() != Piece.Kind.EMPTY) {
+          if (!cells.get(convertToIndex(endRow, endCol)).get().getPieceColor()
+              .name().equals(piece.getPieceColor().name())
+              && banqiLogic.canCapture(cells,
+                  (convertToIndex(startRow, startCol)),
+                  (convertToIndex(endRow, endCol)))) {
+            possibleMoveFromPosition.add(up);
           }
         } else {
           possibleMoveFromPosition.add(up);
         }
       }
-      if (startRow != 4) {
-        endRow = startRow + 1;
-        endCol = startCol;
-        Position down = new Position(endRow, endCol);
-        // If there's a piece in the end position
-        if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
-          // If the piece is facing up, check if the capture can be perform
-          if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-            if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
-                getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
-                pieces, squares, (convertCoord(startRow, startCol)),
-                (convertCoord(endRow, endCol)))) {
-              Piece.PieceColor pieceColor = piece.getColor();
-              Piece.PieceColor targetColor = pieces.get(squares.
-                  get(convertCoord(endRow, endCol)).get()).get().getColor();
-              possibleMoveFromPosition.add(down);
-            }
+    }
+    if (startRow != 4) {
+      endRow = startRow + 1;
+      endCol = startCol;
+      Position down = new Position(endRow, endCol);
+
+      // If the piece is not facing down
+      if (cells.get(convertToIndex(endRow, endCol)).isPresent()) {
+        // If the piece is in the cell and facing up
+        if (cells.get(convertToIndex(endRow, endCol)).get().getKind() != Piece.Kind.EMPTY) {
+          if (!cells.get(convertToIndex(endRow, endCol)).get().getPieceColor()
+              .name().equals(piece.getPieceColor().name())
+              && banqiLogic.canCapture(cells,
+                  (convertToIndex(startRow, startCol)),
+                  (convertToIndex(endRow, endCol)))) {
+            possibleMoveFromPosition.add(down);
           }
         } else {
           possibleMoveFromPosition.add(down);
         }
       }
-      if (startCol != 1) {
-        endRow = startRow;
-        endCol = startCol - 1;
-        Position left = new Position(endRow, endCol);
-        // If there's a piece in the end position
-        if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
-          // If the piece is facing up, check if the capture can be perform
-          if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-            if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
-                getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
-                pieces, squares, (convertCoord(startRow, startCol)),
-                (convertCoord(endRow, endCol)))) {
-              possibleMoveFromPosition.add(left);
-            }
+    }
+    if (startCol != 1) {
+      endRow = startRow;
+      endCol = startCol - 1;
+      Position left = new Position(endRow, endCol);
+
+      // If the piece is not facing down
+      if (cells.get(convertToIndex(endRow, endCol)).isPresent()) {
+        // If the piece is in the cell and facing up
+        if (cells.get(convertToIndex(endRow, endCol)).get().getKind() != Piece.Kind.EMPTY) {
+          if (!cells.get(convertToIndex(endRow, endCol)).get().getPieceColor()
+              .name().equals(piece.getPieceColor().name())
+              && banqiLogic.canCapture(cells,
+                  (convertToIndex(startRow, startCol)),
+                  (convertToIndex(endRow, endCol)))) {
+            possibleMoveFromPosition.add(left);
           }
         } else {
           possibleMoveFromPosition.add(left);
         }
       }
-      if (startCol != 8) {
-        endRow = startRow;
-        endCol = startCol + 1;
-        Position right = new Position(endRow, endCol);
-        // If there's a piece in the end position
-        if (squares.get(convertCoord(endRow, endCol)).isPresent()) {
-          // If the piece is facing up, check if the capture can be perform
-          if (pieces.get(squares.get(convertCoord(endRow, endCol)).get()).isPresent()) {
-            if (!pieces.get(squares.get(convertCoord(endRow, endCol)).get()).get().
-                getColor().name().equals(piece.getColor().name()) && banqiLogic.canCapture(
-                pieces, squares, (convertCoord(startRow, startCol)),
-                (convertCoord(endRow, endCol)))) {
-              possibleMoveFromPosition.add(right);
-            }
+    }
+    if (startCol != 8) {
+      endRow = startRow;
+      endCol = startCol + 1;
+      Position right = new Position(endRow, endCol);
+
+      // If the piece is not facing down
+      if (cells.get(convertToIndex(endRow, endCol)).isPresent()) {
+        // If the piece is in the cell and facing up
+        if (cells.get(convertToIndex(endRow, endCol)).get().getKind() != Piece.Kind.EMPTY) {
+          if (!cells.get(convertToIndex(endRow, endCol)).get().getPieceColor()
+              .name().equals(piece.getPieceColor().name())
+              && banqiLogic.canCapture(cells,
+                  (convertToIndex(startRow, startCol)),
+                  (convertToIndex(endRow, endCol)))) {
+            possibleMoveFromPosition.add(right);
           }
         } else {
           possibleMoveFromPosition.add(right);
         }
-      } 
+      }
     }
-    for (Position pos: possibleMoveFromPosition) {
-      MovePiece move = new MovePiece(convertCoord(startRow, startCol),
-          convertCoord(pos.getRow(), pos.getCol()));
+    for (Position pos : possibleMoveFromPosition) {
+      Move move = new Move(new Position(startRow, startCol), new Position(
+          pos.getRow(), pos.getCol()));
       moves.add(move);
     }
     return moves;
   }
-  
+
   @Override
-  public Set<Position> getPossibleStartPositions(State state) {
+  public Set<Position> getPossibleStartPositions(BanqiState state) {
     Set<Position> startPositions = new HashSet<Position>();
-    ImmutableList<Optional<Piece>> pieces = state.getPieces();
-    ImmutableList<Optional<Integer>> squares = state.getSquares();
+    ImmutableList<Optional<Piece>> cells = state.getCells();
     Color turnOfColor = state.getTurn();
     // Check all pieces on the board
-    int index = 0;
-    for (Optional<Integer> square: squares) { 
-      if (square.isPresent()) {
-        if (pieces.get(square.get()).isPresent()) {
-          Piece piece = pieces.get(square.get()).get();
-          if (piece.getColor().name().substring(0, 1).equals(turnOfColor.toString())) {
-            int piecePos = index;
-            int row = (piecePos / 8) + 1;
-            int col = (piecePos % 8) + 1;
-            Position currentPos = new Position(row, col);
-            if (!getPossibleMovesFromPosition(state, currentPos).isEmpty()) {
-              startPositions.add(currentPos); 
-            }
+    for (int i = 0; i < 32; i++) {
+      Optional<Piece> cell = cells.get(i);
+      if (cell.isPresent() && cell.get().getKind() != Piece.Kind.EMPTY) {
+        Piece piece = cell.get();
+        if (piece.getPieceColor().name().substring(0, 1)
+            .equals(turnOfColor.toString())) {
+          int row = (i / 8) + 1;
+          int col = (i % 8) + 1;
+          Position currentPos = new Position(row, col);
+          if (!getPossibleMovesFromPosition(state, currentPos).isEmpty()) {
+            startPositions.add(currentPos);
           }
-        } 
+        }
       }
-      index++;
     }
+
     return startPositions;
   }
+
+  //Convert the gameApi coodinate(0-31) to row(1-4)/col(1-8) coordinate
+   public Position convertToCoord(int cellIndex) {
+     int row = cellIndex / 8 + 1;
+     int col = cellIndex % 8 + 1;
+     return new Position(row, col);
+   }
+
   
   // Convert the row(1-4)/col(1-8) coordinate to gameApi coodinate(0-31)
-  public int convertCoord(int row, int col) {
+  public int convertToIndex(int row, int col) {
     return ((row - 1) * 8 + col) - 1;
   }
-  
-  public List<Integer> convertFromPosToIndex(Set<Position> possibleStartPositions) {
-    List<Integer> possibleStartIndexOfSquares = new ArrayList<Integer>();
-    for (Position pos: possibleStartPositions) {
+
+  public List<Integer> convertFromPosToIndex(
+      Set<Position> possibleStartPositions) {
+    List<Integer> possibleStartIndexOfCells = new ArrayList<Integer>();
+    for (Position pos : possibleStartPositions) {
       int row = pos.getRow();
       int col = pos.getCol();
-      int index = convertCoord(row, col);
-      possibleStartIndexOfSquares.add(index);
+      int index = convertToIndex(row, col);
+      possibleStartIndexOfCells.add(index);
     }
-    return possibleStartIndexOfSquares;
+    return possibleStartIndexOfCells;
   }
 }

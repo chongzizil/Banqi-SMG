@@ -3,6 +3,10 @@ package org.banqi.client;
 import java.util.Arrays;
 
 public class Piece extends Equality {
+  /**
+   * There're totally 9 kinds which 7 of them are normal kinds of pieces and 1 kind:
+   * EMPTY refers to nonexists piece in a cell.
+   */
   public enum Kind {
     GENERAL,  //GEN
     ADVISOR,  //ADV
@@ -10,7 +14,8 @@ public class Piece extends Equality {
     CHARIOT,  //CHA
     HORSE,    //HOR
     CANNON,   //CAN
-    SOLDIER;  //SOL
+    SOLDIER,  //SOL
+    EMPTY;    //EMP
     
     private static final Kind[] VALUES = values();
     
@@ -29,9 +34,13 @@ public class Piece extends Equality {
     }
   }
 
+  /**
+   * Since the game only supports two players, so there're only two colors.
+   */
   public enum PieceColor {
     RED,
-    BLACK;
+    BLACK,
+    EMPTY;
     
     private static final PieceColor[] VALUES = values();
     
@@ -50,37 +59,55 @@ public class Piece extends Equality {
     }
   }
   
-  private PieceColor colorValue;
   private Kind kindValue;
-
+  private PieceColor pieceColorValue;
   
   /**
-   * Creates a new playing piece.
+   * Creates a piece.
    *
-   * @param kind the kind value of this card.
-   * @param color the rank value of this card.
+   * @param kind the kind value of this piece.
+   * @param pieceColor the color value of this piece.
    */
-  public Piece(PieceColor color, Kind kind) {
+  public Piece(Kind kind, PieceColor pieceColor) {
     kindValue = kind;
-    colorValue = color;
-  }
-
-  /**
-   * Returns the color of the piece.
-   *
-   * @return a PieceColor constant representing the color value of the piece.
-   */
-  public PieceColor getColor() {
-    return colorValue;
+    pieceColorValue = pieceColor;
   }
   
   /**
-   * Returns the kind of the piece.
+   * Creates a piece.
+   *
+   * @param kind the kind value of this piece.
+   */
+  public Piece(Kind kind) {
+    kindValue = kind;
+    pieceColorValue = PieceColor.EMPTY;
+  }
+
+  /**
+   * Returns the Kind of the piece.
    *
    * @return a Kind constant representing the kind value of the piece.
    */
   public Kind getKind() {
     return kindValue;
+  }
+  
+  /**
+   * Returns the PieceColor of the piece.
+   *
+   * @return a PieceColor constant representing the color value of the piece.
+   */
+  public PieceColor getPieceColor() {
+    return pieceColorValue;
+  }
+  
+  /**
+   * Returns the four letters string of the piece.
+   *
+   * @return a string representing the value of the piece.
+   */
+  public String getPieceFourLetterString() {
+    return pieceColorValue.getFirstLetterLowerCase() + kindValue.getFirstThreeLetterLowerCase();
   }
   
   /**
@@ -90,11 +117,11 @@ public class Piece extends Equality {
    */
   @Override
   public String toString() {
-    return colorValue.toString() + " " + kindValue.toString();
+    return pieceColorValue.toString() + " " + kindValue.toString();
   }
 
   @Override
   public Object getId() {
-    return Arrays.asList(getColor(), getKind());
+    return Arrays.asList(getPieceColor(), getKind());
   }
 }

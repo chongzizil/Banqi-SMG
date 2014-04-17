@@ -4,13 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.banqi.client.BanqiState;
 import org.banqi.client.Color;
+import org.banqi.client.Move;
+//import org.banqi.client.BanqiState;
+//import org.banqi.client.Color;
 import org.banqi.client.Piece;
 import org.banqi.client.BanqiPresenter;
 import org.banqi.client.Position;
-import org.banqi.client.State;
 import org.banqi.client.StateExplorerImpl;
 import org.banqi.sounds.GameSounds;
+
+
+
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -29,181 +35,183 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
- * Graphics for the game of cheat.
+ * Graphics for the game of banqi.
  */
 public class BanqiGraphics extends Composite implements BanqiPresenter.View {
-  public interface BanqiGraphicsUiBinder extends UiBinder<Widget, BanqiGraphics> {
+  public interface BanqiGraphicsUiBinder extends
+      UiBinder<Widget, BanqiGraphics> {
   }
 
   @UiField
   HorizontalPanel playerArea;
-  @UiField
-  GameCss css;
-  
+
   private boolean enableClicks = false;
-  private final PieceImageSupplier pieceImageSupplier;
-  private final SquareImageSupplier squareImageSupplier;
+  private final BanqiImageSupplier banqiImageSupplier;
   private BanqiPresenter presenter;
-  AbsolutePanel board = new AbsolutePanel();
+  private AbsolutePanel board = new AbsolutePanel();
+  
   private PieceMovingAnimation animation;
-  private PieceSound sound;
   private Audio pieceDown;
   private Audio pieceCaptured;
+//  private boolean isDnd = true;
+//  private boolean isTurnPiece = true;
+  
+  private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
   List<Image> allImages;
 
-  private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
-  //private Position moveFrom = null;
-  //private Position moveTo = null;
-  //private java.util.Set<MovePiece> possibleMoves;
-
   public BanqiGraphics() {
-    GameSounds gameSounds = GWT.create(GameSounds.class);
-    PieceImages pieceImages = GWT.create(PieceImages.class);
-    SquareImages squareImages = GWT.create(SquareImages.class);
-    this.pieceImageSupplier = new PieceImageSupplier(pieceImages);
-    this.squareImageSupplier = new SquareImageSupplier(squareImages);
+     GameSounds gameSounds = GWT.create(GameSounds.class);
+    BanqiImages banqiImages = GWT.create(BanqiImages.class);
+    this.banqiImageSupplier = new BanqiImageSupplier(banqiImages);
     BanqiGraphicsUiBinder uiBinder = GWT.create(BanqiGraphicsUiBinder.class);
     initWidget(uiBinder.createAndBindUi(this));
-    
-    if (Audio.isSupported()) {
-      pieceDown = Audio.createIfSupported();
-      pieceDown.addSource(gameSounds.pieceDownMp3().getSafeUri()
-                      .asString(), AudioElement.TYPE_MP3);
-      pieceDown.addSource(gameSounds.pieceDownWav().getSafeUri()
-                      .asString(), AudioElement.TYPE_WAV);
-      pieceCaptured = Audio.createIfSupported();
-      pieceCaptured.addSource(gameSounds.pieceCapturedMp3().getSafeUri()
-                      .asString(), AudioElement.TYPE_MP3);
-      pieceCaptured.addSource(gameSounds.pieceCapturedWav().getSafeUri()
-                      .asString(), AudioElement.TYPE_WAV);
-}
+
+     if (Audio.isSupported()) {
+     pieceDown = Audio.createIfSupported();
+     pieceDown.addSource(gameSounds.pieceDownMp3().getSafeUri().asString(),
+     AudioElement.TYPE_MP3);
+     pieceDown.addSource(gameSounds.pieceDownWav().getSafeUri().asString(),
+     AudioElement.TYPE_WAV);
+     pieceCaptured = Audio.createIfSupported();
+     pieceCaptured.addSource(gameSounds.pieceCapturedMp3().getSafeUri()
+     .asString(), AudioElement.TYPE_MP3);
+     pieceCaptured.addSource(gameSounds.pieceCapturedWav().getSafeUri()
+     .asString(), AudioElement.TYPE_WAV);
+     }
   }
 
-  private List<Image> createImages(List<SquareImage> squareImages,
-      List<PieceImage> pieceImages,
-      List<Integer> squares,
-      final List<Piece> pieces) {
-    
+  private List<Image> createImages(List<BanqiImage> banqiImages,
+      final List<Piece> cells) {
+
     List<Image> res = Lists.newArrayList();
-    // Add click handler to each square image
-    for (SquareImage img : squareImages) {
-      final SquareImage imgFinal = img;
-      Image image = new Image(squareImageSupplier.getResource(img));
-        image.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            if (enableClicks) {
-              presenter.squareSelected(imgFinal.squareId, false); //squareId
-            }
+
+    // Add click handler to each cell image
+    for (BanqiImage img : banqiImages) {
+      final BanqiImage imgFinal = img;
+      Image image = new Image(banqiImageSupplier.getResource(img));
+      image.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          if (enableClicks) {
+            presenter.cellSelected(imgFinal.cellId, false);
           }
-        });
+        }
+      });
       res.add(image);
     }
-    
-    // Add click handler if there has a piece image
-    for (PieceImage img : pieceImages) {
-      final PieceImage imgFinal = img;
-      if (imgFinal != null) {
-        Image image = new Image(pieceImageSupplier.getResource(img));
-        image.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            if (enableClicks) {
-              presenter.pieceSelected(imgFinal.pieceId, false); //piceeId
-            }
-          }
-        });
-        res.add(image);
-      } else {
-        res.add(null);
-      }
-    }
+
     allImages = res;
     return res;
   }
 
-  private List<Image> createSquareAndPieceImages(List<Integer> squares,
-      List<Piece> pieces, List<Integer> selectedPieceIds) {
-    
-    // Create all square images
-    List<SquareImage> squareImages = Lists.newArrayList();
-    for (int i = 0; i < 32; i++) {
-      squareImages.add(SquareImage.Factory.getSquareImage(i));
+  private List<Image> createBanqiImages(List<Piece> cells,
+      List<Integer> selectedCells) {
+
+    List<Integer> possibleMovesTargetIndex = new ArrayList<Integer>();
+    if (selectedCells.size() == 1) {
+      int cellIndex = selectedCells.get(0);
+      Position startPos = stateExplorer.convertToCoord(cellIndex);
+      // Get all possible target positions
+      Set<Move> possibleMovesFromPosition = stateExplorer
+          .getPossibleMovesFromPosition(presenter.getState(), startPos);
+      possibleMovesTargetIndex =
+          convertTargetMoveToIndex(possibleMovesFromPosition);
     }
-    
-    // Create all piece images
-    List<PieceImage> pieceImages = Lists.newArrayList();
+
+    // Create all square images
+    List<BanqiImage> banqiImages = Lists.newArrayList();
+
+    // Create all banqi piece images
     for (int i = 0; i < 32; i++) {
-      // If there's a piece on square i, create a corresponding image
-      if (squares.get(i) != null) {
-        // If the piece is facing-up, create it's image
-        if (pieces.get(squares.get(i)) != null) {
-          // If the piece is selected, create the high light image
-          if (selectedPieceIds.contains((Integer) squares.get(i))) {
-            pieceImages.add(PieceImage.Factory.getHighLightPieceImage(
-                pieces.get(squares.get(i)), squares.get(i)));
-          } else { // The piece is not high lighted
-            pieceImages.add(PieceImage.Factory.getPieceImage(
-                pieces.get(squares.get(i)), squares.get(i)));
+      if (cells.get(i) != null) {
+        Piece piece = cells.get(i);
+        if (piece.getKind() == Piece.Kind.EMPTY) {
+          if (possibleMovesTargetIndex.contains((Integer) i)) {
+            // The empty cell is highlighted as a target
+            banqiImages
+            .add(BanqiImage.Factory.getTargetHLEmptyCellImage(cells.get(i), i));
+          } else {
+            // The empty cell is not highlighted
+            banqiImages
+              .add(BanqiImage.Factory.getEmptyCellImage(cells.get(i), i));
           }
-        } else { // The piece is facing-down, create a back image
-          pieceImages.add(PieceImage.Factory.getBackOfPieceImage(squares.get(i)));
+        } else {
+          if (selectedCells.contains((Integer) i)) {
+            // The piece is highlighted as selected
+            banqiImages.add(BanqiImage.Factory.getHighLightPieceImage(
+                cells.get(i), i));
+          } else if (possibleMovesTargetIndex.contains((Integer) i)) {
+            // The piece is highlighted as a target
+            banqiImages.add(BanqiImage.Factory.getTargetHLPieceImage(
+                cells.get(i), i));
+          } else {
+            // The piece is not high lighted
+            banqiImages.add(BanqiImage.Factory.getNormalPieceImage(
+                cells.get(i), i));
+          }
         }
-      } else { // There's no piece on square i
-        pieceImages.add(null);
+      } else {
+        banqiImages.add(BanqiImage.Factory.getBackOfPieceImage(i));
       }
     }
-    
-    return createImages(squareImages, pieceImages, squares, pieces);
+    return createImages(banqiImages, cells);
   }
-  
+
   private void placeImages(HorizontalPanel playerArea, List<Image> images) {
     playerArea.clear();
-    board.setSize("800px", "400px");
     
     // Initialize the drag controller
-    BanqiDragController dragCtrl = new BanqiDragController(board, false, presenter);
+    BanqiDragController dragCtrl = new BanqiDragController(board, false,
+        presenter);
     dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
     dragCtrl.setBehaviorMultipleSelection(false);
-    dragCtrl.setBehaviorDragStartSensitivity(1);
+    dragCtrl.setBehaviorDragStartSensitivity(3);
+    dragCtrl.unregisterDropControllers();
+    dragCtrl.resetCache();
+
+//    if (isDnd || isTurnPiece) {
+      board.clear();
+//    }
+
+    board.setSize("800px", "400px");
+
     // Get all possible start positions
-    Set<Position> possibleStartPositions = stateExplorer.getPossibleStartPositions(
-        presenter.getState());
+    Set<Position> possibleStartPositions = stateExplorer
+        .getPossibleStartPositions(presenter.getState());
     List<Integer> possibleStartIndexOfSquare = convertFromPosToIndex(possibleStartPositions);
-    
-    for (int i = 0; i < 32; i++) {
-      final int squareIndex = i;
-      final int pieceIndex = i + 32;
-      int xCoord = (i % 8) * 100;
-      int yCoord = (i / 8) * 100;
-      // Add the square image
-      board.add(images.get(squareIndex), xCoord, yCoord);
-      BanqiDropController target;
-      
-      if (images.get(pieceIndex) != null) {
-        // If the piece exist in square i, add its image
-        board.add(images.get(pieceIndex), xCoord, yCoord);
+
+    BanqiImage boardBanqiImage = BanqiImage.Factory.getBoardImage();
+    Image boardImage = new Image(
+        banqiImageSupplier.getResource(boardBanqiImage));
+
+//    if (isDnd || isTurnPiece) {
+      board.add(boardImage, 0, 0);
+
+      for (int i = 0; i < 32; i++) {
+        int xCoord = (i % 8) * 100;
+        int yCoord = (i / 8) * 100;
+        // Add the square image
+        board.add(images.get(i), xCoord, yCoord);
+
         // Get the state
-        State state = presenter.getState();
-        // Get the turn color and player color (or null if it's viewer)
+        BanqiState state = presenter.getState();
         Color turnColor = state.getTurn();
         Color myColor = presenter.getMyColor();
-        // If the it's the player's turn, add the possible start position's piece
-        // to drag controller, thus the player can perform drag on the valid pieces only.
+        // If the it's the player's turn, add the possible start position's
+        // piece
+        // to drag controller, thus the player can perform drag on the valid
+        // pieces only.
         if (myColor != null && myColor.name().equals(turnColor.name())) {
-          if (possibleStartIndexOfSquare.contains(pieceIndex - 32)) {
-            dragCtrl.makeDraggable(images.get(pieceIndex));
+          if (possibleStartIndexOfSquare.contains(i)) {
+            dragCtrl.makeDraggable(images.get(i));
           }
         }
-        // Register all pieces to the drag controller
-        target = new BanqiDropController(images.get(pieceIndex), presenter, true);
-        dragCtrl.registerDropController(target);
-      } else {
-        // Register squares with no pieces inside to the drag controller
-        target = new BanqiDropController(images.get(squareIndex), presenter, false);
-        dragCtrl.registerDropController(target);
+
+        dragCtrl.registerDropController(new BanqiDropController(images.get(i),
+            presenter));
       }
-    }
+//    }
+    
     playerArea.add(board);
   }
 
@@ -213,26 +221,24 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   }
 
   @Override
-  public void setViewerState(List<Integer> squares, List<Piece> pieces) {
-    placeImages(playerArea, createSquareAndPieceImages(
-        squares, pieces, Lists.<Integer>newArrayList()));
-  }
-  
-  @Override
-  public void setPlayerState(List<Integer> squares, List<Piece> pieces) {
-    placeImages(playerArea, createSquareAndPieceImages(
-        squares, pieces, Lists.<Integer>newArrayList()));
+  public void setViewerState(List<Piece> cells) {
+    placeImages(playerArea,
+        createBanqiImages(cells, Lists.<Integer> newArrayList()));
   }
 
   @Override
-  public void chooseNextPieceOrSquare(List<Integer> squares,
-      List<Piece> pieces, List<Integer> selectedPieceIds) {
-    // High light the selected piece
+  public void setPlayerState(List<Piece> cells) {
     placeImages(playerArea,
-        createSquareAndPieceImages(squares, pieces, selectedPieceIds));
+        createBanqiImages(cells, Lists.<Integer> newArrayList()));
+  }
+
+  @Override
+  public void chooseNextCell(List<Piece> cells, List<Integer> selectedCells) {
+    // High light the selected piece
+    placeImages(playerArea, createBanqiImages(cells, selectedCells));
     enableClicks = true;
   }
-  
+
   public Position getPosition(Image image) {
     int row = (image.getAbsoluteTop() / 100) + 1;
     int col = (image.getAbsoluteLeft() / 100) + 1;
@@ -240,74 +246,82 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   }
 
   /** Convert from Position (row/col base) to index base (0-31). */
-  public List<Integer> convertFromPosToIndex(Set<Position> possibleStartPositions) {
-    List<Integer> possibleStartIndexOfSquares = new ArrayList<Integer>();
-    for (Position pos: possibleStartPositions) {
+  public List<Integer> convertFromPosToIndex(
+      Set<Position> possibleStartPositions) {
+    List<Integer> possibleStartIndexOfCells = new ArrayList<Integer>();
+    for (Position pos : possibleStartPositions) {
       int row = pos.getRow();
       int col = pos.getCol();
-      int index = stateExplorer.convertCoord(row, col);
-      possibleStartIndexOfSquares.add(index);
+      int index = stateExplorer.convertToIndex(row, col);
+      possibleStartIndexOfCells.add(index);
     }
-    return possibleStartIndexOfSquares;
+    return possibleStartIndexOfCells;
   }
   
-  @Override
-  public void makeSound(boolean isCapture) {
-    sound = new PieceSound(isCapture ? pieceCaptured : pieceDown);
-    sound.run(50);
+  public List<Integer> convertTargetMoveToIndex(
+      Set<Move> possibleMovesFromPosition) {
+    List<Integer> possibleTargetIndexOfCells = new ArrayList<Integer>();
+    for (Move move : possibleMovesFromPosition) {
+      Position toPos = move.getTo();
+      int row = toPos.getRow();
+      int col = toPos.getCol();
+      int index = stateExplorer.convertToIndex(row, col);
+      possibleTargetIndexOfCells.add(index);
+    }
+    return possibleTargetIndexOfCells;
   }
-  
+
   @Override
-  public void animateMove(List<Optional<Integer>> squares, List <Optional<Piece>> pieces,
-      int startCoord, int endCoord, boolean isMove) {
-    
-    int startId = squares.get(startCoord).get();
-    int endId = isMove ? endCoord : squares.get(endCoord).get();
-    
-    Image startImage = allImages.get(startCoord + 32);
-    Image endImage = isMove ? allImages.get(endId) : allImages.get(endCoord + 32);
-    PieceImage startImg;
+  public void animateMove(List<Optional<Piece>> cells,
+      int startCoord, int endCoord, boolean isCapture, boolean isDnd) {
+//    this.isDnd = isDnd;
+//    if (startCoord == endCoord) {
+//      this.isTurnPiece = true;
+//    } else {
+//      this.isTurnPiece = false;
+//    }
+    Image startImage = allImages.get(startCoord);
+    Image endImage = allImages.get(endCoord);
+    BanqiImage startImg;
+    BanqiImage endImg;
     ImageResource startRes;
     ImageResource endRes;
-    
+    ImageResource blankRes;
+
     // If first piece is facing up
-    if (pieces.get(startId).isPresent()) {
-      startImg = PieceImage.Factory.getPieceImage(
-          pieces.get(startId).get(), startId);
-      startRes = pieceImageSupplier.getResource(startImg);
+    if (cells.get(startCoord).isPresent()) {
+      startImg = BanqiImage.Factory.getNormalPieceImage(cells.get(startCoord).get(),
+          startCoord);
+      startRes = banqiImageSupplier.getResource(startImg);
     } else {
-      startImg = PieceImage.Factory.getBackOfPieceImage(
-          squares.get(startCoord).get());
-      startRes = pieceImageSupplier.getResource(startImg);
+      startImg = BanqiImage.Factory.getBackOfPieceImage(startCoord);
+      startRes = banqiImageSupplier.getResource(startImg);
     }
-    
-    
+
     // If the second selected is a square
-    if (isMove) {
-      SquareImage endImg;
-      Piece endPiece = pieces.get(endId).get();
-      int endSquareId = endId;
-      endImg = SquareImage.Factory.getSquareImage(endId);
-      endRes = squareImageSupplier.getResource(endImg);
-    } else {
-      PieceImage endImg;
-      if (pieces.get(endId).isPresent()) {
-        endImg = PieceImage.Factory.getPieceImage(
-            pieces.get(endId).get(), endId);
-        endRes = pieceImageSupplier.getResource(endImg);
+    if (cells.get(endCoord).isPresent()) {
+      if (cells.get(endCoord).get().getKind() == Piece.Kind.EMPTY) {
+        // The target cell is empty
+        endImg = BanqiImage.Factory.getEmptyCellImage(cells.get(endCoord).get(),
+            endCoord);
+        endRes = banqiImageSupplier.getResource(endImg);
       } else {
-        endImg = PieceImage.Factory.getBackOfPieceImage(
-            squares.get(endCoord).get());
-        endRes = pieceImageSupplier.getResource(endImg);
+        // The target cell has piece within
+        endImg = BanqiImage.Factory.getNormalPieceImage(cells.get(endCoord).get(),
+            endCoord);
+        endRes = banqiImageSupplier.getResource(endImg);
       }
+    } else {
+      endImg = BanqiImage.Factory.getBackOfPieceImage(endCoord);
+      endRes = banqiImageSupplier.getResource(endImg);
     }
- 
-    ImageResource transformImage = null;
+    
+    blankRes = banqiImageSupplier.getResource(BanqiImage.Factory.getEmptyCellImage(null, 0));
 
     animation = new PieceMovingAnimation(startImage, endImage, startRes,
-        endRes, endRes);
-    animation.run(1000);
+        endRes, blankRes, isCapture ? pieceCaptured : pieceDown, isDnd);
+    if (!isDnd) {
+      animation.run(600);
+    }
   }
-  
-  
 }

@@ -1,11 +1,6 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
   xmlns:g="urn:import:com.google.gwt.user.client.ui">
-  <ui:style field="css" type="org.banqi.graphics.GameCss">
-                .highlighted {
-                        outline: dotted red 2px;
-                } 
-        </ui:style>
   <g:VerticalPanel>
     <g:HorizontalPanel height="400px" ui:field="playerArea"/>
   </g:VerticalPanel>

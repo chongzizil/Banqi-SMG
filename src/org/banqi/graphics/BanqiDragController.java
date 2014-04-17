@@ -1,15 +1,10 @@
 package org.banqi.graphics;
 
-
-import java.util.List;
-
 import org.banqi.client.BanqiPresenter;
 import org.banqi.client.Position;
-import org.banqi.client.State;
 import org.banqi.client.StateExplorerImpl;
 
 import com.allen_sauer.gwt.dnd.client.PickupDragController;
-import com.google.common.base.Optional;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Image;
 
@@ -32,15 +27,16 @@ public class BanqiDragController extends PickupDragController {
     Position startPos = getPosition((Image) context.draggable);
 
     // Convert the coordinate from row/col to index (0-31)
-    int indexOfdropper = stateExplorer.convertCoord(startPos.getRow(), startPos.getCol());
+    int indexOfDropper = stateExplorer.convertToIndex(startPos.getRow(), startPos.getCol());
 
-    State state = presenter.getState();
-    List<Optional<Integer>> squares = state.getSquares();
-    // Get the dragger's piece ID and perform presenter.pieceSelected(pieceId)
-    int pieceId = squares.get(indexOfdropper).get();
-    presenter.pieceSelected(pieceId, true);
-
+    presenter.setFromCellIndex(indexOfDropper);
+//    presenter.cellSelected(indexOfdropper/*, true*/);
   }
+  
+//  @Override
+//  public void dragEnd() {
+//    
+//  }
   
   public Position getPosition(Image image) {
     int row = (image.getAbsoluteTop() / 100) + 1;
