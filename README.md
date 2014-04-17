@@ -1,9 +1,11 @@
-# Banqi/Half Chess/半棋/暗器
+# Banqi/Half Chess/半棋/暗棋
 
 ## Overview
 
-This game is a Social Multiplayer Gaming course project which mainly use GWT. <br/>
-The description of this game can be found at [wikipedia] (http://en.wikipedia.org/wiki/Banqi).
+This game is a Social Multiplayer Gaming project which mainly use GWT. <br/>
+The description and rules of this game can be found at [wikipedia] (http://en.wikipedia.org/wiki/Banqi).
+
+![ScreenShot](/sample.jpg)
 
 ## Versions
 
@@ -43,4 +45,4 @@ Warning: The animation can not be properly performed in the latest version (V4 &
 ## Thanks
 - Professor Yoav
 - Grader ashishmanral
-- Joecy Huang (Thank you for all the images you created for this game, my love :) )
+- Joyce Huang (Thank you for all the images you created for this game, my love :) )
