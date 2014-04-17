@@ -18,6 +18,7 @@ import org.banqi.sounds.GameSounds;
 
 
 
+
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.shared.GWT;
@@ -28,6 +29,7 @@ import com.google.gwt.media.client.Audio;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -49,12 +51,18 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   private final BanqiImageSupplier banqiImageSupplier;
   private BanqiPresenter presenter;
   private AbsolutePanel board = new AbsolutePanel();
+  private static final int ANIMATION_NORMAL_DURATION = 600;
+  private static final int ANIMATION_ZERO_DURATION = 0;
+//  private static final int ANIMATION_DURATION_OFFSET = 100;
   
-  private PieceMovingAnimation animation;
   private Audio pieceDown;
   private Audio pieceCaptured;
-//  private boolean isDnd = true;
-//  private boolean isTurnPiece = true;
+  private int startCoordOfAnimation;
+  private int endCoordOfAnimation;
+  private boolean isCaptureOfAnimation;
+  private boolean isDndOfAnimation;
+  private boolean hasAnimation = false;
+  private List<Optional<Piece>> cellsOfAnimation;
   
   private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
   List<Image> allImages;
@@ -221,15 +229,47 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   }
 
   @Override
-  public void setViewerState(List<Piece> cells) {
-    placeImages(playerArea,
-        createBanqiImages(cells, Lists.<Integer> newArrayList()));
+  public void setViewerState(final List<Piece> cells) {
+    Timer animationTimer = new Timer() { 
+      public void run() {
+        placeImages(playerArea,
+            createBanqiImages(cells, Lists.<Integer> newArrayList()));
+      }
+    };
+    if (hasAnimation) {
+      animateMove(cellsOfAnimation, startCoordOfAnimation, endCoordOfAnimation,
+          isCaptureOfAnimation, isDndOfAnimation);
+      if (isDndOfAnimation) {
+        animationTimer.schedule(ANIMATION_ZERO_DURATION);
+      } else {
+        animationTimer.schedule(ANIMATION_NORMAL_DURATION);
+      }
+      hasAnimation = false;
+    } else {
+      animationTimer.schedule(ANIMATION_ZERO_DURATION);
+    } 
   }
 
   @Override
-  public void setPlayerState(List<Piece> cells) {
-    placeImages(playerArea,
-        createBanqiImages(cells, Lists.<Integer> newArrayList()));
+  public void setPlayerState(final List<Piece> cells) {
+    Timer animationTimer = new Timer() { 
+      public void run() {
+        placeImages(playerArea,
+            createBanqiImages(cells, Lists.<Integer> newArrayList()));
+      }
+    }; 
+    if (hasAnimation) {
+      animateMove(cellsOfAnimation, startCoordOfAnimation, endCoordOfAnimation,
+          isCaptureOfAnimation, isDndOfAnimation);
+      if (isDndOfAnimation) {
+        animationTimer.schedule(ANIMATION_ZERO_DURATION);
+      } else {
+        animationTimer.schedule(ANIMATION_NORMAL_DURATION /*- ANIMATION_DURATION_OFFSET*/);
+      }
+      hasAnimation = false;
+    } else {
+      animationTimer.schedule(ANIMATION_ZERO_DURATION /*- ANIMATION_DURATION_OFFSET*/);
+    } 
   }
 
   @Override
@@ -270,16 +310,23 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     }
     return possibleTargetIndexOfCells;
   }
+  
+  @Override
+  public void setAnimateArgs(List<Optional<Piece>> cells,
+      int startCoord, int endCoord,
+      boolean isCapture, boolean isDnd) {
+    cellsOfAnimation = cells;
+    startCoordOfAnimation = startCoord;
+    endCoordOfAnimation = endCoord;
+    isCaptureOfAnimation = isCapture;
+    isDndOfAnimation = isDnd;
+    hasAnimation = true;
+  }
 
   @Override
   public void animateMove(List<Optional<Piece>> cells,
       int startCoord, int endCoord, boolean isCapture, boolean isDnd) {
-//    this.isDnd = isDnd;
-//    if (startCoord == endCoord) {
-//      this.isTurnPiece = true;
-//    } else {
-//      this.isTurnPiece = false;
-//    }
+
     Image startImage = allImages.get(startCoord);
     Image endImage = allImages.get(endCoord);
     BanqiImage startImg;
@@ -318,10 +365,10 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     
     blankRes = banqiImageSupplier.getResource(BanqiImage.Factory.getEmptyCellImage(null, 0));
 
-    animation = new PieceMovingAnimation(startImage, endImage, startRes,
+    PieceMovingAnimation animation = new PieceMovingAnimation(startImage, endImage, startRes,
         endRes, blankRes, isCapture ? pieceCaptured : pieceDown, isDnd);
     if (!isDnd) {
-      animation.run(600);
+      animation.run(ANIMATION_NORMAL_DURATION);
     }
   }
 }

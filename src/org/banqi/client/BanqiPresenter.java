@@ -61,21 +61,14 @@ public class BanqiPresenter {
     /** Sets the state for a player (whether the player has the turn or not). */
     void setPlayerState(List<Piece> cells);
 
-    /** Set the sound of the move. */
-//    void makeSound(boolean isCapture);
-
+    /** Set the argument of the animation. */
+    void setAnimateArgs(List<Optional<Piece>> cells,
+        int startCoord, int endCoord,
+        boolean isCapture, boolean isDnd);
+    
     /** Set the animation of the move. */
     void animateMove(List<Optional<Piece>> cells,
         int startCoord, int endCoord, boolean isCapture, boolean isDnd);
-
-    /** Initialize the behavior of a widget being dragged. */
-    // DragHandler initializeDragHandler();
-
-    /** Initialize the behavior of a widget bieng dropped. */
-    // Dropper initializeDropHandler();
-
-    /** Find the board position associated with an image. */
-    // Position getPosition(Image image);
 
     /**
      * Asks the player to choose the next piece or empty cell. We pass what
@@ -214,7 +207,7 @@ public class BanqiPresenter {
         int selectedCoord = cellIndex;
         Set turnPiece = new Set(TURNPIECE, "C" + selectedCoord);
         // ****************** make a move ******************//
-        view.animateMove(cells, selectedCoord, selectedCoord, false, isDnd);
+        view.setAnimateArgs(cells, selectedCoord, selectedCoord, false, isDnd);
         turnPiece(turnPiece);
       } else if (cells.get(cellIndex).get().getKind() != Piece.Kind.EMPTY) {
         // There exists a piece in the cell
@@ -238,8 +231,7 @@ public class BanqiPresenter {
             Set movePiece = new Set(MOVEPIECE, ImmutableList.of("C"
                 + selectedFromCoord, "C" + selectedToCoord));
             // ****************** make a move ******************//
-            view.animateMove(cells, selectedFromCoord, selectedToCoord,
-                false, isDnd);
+            view.setAnimateArgs(cells, selectedFromCoord, selectedToCoord, false, isDnd);
             movePiece(movePiece);
           } else {
             chooseNextCell();
@@ -258,8 +250,7 @@ public class BanqiPresenter {
               Set capturePiece = new Set(CAPTUREPIECE, ImmutableList.of("C"
                   + selectedFromCoord, "C" + selectedToCoord));
               // ****************** make a move ******************//
-              view.animateMove(cells, selectedFromCoord, selectedToCoord,
-                  true, isDnd);
+              view.setAnimateArgs(cells, selectedFromCoord, selectedToCoord, true, isDnd);
               capturePiece(capturePiece);
             } else {
               chooseNextCell();

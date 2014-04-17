@@ -37,12 +37,10 @@ public class PieceMovingAnimation extends Animation {
     audio = sfx;
     cancelled = false;
     
-
     start.setResource(blankRes);
     moving = new Image(startRes);
     moving.setPixelSize(startWidth, startHeight);
     panel.add(moving, startX, startY);
-
 
     playAudio(audio);
   }
