@@ -8,10 +8,6 @@ import org.game_api.GameApi.Set;
 import org.game_api.GameApi.SetTurn;
 import org.game_api.GameApi.UpdateUI;
 
-
-//import com.allen_sauer.gwt.dnd.client.DragHandler;
-//import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
-//import com.allen_sauer.gwt.dnd.client.DragStartEvent;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -141,6 +137,7 @@ public class BanqiPresenter {
             .getPlayerId())];
       }
     }
+
     banqiState = banqiLogic.gameApiStateToBanqiState(updateUI.getState(),
         turnOfColor, playerIds);
 
@@ -156,15 +153,19 @@ public class BanqiPresenter {
     }
 
     // Must be a player!
+
     boolean hasBlack = banqiState.hasRedOrBlackPieces(Color.B);
     boolean hasRed = banqiState.hasRedOrBlackPieces(Color.R);
     boolean hasFacingDownPieces = banqiState.hasFacingDownPiece();
+
+    // Set the view
     view.setPlayerState(getAllCells(banqiState));
     if (isMyTurn()) {
-      if ((hasBlack ^ hasRed) && !hasFacingDownPieces) { // The game is over
+      if ((hasBlack ^ hasRed) && !hasFacingDownPieces) {
+        // The game is over, send the endGame operation
         endGame();
       } else {
-        // Choose the piece only if the game is not over
+        // Choose the cell only if the game is not over
         chooseNextCell();
       }
     }
@@ -194,25 +195,35 @@ public class BanqiPresenter {
   }
 
   /**
-   * Adds/remove the piece from the {@link #selectedCells}. The view can only
+   * Adds/remove the cell from the {@link #selectedCells}. The view can only
    * call this method if the presenter called {@link View#chooseNextCell}.
    */
   public void cellSelected(int cellIndex, boolean isDnd) {
     check(isMyTurn());
+    // Get all cells
     List<Optional<Piece>> cells = banqiState.getCells();
 
     if (selectedCells.size() == 0) {
-      // The piece in the cell is facing down
+      // No cells are previously selected
       if (!cells.get(cellIndex).isPresent()) {
+        // The cell contains a face down piece
+        // Get the selected piece coordinate
         int selectedCoord = cellIndex;
         Set turnPiece = new Set(TURNPIECE, "C" + selectedCoord);
-        // ****************** make a move ******************//
+        // ************************* make move start *************************
+        // //
+        // Set the arguments for the animation
         view.setAnimateArgs(cells, selectedCoord, selectedCoord, false, isDnd);
+        // Make the turnPiece move
         turnPiece(turnPiece);
+        // ************************** make move end **************************
+        // //
       } else if (cells.get(cellIndex).get().getKind() != Piece.Kind.EMPTY) {
-        // There exists a piece in the cell
+        // The cell contains a face up piece
         if (cells.get(cellIndex).get().getPieceColor().name().substring(0, 1)
             .equals(myColor.get().name())) {
+          // If the piece's color is as same as the player's, the cell contains
+          // it is selected
           selectedCells.add(cellIndex);
           chooseNextCell();
         }
@@ -220,38 +231,55 @@ public class BanqiPresenter {
         chooseNextCell();
       }
     } else if (selectedCells.size() == 1) {
+      // One cell is already selected
       if (cells.get(cellIndex).isPresent()) {
+        // The cell does not contain a face down piece
         if (cells.get(cellIndex).get().getKind() == Piece.Kind.EMPTY) {
+          // The cell is empty, get the from and to coordinate
           int selectedFromCoord = selectedCells.get(0);
           int selectedToCoord = cellIndex;
-          // Only perform the move when selected a legal square, otherwise need
-          // to
-          // reselect
+          // Only perform movePiece when a legal cell is selected, otherwise
+          // need
+          // to reselect another cell
           if (banqiLogic.isMoveCoordLegal(selectedFromCoord, selectedToCoord)) {
             Set movePiece = new Set(MOVEPIECE, ImmutableList.of("C"
                 + selectedFromCoord, "C" + selectedToCoord));
-            // ****************** make a move ******************//
-            view.setAnimateArgs(cells, selectedFromCoord, selectedToCoord, false, isDnd);
+            // ************************* make move start
+            // ************************* //
+            // Set the arguments for the animation
+            view.setAnimateArgs(cells, selectedFromCoord, selectedToCoord,
+                false, isDnd);
+            // Make the movePiece move
             movePiece(movePiece);
+            // ************************** make move end
+            // ************************** //
           } else {
             chooseNextCell();
           }
         } else {
+          // The cell contains a face up piece
           if (selectedCells.contains(cellIndex)) {
+            // The cell is already selected, so it will be unselected
             selectedCells.remove((Integer) cellIndex);
             chooseNextCell();
           } else {
-            // A piece is selected
+            // The cell is selected, get the from and to coordinate
             int selectedFromCoord = selectedCells.get(0);
             int selectedToCoord = cellIndex;
-            // Check the logic to see if the capturee is legal to be chosen
+            // Only perform capturePiece when a cell is legal to be chosen
             if (banqiLogic
                 .canCapture(cells, selectedFromCoord, selectedToCoord)) {
               Set capturePiece = new Set(CAPTUREPIECE, ImmutableList.of("C"
                   + selectedFromCoord, "C" + selectedToCoord));
-              // ****************** make a move ******************//
-              view.setAnimateArgs(cells, selectedFromCoord, selectedToCoord, true, isDnd);
+              // ************************* make move start
+              // ************************* //
+              // Set the arguments for the animation
+              view.setAnimateArgs(cells, selectedFromCoord, selectedToCoord,
+                  true, isDnd);
+              // Make the capturePiece move
               capturePiece(capturePiece);
+              // ************************** make move end
+              // ************************** //
             } else {
               chooseNextCell();
             }
@@ -263,11 +291,6 @@ public class BanqiPresenter {
     }
   }
 
-  /**
-   * Sends a move that the opponent is a cheater. The view can only call this
-   * method if the presenter passed CheaterMessage.IS_OPPONENT_CHEATING in
-   * {@link View#setPlayerState}.
-   */
   void movePiece(Set move) {
     container.sendMakeMove(banqiLogic.getMovePieceOperation(banqiState, move));
   }

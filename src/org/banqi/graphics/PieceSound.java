@@ -7,9 +7,6 @@ package org.banqi.graphics;
 
 import com.google.gwt.animation.client.Animation;
 import com.google.gwt.media.client.Audio;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.ui.AbsolutePanel;
-import com.google.gwt.user.client.ui.Image;
 
 public class PieceSound extends Animation {
   Audio soundAtEnd;
