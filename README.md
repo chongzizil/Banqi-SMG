@@ -26,6 +26,16 @@ The description and rules of this game can be found at [wikipedia] (http://en.wi
 - Improved performance
 - Fixed bugs
 
+### [2.1] (http://2-1-dot-banqi-smg.appspot.com/)
+- HW10 first deploy
+- Changed to mobile UI
+- Standalone, no need to use emulator for this version
+- Need to play horizontally, tested in iPhone 5s.
+- Know bugs:
+  - No sound
+  - Popup error during the first move and drag and drop
+
+
 ## Instruction
 
 ### How to play
