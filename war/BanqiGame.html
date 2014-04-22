@@ -2,17 +2,15 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1.0, minimum-scale=1.0, maximum-scale=1.0">
     <title>Banqi game</title>
     <script type="text/javascript" language="javascript" src="banqi_game/banqi_game.nocache.js"></script>
-    <style>
-  .imgContainer {
-    overflow:hidden;
-    width: 100px;
-    height: 100px;
-  }
-    </style>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   </head>
   <body>
-    <div id="mainDiv" width="800" height="400" ></div>
+    <div id="mainDiv"></div>
+    <script>
+      console.log($(window).width());
+    </script>
   </body>
 </html>

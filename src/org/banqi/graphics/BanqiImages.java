@@ -148,4 +148,8 @@ public interface BanqiImages extends ClientBundle {
   // Banqi board
   @Source("images/other/board.gif")
   ImageResource board();
+  
+  //Banqi board for mobile
+// @Source("images/other/board_mobile.gif")
+// ImageResource board();
 }

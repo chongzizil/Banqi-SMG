@@ -92,6 +92,7 @@ public final class BanqiImage extends Equality {
     case EMPTYTARGETHL:
       return "other/" + "empty_cell_target.hl.gif";
     case BOARD:
+//      return "other/" + "board_mobile.gif";
       return "other/" + "board.gif";
     default:
       return "Forgot kind=" + kind;

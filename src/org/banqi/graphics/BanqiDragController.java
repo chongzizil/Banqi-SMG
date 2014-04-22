@@ -25,7 +25,6 @@ public class BanqiDragController extends PickupDragController {
     saveSelectedWidgetsLocationAndStyle();
     // Get the dragger's position
     Position startPos = getPosition((Image) context.draggable);
-
     // Convert the coordinate from row/col to index (0-31)
     int indexOfDropper = stateExplorer.convertToIndex(startPos.getRow(), startPos.getCol());
 

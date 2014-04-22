@@ -21,7 +21,9 @@
   <add-linker name='xsiframe' />
   <inherits name='com.google.gwt.json.JSON'/>
   <inherits name='com.allen_sauer.gwt.dnd.gwt-dnd'/>
-
+  <!-- MGWT -->
+  <inherits name="com.googlecode.mgwt.MGWT"/>
+ 
   <!-- Specify the paths for translatable code                    -->
   <source path='banqi'/>
   <source path='game_api'/>

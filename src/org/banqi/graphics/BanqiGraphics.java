@@ -13,6 +13,12 @@ import org.banqi.client.Position;
 import org.banqi.client.StateExplorerImpl;
 import org.banqi.sounds.GameSounds;
 
+import com.allen_sauer.gwt.dnd.client.DragContext;
+import com.allen_sauer.gwt.dnd.client.DragEndEvent;
+import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
+import com.allen_sauer.gwt.dnd.client.DragStartEvent;
+import com.allen_sauer.gwt.dnd.client.PickupDragController;
+import com.allen_sauer.gwt.dnd.client.drop.SimpleDropController;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.shared.GWT;
@@ -28,6 +34,7 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -44,7 +51,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   private boolean enableClicks = false;
   private final BanqiImageSupplier banqiImageSupplier;
   private BanqiPresenter presenter;
-  private AbsolutePanel board = new AbsolutePanel();
+  private BanqiAbsolutePanel board = new BanqiAbsolutePanel();
   private static final int ANIMATION_NORMAL_DURATION = 600;
   private static final int ANIMATION_ZERO_DURATION = 0;
   // private static final int ANIMATION_DURATION_OFFSET = 100;
@@ -69,15 +76,30 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
 
     if (Audio.isSupported()) {
       pieceDown = Audio.createIfSupported();
-      pieceDown.addSource(gameSounds.pieceDownMp3().getSafeUri().asString(),
-          AudioElement.TYPE_MP3);
-      pieceDown.addSource(gameSounds.pieceDownWav().getSafeUri().asString(),
-          AudioElement.TYPE_WAV);
+      pieceDown.setControls(false);
+      if (pieceDown.canPlayType(AudioElement.TYPE_WAV).equals(AudioElement.CAN_PLAY_PROBABLY)
+          || pieceDown.canPlayType(AudioElement.TYPE_WAV).equals(AudioElement.CAN_PLAY_MAYBE)) {
+        pieceDown.addSource(
+            gameSounds.pieceDownWav().getSafeUri().asString(), AudioElement.TYPE_WAV);
+      }
+      if (pieceDown.canPlayType(AudioElement.TYPE_MP3).equals(AudioElement.CAN_PLAY_PROBABLY)
+          || pieceDown.canPlayType(AudioElement.TYPE_MP3).equals(AudioElement.CAN_PLAY_MAYBE)) {
+        pieceDown.addSource(
+            gameSounds.pieceDownMp3().getSafeUri().asString(), AudioElement.TYPE_WAV);
+      }
+      
       pieceCaptured = Audio.createIfSupported();
-      pieceCaptured.addSource(gameSounds.pieceCapturedMp3().getSafeUri()
-          .asString(), AudioElement.TYPE_MP3);
-      pieceCaptured.addSource(gameSounds.pieceCapturedWav().getSafeUri()
-          .asString(), AudioElement.TYPE_WAV);
+      pieceCaptured.setControls(false);
+      if (pieceCaptured.canPlayType(AudioElement.TYPE_WAV).equals(AudioElement.CAN_PLAY_PROBABLY)
+          || pieceCaptured.canPlayType(AudioElement.TYPE_WAV).equals(AudioElement.CAN_PLAY_MAYBE)) {
+        pieceCaptured.addSource(
+            gameSounds.pieceDownWav().getSafeUri().asString(), AudioElement.TYPE_WAV);
+      }
+      if (pieceCaptured.canPlayType(AudioElement.TYPE_MP3).equals(AudioElement.CAN_PLAY_PROBABLY)
+          || pieceCaptured.canPlayType(AudioElement.TYPE_MP3).equals(AudioElement.CAN_PLAY_MAYBE)) {
+        pieceCaptured.addSource(
+            gameSounds.pieceDownMp3().getSafeUri().asString(), AudioElement.TYPE_WAV);
+      }
     }
   }
 
@@ -91,6 +113,8 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     for (BanqiImage img : banqiImages) {
       final BanqiImage imgFinal = img;
       Image image = new Image(banqiImageSupplier.getResource(img));
+      // Change the image size for mobile device...
+      image.setPixelSize(70, 70);
       image.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -169,22 +193,32 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   }
 
   /** Place the images on the board and set the drag and drop controller. */
-  private void placeImages(HorizontalPanel playerArea, List<Image> images) {
+  private void placeImages(HorizontalPanel playerArea, final List<Image> images) {
     // Initialize the drag controller
-    BanqiDragController dragCtrl = new BanqiDragController(board, false,
-        presenter);
+    PickupDragController dragCtrl = new PickupDragController(board, false);
     dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
     dragCtrl.setBehaviorMultipleSelection(false);
     dragCtrl.setBehaviorDragStartSensitivity(3);
     dragCtrl.unregisterDropControllers();
     dragCtrl.resetCache();
+    dragCtrl.addDragHandler(new DragHandlerAdapter() {
+      @Override
+      public void onDragStart(DragStartEvent event) {
+        // Get the dragger's position
+        Position startPos = getPosition((Image) event.getContext().draggable);
+        // Convert the coordinate from row/col to index (0-31)
+        int indexOfDropper = stateExplorer.convertToIndex(startPos.getRow(), startPos.getCol());
 
+        presenter.setFromCellIndex(indexOfDropper);
+      }
+    });
+    
     // Clear the playerArea
     playerArea.clear();
     // Clear the board
     board.clear();
     // Set the board
-    board.setSize("800px", "400px");
+    board.setSize("560px", "280px");
 
     // Get all possible start positions
     Set<Position> possibleStartPositions = stateExplorer
@@ -196,12 +230,13 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     BanqiImage boardBanqiImage = BanqiImage.Factory.getBoardImage();
     Image boardImage = new Image(
         banqiImageSupplier.getResource(boardBanqiImage));
+    boardImage.setPixelSize(560, 280);
     board.add(boardImage, 0, 0);
 
     // Place all 32 cell images
     for (int i = 0; i < 32; i++) {
-      int xCoord = (i % 8) * 100;
-      int yCoord = (i / 8) * 100;
+      int xCoord = (i % 8) * 70;
+      int yCoord = (i / 8) * 70;
       // Add the cell image
       board.add(images.get(i), xCoord, yCoord);
 
@@ -219,10 +254,24 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
           dragCtrl.makeDraggable(images.get(i));
         }
       }
+      final Image image = images.get(i);
+      SimpleDropController dropController = new SimpleDropController(image) {
 
-      dragCtrl.registerDropController(new BanqiDropController(images.get(i),
-          presenter));
+        @Override
+        public void onDrop(DragContext context) {
+          super.onDrop(context);
+          // Get the target's position
+          Position target = getPosition((Image) image);
+          // Get the target's square ID (position in the board).
+          int cellIndex = stateExplorer.convertToIndex(target.getRow(), target.getCol());
+          int fromCellIndex = presenter.getFromCellIndex();
+          presenter.cellSelected(fromCellIndex, true);
+          presenter.cellSelected(cellIndex, true);
+        }
+      };      
+      dragCtrl.registerDropController(dropController);
     }
+    
     // Place the board onto the playerArea
     playerArea.add(board);
   }
@@ -259,6 +308,13 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       possibleTargetIndexOfCells.add(index);
     }
     return possibleTargetIndexOfCells;
+  }
+
+  /** Return the image position. */ 
+  public Position getPosition(Image image) {
+    int row = (image.getAbsoluteTop() / 70) + 1;
+    int col = (image.getAbsoluteLeft() / 70) + 1;
+    return new Position(row, col);
   }
   
   @Override
