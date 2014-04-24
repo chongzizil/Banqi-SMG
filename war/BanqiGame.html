@@ -1,16 +1,83 @@
 <!doctype html>
 <html>
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1.0, minimum-scale=1.0, maximum-scale=1.0">
-    <title>Banqi game</title>
-    <script type="text/javascript" language="javascript" src="banqi_game/banqi_game.nocache.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-  </head>
-  <body>
-    <div id="mainDiv"></div>
-    <script>
-      console.log($(window).width());
-    </script>
-  </body>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Banqi game</title>
+<style type="text/css" media="only screen and (max-device-width: 480px)">
+body>div {
+	-webkit-transition: all 1s ease-in-out;
+}
+</style>
+<script type="text/javascript" language="javascript"
+	src="banqi_game/banqi_game.nocache.js"></script>
+<script
+	src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+</head>
+<body>
+	<div id="mainDiv" style="height: 100%; width: 100%;"></div>
+	<script>
+	console.log($("#mainDiv").innerWidth());
+		function scaleBody() {
+			var myGameWidth = 800;
+			var myGameHeight = 431;
+			var scaleX = window.innerWidth / myGameWidth;
+			var scaleY = window.innerHeight / myGameHeight;
+			var scale = Math.min(scaleX, scaleY);
+			var transformString = "scale(" + scale + "," + scale + ")";
+			document.body.style.transform = transformString;
+			document.body.style['-o-transform'] = transformString;
+			document.body.style['-webkit-transform'] = transformString;
+			document.body.style['-moz-transform'] = transformString;
+			document.body.style['-ms-transform'] = transformString;
+			var transformOriginString = "0 0 0";
+			document.body.style['transform-origin'] = transformOriginString;
+			document.body.style['-o-transform-origin'] = transformOriginString;
+			document.body.style['-webkit-transform-origin'] = transformOriginString;
+			document.body.style['-moz-transform-origin'] = transformOriginString;
+			document.body.style['-ms-transform-origin'] = transformOriginString;
+		}
+		window.onresize = scaleBody;
+		window.onorientationchange = scaleBody;
+		document.addEventListener("orientationchange", scaleBody);
+		scaleBody();
+	</script>
+	<script>
+		/*
+		console.log($("#mainDiv").position());
+		
+		console.log("Window width" + window.innerWidth);
+		console.log("Window height" + window.innerHeight);
+		
+		console.log("Main div height: " + $("#mainDiv").height());
+		console.log("Main div width(): " + $("#mainDiv").width());
+		 */
+		 /*
+		$(document)
+				.ready(
+						function() {
+							console.log("rotating...");
+							function reorient(e) {
+								var portrait = (window.orientation === 90 || window.orientation === 270);
+								$("#mainDiv").css("-webkit-transform",
+										!portrait ? "rotate(90deg)" : "");
+								if (!portrait) {
+									console.log("Woking...");
+									var width = $("#mainDiv").width();
+									var height = $("#mainDiv").height();
+									var marginLeft = -(width - height) / 2;
+									var marginTop = (width - height) / 2;
+									$("#mainDiv").css("margin-left",
+											marginLeft + "px");
+									$("#mainDiv").css("margin-top",
+											marginTop + "px");
+								}
+							}
+							window.onorientationchange = reorient;
+							window.setTimeout(reorient, 0);
+						});
+		 */
+	</script>
+</body>
 </html>

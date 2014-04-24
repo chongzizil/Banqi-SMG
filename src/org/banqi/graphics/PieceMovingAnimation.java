@@ -28,12 +28,26 @@ public class PieceMovingAnimation extends Animation {
     piece = startRes;
     transform = endRes == null ? startRes : endRes;
     panel = (AbsolutePanel) start.getParent();
-    startX = panel.getWidgetLeft(start);
-    startY = panel.getWidgetTop(start);
+    String[] startCoords = start.getAltText().split(",");
+    String[] endCoords = end.getAltText().split(",");
+    int startRow = Integer.parseInt(startCoords[0]);
+    int startCol = Integer.parseInt(startCoords[1]);
+    int endRow = Integer.parseInt(endCoords[0]);
+    int endCol = Integer.parseInt(endCoords[1]);
+    startX = (startCol - 1) * start.getWidth();
+    startY = (startRow - 1) * start.getHeight();
+    endX = (endCol - 1) * end.getWidth();
+    endY = (endRow - 1) * end.getHeight();
+//    startX = panel.getWidgetLeft(start);
+//    startY = panel.getWidgetTop(start);
+    console("Start X: " + startX);
+    console("Start Y: " + startY);
+    console("End X: " + endX);
+    console("End Y: " + endY);
+//    endX = panel.getWidgetLeft(end);
+//    endY = panel.getWidgetTop(end);
     startWidth = startImage.getWidth();
     startHeight = startImage.getHeight();
-    endX = panel.getWidgetLeft(end);
-    endY = panel.getWidgetTop(end);
     audio = sfx;
     cancelled = false;
     
@@ -45,6 +59,12 @@ public class PieceMovingAnimation extends Animation {
     playAudio(audio);
   }
 
+  /** Print debug info in the console. */
+  public static native void console(String text)
+  /*-{
+      console.log(text);
+  }-*/;
+  
   @Override
   protected void onUpdate(double progress) {
     int x = (int) (startX + (endX - startX) * progress);

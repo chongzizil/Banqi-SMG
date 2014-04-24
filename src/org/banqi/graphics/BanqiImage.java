@@ -50,10 +50,10 @@ public final class BanqiImage extends Equality {
   public final Piece piece;
   public final int cellId;
 
-  private BanqiImage(BanqiImageKind kind, Piece piece, int pieceId) {
+  private BanqiImage(BanqiImageKind kind, Piece piece, int cellId) {
     this.kind = kind;
     this.piece = piece;
-    this.cellId = pieceId;
+    this.cellId = cellId;
   }
   
   private BanqiImage(BanqiImageKind kind) {

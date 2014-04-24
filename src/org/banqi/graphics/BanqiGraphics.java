@@ -14,7 +14,7 @@ import org.banqi.client.StateExplorerImpl;
 import org.banqi.sounds.GameSounds;
 
 import com.allen_sauer.gwt.dnd.client.DragContext;
-import com.allen_sauer.gwt.dnd.client.DragEndEvent;
+//import com.allen_sauer.gwt.dnd.client.DragEndEvent;
 import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
 import com.allen_sauer.gwt.dnd.client.DragStartEvent;
 import com.allen_sauer.gwt.dnd.client.PickupDragController;
@@ -34,7 +34,7 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.LayoutPanel;
+//import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -51,7 +51,6 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   private boolean enableClicks = false;
   private final BanqiImageSupplier banqiImageSupplier;
   private BanqiPresenter presenter;
-  private BanqiAbsolutePanel board = new BanqiAbsolutePanel();
   private static final int ANIMATION_NORMAL_DURATION = 600;
   private static final int ANIMATION_ZERO_DURATION = 0;
   // private static final int ANIMATION_DURATION_OFFSET = 100;
@@ -108,13 +107,18 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       final List<Piece> cells) {
 
     List<Image> res = Lists.newArrayList();
-
+    
     // Add click handler to each cell image
-    for (BanqiImage img : banqiImages) {
+    for (int i = 0; i < banqiImages.size(); i++) {
+      BanqiImage img = banqiImages.get(i);      
       final BanqiImage imgFinal = img;
       Image image = new Image(banqiImageSupplier.getResource(img));
+      int row = i / 8 + 1;
+      int col = i % 8 + 1;
+      // Add the cell image
+      image.setAltText(row + "," + col);
       // Change the image size for mobile device...
-      image.setPixelSize(70, 70);
+//      image.setPixelSize(70, 70);
       image.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -194,6 +198,20 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
 
   /** Place the images on the board and set the drag and drop controller. */
   private void placeImages(HorizontalPanel playerArea, final List<Image> images) {
+    AbsolutePanel board = new AbsolutePanel();
+    // Clear the playerArea
+    playerArea.clear();
+    // Clear the board
+    board.clear();
+    
+ // Place the boardIamge first
+    BanqiImage boardBanqiImage = BanqiImage.Factory.getBoardImage();
+    Image boardImage = new Image(
+        banqiImageSupplier.getResource(boardBanqiImage));
+    // Set the board
+    board.setSize(boardImage.getWidth() + "px", boardImage.getHeight() + "px");
+    board.add(boardImage, 0, 0);
+    
     // Initialize the drag controller
     PickupDragController dragCtrl = new PickupDragController(board, false);
     dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
@@ -212,13 +230,6 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
         presenter.setFromCellIndex(indexOfDropper);
       }
     });
-    
-    // Clear the playerArea
-    playerArea.clear();
-    // Clear the board
-    board.clear();
-    // Set the board
-    board.setSize("560px", "280px");
 
     // Get all possible start positions
     Set<Position> possibleStartPositions = stateExplorer
@@ -226,20 +237,12 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     // Get all possible start cell indexes
     List<Integer> possibleStartIndexOfSquare = convertFromPosToIndex(possibleStartPositions);
 
-    // Place the boardIamge first
-    BanqiImage boardBanqiImage = BanqiImage.Factory.getBoardImage();
-    Image boardImage = new Image(
-        banqiImageSupplier.getResource(boardBanqiImage));
-    boardImage.setPixelSize(560, 280);
-    board.add(boardImage, 0, 0);
-
     // Place all 32 cell images
     for (int i = 0; i < 32; i++) {
-      int xCoord = (i % 8) * 70;
-      int yCoord = (i / 8) * 70;
-      // Add the cell image
-      board.add(images.get(i), xCoord, yCoord);
+      int xCoord = (i % 8) * images.get(i).getWidth();
+      int yCoord = (i / 8) * images.get(i).getHeight();
 
+      board.add(images.get(i), xCoord, yCoord);
       // Get the state
       BanqiState state = presenter.getState();
       // Get the current turn color
@@ -312,10 +315,17 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
 
   /** Return the image position. */ 
   public Position getPosition(Image image) {
-    int row = (image.getAbsoluteTop() / 70) + 1;
-    int col = (image.getAbsoluteLeft() / 70) + 1;
+    String[] coords = image.getAltText().split(",");
+    int row = Integer.parseInt(coords[0]);
+    int col = Integer.parseInt(coords[1]);
     return new Position(row, col);
   }
+  
+//  /** Print debug info in the console. */
+//  public static native void console(String text)
+//  /*-{
+//      console.log(text);
+//  }-*/;
   
   @Override
   public void setPresenter(BanqiPresenter banqiPresenter) {
