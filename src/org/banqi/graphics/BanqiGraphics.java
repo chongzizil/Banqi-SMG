@@ -57,6 +57,8 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
 
   private Audio pieceDown;
   private Audio pieceCaptured;
+  private Audio cannonCaptured;
+  private Audio normalCaptured;
   private int startCoordOfAnimation;
   private int endCoordOfAnimation;
   private boolean isCaptureOfAnimation;
@@ -74,30 +76,72 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     initWidget(uiBinder.createAndBindUi(this));
 
     if (Audio.isSupported()) {
+      cannonCaptured = Audio.createIfSupported();
+      cannonCaptured.setControls(false);
+      if (cannonCaptured.canPlayType(AudioElement.TYPE_WAV).equals(
+          AudioElement.CAN_PLAY_PROBABLY)
+          || cannonCaptured.canPlayType(AudioElement.TYPE_WAV).equals(
+              AudioElement.CAN_PLAY_MAYBE)) {
+        cannonCaptured.addSource(gameSounds.cannonCapturedWav().getSafeUri()
+            .asString(), AudioElement.TYPE_WAV);
+      }
+      if (cannonCaptured.canPlayType(AudioElement.TYPE_MP3).equals(
+          AudioElement.CAN_PLAY_PROBABLY)
+          || cannonCaptured.canPlayType(AudioElement.TYPE_MP3).equals(
+              AudioElement.CAN_PLAY_MAYBE)) {
+        cannonCaptured.addSource(gameSounds.cannonCapturedMp3().getSafeUri()
+            .asString(), AudioElement.TYPE_WAV);
+      }
+
+      normalCaptured = Audio.createIfSupported();
+      normalCaptured.setControls(false);
+      if (normalCaptured.canPlayType(AudioElement.TYPE_WAV).equals(
+          AudioElement.CAN_PLAY_PROBABLY)
+          || normalCaptured.canPlayType(AudioElement.TYPE_WAV).equals(
+              AudioElement.CAN_PLAY_MAYBE)) {
+        normalCaptured.addSource(gameSounds.normalCapturedWav().getSafeUri()
+            .asString(), AudioElement.TYPE_WAV);
+      }
+      if (normalCaptured.canPlayType(AudioElement.TYPE_MP3).equals(
+          AudioElement.CAN_PLAY_PROBABLY)
+          || normalCaptured.canPlayType(AudioElement.TYPE_MP3).equals(
+              AudioElement.CAN_PLAY_MAYBE)) {
+        normalCaptured.addSource(gameSounds.normalCapturedMp3().getSafeUri()
+            .asString(), AudioElement.TYPE_WAV);
+      }
+
       pieceDown = Audio.createIfSupported();
       pieceDown.setControls(false);
-      if (pieceDown.canPlayType(AudioElement.TYPE_WAV).equals(AudioElement.CAN_PLAY_PROBABLY)
-          || pieceDown.canPlayType(AudioElement.TYPE_WAV).equals(AudioElement.CAN_PLAY_MAYBE)) {
-        pieceDown.addSource(
-            gameSounds.pieceDownWav().getSafeUri().asString(), AudioElement.TYPE_WAV);
+      if (pieceDown.canPlayType(AudioElement.TYPE_WAV).equals(
+          AudioElement.CAN_PLAY_PROBABLY)
+          || pieceDown.canPlayType(AudioElement.TYPE_WAV).equals(
+              AudioElement.CAN_PLAY_MAYBE)) {
+        pieceDown.addSource(gameSounds.pieceDownWav().getSafeUri().asString(),
+            AudioElement.TYPE_WAV);
       }
-      if (pieceDown.canPlayType(AudioElement.TYPE_MP3).equals(AudioElement.CAN_PLAY_PROBABLY)
-          || pieceDown.canPlayType(AudioElement.TYPE_MP3).equals(AudioElement.CAN_PLAY_MAYBE)) {
-        pieceDown.addSource(
-            gameSounds.pieceDownMp3().getSafeUri().asString(), AudioElement.TYPE_WAV);
+      if (pieceDown.canPlayType(AudioElement.TYPE_MP3).equals(
+          AudioElement.CAN_PLAY_PROBABLY)
+          || pieceDown.canPlayType(AudioElement.TYPE_MP3).equals(
+              AudioElement.CAN_PLAY_MAYBE)) {
+        pieceDown.addSource(gameSounds.pieceDownMp3().getSafeUri().asString(),
+            AudioElement.TYPE_WAV);
       }
-      
+
       pieceCaptured = Audio.createIfSupported();
       pieceCaptured.setControls(false);
-      if (pieceCaptured.canPlayType(AudioElement.TYPE_WAV).equals(AudioElement.CAN_PLAY_PROBABLY)
-          || pieceCaptured.canPlayType(AudioElement.TYPE_WAV).equals(AudioElement.CAN_PLAY_MAYBE)) {
-        pieceCaptured.addSource(
-            gameSounds.pieceDownWav().getSafeUri().asString(), AudioElement.TYPE_WAV);
+      if (pieceCaptured.canPlayType(AudioElement.TYPE_WAV).equals(
+          AudioElement.CAN_PLAY_PROBABLY)
+          || pieceCaptured.canPlayType(AudioElement.TYPE_WAV).equals(
+              AudioElement.CAN_PLAY_MAYBE)) {
+        pieceCaptured.addSource(gameSounds.pieceDownWav().getSafeUri()
+            .asString(), AudioElement.TYPE_WAV);
       }
-      if (pieceCaptured.canPlayType(AudioElement.TYPE_MP3).equals(AudioElement.CAN_PLAY_PROBABLY)
-          || pieceCaptured.canPlayType(AudioElement.TYPE_MP3).equals(AudioElement.CAN_PLAY_MAYBE)) {
-        pieceCaptured.addSource(
-            gameSounds.pieceDownMp3().getSafeUri().asString(), AudioElement.TYPE_WAV);
+      if (pieceCaptured.canPlayType(AudioElement.TYPE_MP3).equals(
+          AudioElement.CAN_PLAY_PROBABLY)
+          || pieceCaptured.canPlayType(AudioElement.TYPE_MP3).equals(
+              AudioElement.CAN_PLAY_MAYBE)) {
+        pieceCaptured.addSource(gameSounds.pieceDownMp3().getSafeUri()
+            .asString(), AudioElement.TYPE_WAV);
       }
     }
   }
@@ -107,10 +151,10 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       final List<Piece> cells) {
 
     List<Image> res = Lists.newArrayList();
-    
+
     // Add click handler to each cell image
     for (int i = 0; i < banqiImages.size(); i++) {
-      BanqiImage img = banqiImages.get(i);      
+      BanqiImage img = banqiImages.get(i);
       final BanqiImage imgFinal = img;
       Image image = new Image(banqiImageSupplier.getResource(img));
       int row = i / 8 + 1;
@@ -118,7 +162,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       // Add the cell image
       image.setAltText(row + "," + col);
       // Change the image size for mobile device...
-//      image.setPixelSize(70, 70);
+      // image.setPixelSize(70, 70);
       image.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -203,15 +247,15 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     playerArea.clear();
     // Clear the board
     board.clear();
-    
- // Place the boardIamge first
+
+    // Place the boardIamge first
     BanqiImage boardBanqiImage = BanqiImage.Factory.getBoardImage();
     Image boardImage = new Image(
         banqiImageSupplier.getResource(boardBanqiImage));
     // Set the board
     board.setSize(boardImage.getWidth() + "px", boardImage.getHeight() + "px");
     board.add(boardImage, 0, 0);
-    
+
     // Initialize the drag controller
     PickupDragController dragCtrl = new PickupDragController(board, false);
     dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
@@ -225,7 +269,8 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
         // Get the dragger's position
         Position startPos = getPosition((Image) event.getContext().draggable);
         // Convert the coordinate from row/col to index (0-31)
-        int indexOfDropper = stateExplorer.convertToIndex(startPos.getRow(), startPos.getCol());
+        int indexOfDropper = stateExplorer.convertToIndex(startPos.getRow(),
+            startPos.getCol());
 
         presenter.setFromCellIndex(indexOfDropper);
       }
@@ -266,23 +311,24 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
           // Get the target's position
           Position target = getPosition((Image) image);
           // Get the target's square ID (position in the board).
-          int cellIndex = stateExplorer.convertToIndex(target.getRow(), target.getCol());
+          int cellIndex = stateExplorer.convertToIndex(target.getRow(),
+              target.getCol());
           int fromCellIndex = presenter.getFromCellIndex();
           presenter.cellSelected(fromCellIndex, true);
           presenter.cellSelected(cellIndex, true);
         }
-      };      
+      };
       dragCtrl.registerDropController(dropController);
     }
-    
+
     // Place the board onto the playerArea
     playerArea.add(board);
   }
-  
+
   /** Convert all possible start cell from row/col base to index base (0-31). */
   public List<Integer> convertFromPosToIndex(
       Set<Position> possibleStartPositions) {
-    
+
     List<Integer> possibleStartIndexOfCells = new ArrayList<Integer>();
     // Get all possible start positions and convert them into indexes
     for (Position pos : possibleStartPositions) {
@@ -300,9 +346,10 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
    */
   public List<Integer> convertTargetMoveToIndex(
       Set<Move> possibleMovesFromPosition) {
-    
+
     List<Integer> possibleTargetIndexOfCells = new ArrayList<Integer>();
-    // Get all possible moves from the start position and retrieve all target indexes
+    // Get all possible moves from the start position and retrieve all target
+    // indexes
     for (Move move : possibleMovesFromPosition) {
       Position toPos = move.getTo();
       int row = toPos.getRow();
@@ -313,20 +360,20 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     return possibleTargetIndexOfCells;
   }
 
-  /** Return the image position. */ 
+  /** Return the image position. */
   public Position getPosition(Image image) {
     String[] coords = image.getAltText().split(",");
     int row = Integer.parseInt(coords[0]);
     int col = Integer.parseInt(coords[1]);
     return new Position(row, col);
   }
-  
-//  /** Print debug info in the console. */
-//  public static native void console(String text)
-//  /*-{
-//      console.log(text);
-//  }-*/;
-  
+
+  // /** Print debug info in the console. */
+  // public static native void console(String text)
+  // /*-{
+  // console.log(text);
+  // }-*/;
+
   @Override
   public void setPresenter(BanqiPresenter banqiPresenter) {
     this.presenter = banqiPresenter;
@@ -420,13 +467,16 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     ImageResource startRes;
     ImageResource endRes;
     ImageResource blankRes;
-
+    boolean isCannon = false;
     // The first selected cell
     if (cells.get(startCoord).isPresent()) {
       // The cell does not contain a face down piece
       startImg = BanqiImage.Factory.getNormalPieceImage(cells.get(startCoord)
           .get(), startCoord);
       startRes = banqiImageSupplier.getResource(startImg);
+      if (cells.get(startCoord).get().getKind() == Piece.Kind.CANNON) {
+        isCannon = true;
+      }
     } else {
       // The cell containes a face down piece
       startImg = BanqiImage.Factory.getBackOfPieceImage(startCoord);
@@ -457,9 +507,10 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     blankRes = banqiImageSupplier.getResource(BanqiImage.Factory
         .getEmptyCellImage(null, 0));
 
+    Audio audio = isCapture ? (isCannon ? cannonCaptured : normalCaptured) : pieceDown;
+    
     PieceMovingAnimation animation = new PieceMovingAnimation(startImage,
-        endImage, startRes, endRes, blankRes, isCapture ? pieceCaptured
-            : pieceDown, isDnd);
+        endImage, startRes, endRes, blankRes, audio, isDnd);
 
     // Only perfomr the animation if the player make the move by click instead
     // of drag and drop
