@@ -31,9 +31,21 @@ The description and rules of this game can be found at [wikipedia] (http://en.wi
 - Changed to mobile UI
 - Standalone, no need to use emulator for this version
 - Need to play horizontally, tested in iPhone 5s.
-- Know bugs:
+- Known bugs:
   - No sound
   - Popup error during the first move and drag and drop
+
+### [2.9] (http://2-9-dot-banqi-smg.appspot.com/)
+- HW9 and HW10
+- For testing or playing without emulator : [2.8] (http://2-8-dot-banqi-smg.appspot.com/)
+- Since there's really no string for i18n, so i18n is not implemented...
+- Auto resize to fit the browser.
+- Auto change to landscape if the browser's width is less than the game's, in another word it will only effects in mobile phone. (Tested in iPhone 5s...)
+- Change the sound of capture piece to a more suitable one, except for the cannon which still booooms...
+- Known bugs:
+  - Due to the bug of gwt-dnd, drag and drop won't work... (Yet it is not deleted)
+  - No sound in mobile device.
+  - Popup error during the first move and drag and drop (possiblely caused by the sound...), yet the move is valid and everything back to normal after...
 
 
 ## Instruction
