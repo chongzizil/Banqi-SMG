@@ -39,8 +39,8 @@ import com.googlecode.mgwt.ui.client.widget.Button;
  */
 public class BanqiEntryPoint implements EntryPoint {
   
-//    ContainerConnector container;
-  IteratingPlayerContainer container;
+    ContainerConnector container;
+//  IteratingPlayerContainer container;
   BanqiPresenter banqiPresenter;
   
   @Override
@@ -57,61 +57,62 @@ public class BanqiEntryPoint implements EntryPoint {
       }
     };
     
-//    container = new ContainerConnector(game);
-    container = new IteratingPlayerContainer(game, 2);
+    container = new ContainerConnector(game);
+//    container = new IteratingPlayerContainer(game, 2);
     
     BanqiGraphics banqiGraphics = new BanqiGraphics();
     banqiPresenter = new BanqiPresenter(banqiGraphics, container);
     
     ///////////////////For test withou emulator//////////////////////
     // Most of button codes copied from http://bit.ly/1i5W9M4
-    final HorizontalPanel buttonGroup = new HorizontalPanel();
     
-    final ButtonCss buttonCss = MGWTStyle.getTheme().getMGWTClientBundle().getButtonCss();
-    final Button redPlayer = new Button("Red player");
-    final Button blackPlayer = new Button("Black player");
-    final Button viewer = new Button("Viewer"); 
-    redPlayer.setSmall(true);
-    blackPlayer.setSmall(true);
-    viewer.setSmall(true);
-    
-    redPlayer.addTapHandler(new TapHandler() {
-      @Override
-      public void onTap(TapEvent event) {
-        container.updateUi(container.getPlayerIds().get(0));
-        redPlayer.addStyleName(buttonCss.active());
-        blackPlayer.removeStyleName(buttonCss.active());
-        viewer.removeStyleName(buttonCss.active());
-      }                    
-    });
-    
-    blackPlayer.addTapHandler(new TapHandler() {
-      @Override
-      public void onTap(TapEvent event) {
-        container.updateUi(container.getPlayerIds().get(1));
-        blackPlayer.addStyleName(buttonCss.active());
-        redPlayer.removeStyleName(buttonCss.active());
-        viewer.removeStyleName(buttonCss.active());
-      }                    
-    });
-    
-    viewer.addTapHandler(new TapHandler() {
-      @Override
-      public void onTap(TapEvent event) {
-        container.updateUi(GameApi.VIEWER_ID);
-        viewer.addStyleName(buttonCss.active());
-        redPlayer.removeStyleName(buttonCss.active());
-        blackPlayer.removeStyleName(buttonCss.active());
-      }                    
-    }); 
-    
-    buttonGroup.add(redPlayer);
-    buttonGroup.add(blackPlayer);
-    buttonGroup.add(viewer);
-   
-    FlowPanel flowPanel = new FlowPanel();
-    flowPanel.add(banqiGraphics);
-    flowPanel.add(buttonGroup);
+//    final HorizontalPanel buttonGroup = new HorizontalPanel();
+//    
+//    final ButtonCss buttonCss = MGWTStyle.getTheme().getMGWTClientBundle().getButtonCss();
+//    final Button redPlayer = new Button("Red player");
+//    final Button blackPlayer = new Button("Black player");
+//    final Button viewer = new Button("Viewer"); 
+//    redPlayer.setSmall(true);
+//    blackPlayer.setSmall(true);
+//    viewer.setSmall(true);
+//    
+//    redPlayer.addTapHandler(new TapHandler() {
+//      @Override
+//      public void onTap(TapEvent event) {
+//        container.updateUi(container.getPlayerIds().get(0));
+//        redPlayer.addStyleName(buttonCss.active());
+//        blackPlayer.removeStyleName(buttonCss.active());
+//        viewer.removeStyleName(buttonCss.active());
+//      }                    
+//    });
+//    
+//    blackPlayer.addTapHandler(new TapHandler() {
+//      @Override
+//      public void onTap(TapEvent event) {
+//        container.updateUi(container.getPlayerIds().get(1));
+//        blackPlayer.addStyleName(buttonCss.active());
+//        redPlayer.removeStyleName(buttonCss.active());
+//        viewer.removeStyleName(buttonCss.active());
+//      }                    
+//    });
+//    
+//    viewer.addTapHandler(new TapHandler() {
+//      @Override
+//      public void onTap(TapEvent event) {
+//        container.updateUi(GameApi.VIEWER_ID);
+//        viewer.addStyleName(buttonCss.active());
+//        redPlayer.removeStyleName(buttonCss.active());
+//        blackPlayer.removeStyleName(buttonCss.active());
+//      }                    
+//    }); 
+//    
+//    buttonGroup.add(redPlayer);
+//    buttonGroup.add(blackPlayer);
+//    buttonGroup.add(viewer);
+//   
+//    FlowPanel flowPanel = new FlowPanel();
+//    flowPanel.add(banqiGraphics);
+//    flowPanel.add(buttonGroup);
 
 //  final ListBox playerSelect = new ListBox();
 //  playerSelect.addItem("RedPlayer");
@@ -130,17 +131,17 @@ public class BanqiEntryPoint implements EntryPoint {
 //  layoutPanel.add(banqiGraphics);
 //  layoutPanel.add(playerSelect);
     
-    RootPanel.get("mainDiv").add(flowPanel);
-    container.sendGameReady();
-    container.updateUi(container.getPlayerIds().get(0));
+//    RootPanel.get("mainDiv").add(flowPanel);
+//    container.sendGameReady();
+//    container.updateUi(container.getPlayerIds().get(0));
     ////////////////////////////////////////////////////////////////////////
     
 
-//    RootPanel.get("mainDiv").add(banqiGraphics);
-//    container.sendGameReady();
+    RootPanel.get("mainDiv").add(banqiGraphics);
+    container.sendGameReady();
     
     
-    
+   
     
     
     
@@ -172,4 +173,10 @@ public class BanqiEntryPoint implements EntryPoint {
 //    test.add(board);
 //    RootPanel.get("mainDiv").add(board);
   }
+  
+  /** Print debug info in the console. */
+  public static native void console(String text)
+  /*-{
+      console.log(text);
+  }-*/;
 }

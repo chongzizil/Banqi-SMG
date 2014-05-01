@@ -299,7 +299,7 @@ public class BanqiLogic {
       expectedOperations.add(new EndGame(state.getPlayerId(winnerColor)));
     } else if (winnerColor == turnOfColor.getOppositeColor()) {
       expectedOperations.add(new SetTurn(state.getPlayerId(winnerColor.getOppositeColor())));
-      expectedOperations.add(new EndGame(state.getPlayerId(winnerColor.getOppositeColor())));
+      expectedOperations.add(new EndGame(state.getPlayerId(winnerColor)));
     }
     return expectedOperations;
   }

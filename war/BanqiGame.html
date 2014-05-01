@@ -19,11 +19,11 @@
 <div id="mainDiv" style="height: 800px; width: 400px;"></div>
 <script>
   var scaleBody = function (myGameWidth, myGameHeight) {
-    console.log("Start scaling...");
+    /*console.log("Start scaling...");
     console.log("Width: " + window.innerWidth);
     console.log("Height: " + window.innerHeight);
     console.log("Game width: " + $("#mainDiv").width());
-    console.log("Game height: " + $("#mainDiv").height());
+    console.log("Game height: " + $("#mainDiv").height());*/
     var scaleX = window.innerWidth / myGameWidth;
     var scaleY = window.innerHeight / myGameHeight;
     var scale = Math.min(scaleX, scaleY);
@@ -39,24 +39,24 @@
     document.body.style['-webkit-transform-origin'] = transformOriginString;
     document.body.style['-moz-transform-origin'] = transformOriginString;
     document.body.style['-ms-transform-origin'] = transformOriginString;
-    console.log("Game width: " + $("#mainDiv").width());
+    /*console.log("Game width: " + $("#mainDiv").width());
     console.log("Game height: " + $("#mainDiv").height());
-    console.log("Scaled...");
+    console.log("Scaled...");*/
   };
 
   $(document).ready(function () {
     function reorient(e) {
       var mainDivWidth = $("#mainDiv").width();
       var mainDivHeight = $("#mainDiv").height();
-      console.log("Game width: " + mainDivWidth);
-      console.log("Game height: " + mainDivHeight);
+      /*console.log("Game width: " + mainDivWidth);
+      console.log("Game height: " + mainDivHeight);*/
       if (window.innerWidth < 800 || window.innerHeight < 400) {
-        console.log("Start rotating...");
+        //console.log("Start rotating...");
         var portrait = (window.orientation === 90 || window.orientation === 270);
         $("#mainDiv").css("-webkit-transform",
             !portrait ? "rotate(90deg)" : "");
         if (!portrait) {
-          console.log("Woking...");
+          //console.log("Woking...");
           var width = $("#mainDiv").width();
           var height = $("#mainDiv").height();
           var marginLeft = (width - height) / 2;
@@ -67,7 +67,7 @@
                   marginTop + "px");
           scaleBody(400, 800);
         } else {
-          console.log("Woking...");
+          //console.log("Woking...");
           var width = $("#mainDiv").width();
           var height = $("#mainDiv").height();
           var marginLeft = 0;
@@ -78,7 +78,7 @@
                   marginTop + "px");
           scaleBody(800, 400);
         }
-        console.log("Rotated...");
+        //console.log("Rotated...");
       } else {
         scaleBody(800, 400);
       }

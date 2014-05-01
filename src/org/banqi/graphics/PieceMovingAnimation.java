@@ -40,10 +40,12 @@ public class PieceMovingAnimation extends Animation {
     endY = (endRow - 1) * end.getHeight();
 //    startX = panel.getWidgetLeft(start);
 //    startY = panel.getWidgetTop(start);
-    console("Start X: " + startX);
-    console("Start Y: " + startY);
-    console("End X: " + endX);
-    console("End Y: " + endY);
+//    console("Height: " + start.getHeight());
+//    console("Width: " + start.getWidth());
+//    console("Start X: " + startX);
+//    console("Start Y: " + startY);
+//    console("End X: " + endX);
+//    console("End Y: " + endY);
 //    endX = panel.getWidgetLeft(end);
 //    endY = panel.getWidgetTop(end);
     startWidth = startImage.getWidth();
