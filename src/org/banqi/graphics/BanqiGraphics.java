@@ -257,7 +257,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     board.add(boardImage, 0, 0);
 
     // Initialize the drag controller
-    PickupDragController dragCtrl = new PickupDragController(board, false);
+    /*PickupDragController dragCtrl = new PickupDragController(board, false);
     dragCtrl.setBehaviorConstrainedToBoundaryPanel(true);
     dragCtrl.setBehaviorMultipleSelection(false);
     dragCtrl.setBehaviorDragStartSensitivity(3);
@@ -274,7 +274,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
 
         presenter.setFromCellIndex(indexOfDropper);
       }
-    });
+    });*/
 
     // Get all possible start positions
     Set<Position> possibleStartPositions = stateExplorer
@@ -297,13 +297,13 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       // If it's the player's turn, add the possible start position's
       // piece to drag controller so the player can perform drag on the valid
       // pieces only.
-      if (myColor != null && myColor.name().equals(turnColor.name())) {
+      /*if (myColor != null && myColor.name().equals(turnColor.name())) {
         if (possibleStartIndexOfSquare.contains(i)) {
           dragCtrl.makeDraggable(images.get(i));
         }
-      }
+      }*/
       final Image image = images.get(i);
-      SimpleDropController dropController = new SimpleDropController(image) {
+      /*SimpleDropController dropController = new SimpleDropController(image) {
 
         @Override
         public void onDrop(DragContext context) {
@@ -318,7 +318,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
           presenter.cellSelected(cellIndex, true);
         }
       };
-      dragCtrl.registerDropController(dropController);
+      dragCtrl.registerDropController(dropController);*/
     }
 
     // Place the board onto the playerArea

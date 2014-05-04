@@ -160,8 +160,10 @@ public class BanqiPresenter {
         // The game is not over, make the move :)
         Heuristic heuristic = new Heuristic();
         AlphaBetaPruning ai = new AlphaBetaPruning(heuristic, banqiState);
-        // The move of the AI takes at most 0.75 second
-        DateTimer timer = new DateTimer(750);
+        
+        // The move of the AI takes at most 0.5 second
+        DateTimer timer = new DateTimer(500);
+        
         // The depth is 4 though due to the time limit, it may not reach that deep
         Move move = ai.findBestMove(4, timer);
         

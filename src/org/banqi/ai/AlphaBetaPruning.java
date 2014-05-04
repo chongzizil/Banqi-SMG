@@ -132,7 +132,18 @@ public class AlphaBetaPruning {
     }
 
     Collections.sort(scores);
-    return scores.get(0).move;
+    
+    Move bestMove = scores.get(0).move;
+    
+    // Choose a capture move first if it's not too bad...
+    for (MoveScore<Move> ms : scores) {
+      if (ms.move.getType() == Move.Type.CAPTURE && scores.get(0).score - ms.score < 6) {
+        bestMove = ms.move;
+        break;
+      }
+    }
+    
+    return bestMove;
   }
 
   /**
@@ -153,9 +164,14 @@ public class AlphaBetaPruning {
     if (depth == 0 || state.hasGameEnded()) {
       // The weight of a capture move should be much more than other moves otherwise the AI
       // will always assume turn is the best move based on a random full state.
-      if (isCapture) {
-        return (int) (heuristic.getStateValue(state) + 15);
-      }
+      // TODO: Adjust later...
+//      if (isCapture) {
+//        if (Color.B == state.getTurn()) {
+//          return heuristic.getStateValue(state) - 8;
+//        } else {
+//          return heuristic.getStateValue(state) + 8;
+//        }
+//      }
       return heuristic.getStateValue(state);
     }
 
