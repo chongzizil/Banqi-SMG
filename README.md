@@ -47,6 +47,17 @@ The description and rules of this game can be found at [wikipedia] (http://en.wi
   - No sound in mobile device.
   - Popup error during the first move and drag and drop (possiblely caused by the sound...), yet the move is valid and everything back to normal after...
 
+### [3.0] (http://3.banqi-smg.appspot.com/)
+- HW10 (AI Part...)
+- DND is deleted due to its bug when implementing the auto scale.
+- The response time of the AI is 0.5s.
+- The depth is 4. (It will at least reach depth 2, yet due to time limit, it may not reach depth 4.)
+- Since it's a imperfect game, each time before the AI caculates the move, it first will caculate a full (perfect) state for following caculation. (So the AI also have to guess...)
+- Problem
+  - Since the AI caculates the move base on a fake full state, at first it will always do a turn move instead of do a capture or simply move a piece. I manually force it to choose a move of capture if the state value is not too bad...
+- Known bugs:
+  - Same as previous...
+
 
 ## Instruction
 
@@ -56,12 +67,15 @@ For the version later than 1.2.0, you need either the emulator or the container 
 
 #### Use the emulator
 - [GWT-Emulator] (http://smg-gwt-emulator.appspot.com/GwtEmulator.html)
-- [AngularJS-Emulator] (http://4.smg-angularjs-emulator.appspot.com/)
+- [AngularJS-Emulator] (http://smg-angularjs-emulator.appspot.com/)
 
 Warning: The animation can not be properly performed in the latest version (V4 & V3) of GWT-Emulator.
 
-#### Use the container
-- [GWT-Container] (http://5-dot-smg-gwt-container.appspot.com/demo.html)
+#### Use the website 
+- [Login Page] (http://7.smg-server.appspot.com/login.html)
+
+#### Use the container 
+- [GWT-Container] (http://smg-gwt-container.appspot.com/demo.html)
 - [AngularJS-Container] (http://smg-angularjs-container.appspot.com/#/) (My SMG team project, check [here] (https://github.com/chongzizil/SMG-AngularJS-Container) :) )
 
 ## Thanks
