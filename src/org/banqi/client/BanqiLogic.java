@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 public class BanqiLogic {
 
   private static final String C = "C";
+  private static final String O = "O";
   private static final List<Integer> INVISIBLE = new ArrayList<Integer>();
   private static final String EMPTYCELL = "eemp";
   private static final String TURNPIECE = "turnPiece";
@@ -157,7 +158,7 @@ public class BanqiLogic {
 
   /** Returns the operations for moving a piece (e.g., I move a piece from S0 to S1). */
   List<Operation> getMovePieceOperation(BanqiState state, Set move) {
-    ImmutableList<Optional<Piece>> cells = state.getCells();
+    List<Optional<Piece>> cells = state.getCells();
     Color turnOfColor = state.getTurn();
     
     @SuppressWarnings("unchecked")
@@ -202,7 +203,7 @@ public class BanqiLogic {
   
   /** Returns the operations for turning a piece (e.g., I turn a piece up at S0). */
   List<Operation> getTurnPieceOperation(BanqiState state, Set move) {
-    ImmutableList<Optional<Piece>> cells = state.getCells();
+    List<Optional<Piece>> cells = state.getCells();
     Color turnOfColor = state.getTurn();
     
     String coord = (String) move.getValue();
@@ -224,7 +225,7 @@ public class BanqiLogic {
   
   /** Returns the operations for capturing a piece (e.g., I use P0 at S0 to capture P1 at S1). */
   List<Operation> getCapturePieceOperation(BanqiState state, Set move) {
-    ImmutableList<Optional<Piece>> cells = state.getCells();
+    List<Optional<Piece>> cells = state.getCells();
     Color turnOfColor = state.getTurn();
     
     @SuppressWarnings("unchecked")
@@ -263,11 +264,18 @@ public class BanqiLogic {
     // Check if the capture move is valid
     check(canCapture(cells, fromCoord, toCoord));
     
+    // Update the captured pieces list
+    String capturedPieceString = toPiece.getPieceFourLetterString();
+    List<String> capturedPiecesList = getCapturedPiecesString(state.getCapturedPieces());
+    capturedPiecesList.add(capturedPieceString);
+    
     List<Operation> expectedOperations = Lists.newArrayList();
     expectedOperations.add(new SetTurn(state.getPlayerId(turnOfColor.getOppositeColor())));
     expectedOperations.add(new Set(CAPTUREPIECE, ImmutableList.of(C + fromCoord, C + toCoord)));
     expectedOperations.add(new Set(C + fromCoord, EMPTYCELL));
-    expectedOperations.add(new Set(C + toCoord, fromPiece.getPieceFourLetterString())); 
+    expectedOperations.add(new Set(C + toCoord, fromPiece.getPieceFourLetterString()));
+    expectedOperations.add(new Set(O, capturedPiecesList));
+    
     return expectedOperations;
   }
   
@@ -403,7 +411,20 @@ public class BanqiLogic {
       operations.add(new SetVisibility(C + i, INVISIBLE));
     }
     
+    operations.add(new Set(O, ImmutableList.of()));
+    
     return operations;
+  }
+  
+  /**
+   * Convert the list of Pieces to the list of piece strings.
+   */
+  public List<String> getCapturedPiecesString(List<Piece> capturedPieces) {
+    List<String> capturedPiecesString = new ArrayList<String>();
+    for (Piece piece : capturedPieces) {
+      capturedPiecesString.add(piece.getPieceFourLetterString());
+    }
+    return capturedPiecesString;
   }
   
   /**
@@ -412,7 +433,8 @@ public class BanqiLogic {
   BanqiState gameApiStateToBanqiState(Map<String, Object> gameApiState,
       Color turnOfColor, List<String> playerIds) {
     List<Optional<Piece>> cells = Lists.newArrayList();
-   
+    List<Piece> capturedPieces = Lists.newArrayList();
+    
     for (int i = 0; i < 32; i++) {
       String pieceString = (String) gameApiState.get(C + i);
       if (pieceString != null) {
@@ -424,10 +446,22 @@ public class BanqiLogic {
       }
     }
     
+    @SuppressWarnings("unchecked")
+    List<String> capturedPiecesString = (List<String>) gameApiState.get(O);
+
+    for (String pieceString : capturedPiecesString) {
+      String pieceColor = pieceString.substring(0, 1);
+      String pieceKind = pieceString.substring(1);
+      Piece piece = new Piece(Piece.Kind.fromFirstThreeLetterLowerCase(pieceKind),
+          Piece.PieceColor.fromFirstLetterLowerCase(pieceColor));
+      capturedPieces.add(piece);
+    }
+
     return new BanqiState(
         turnOfColor,
         ImmutableList.copyOf(playerIds),
-        ImmutableList.copyOf(cells)
+        ImmutableList.copyOf(cells),
+        ImmutableList.copyOf(capturedPieces)
     );
   }
   

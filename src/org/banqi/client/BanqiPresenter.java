@@ -2,6 +2,9 @@ package org.banqi.client;
 
 import java.util.List;
 
+import org.banqi.ai.AlphaBetaPruning;
+import org.banqi.ai.DateTimer;
+import org.banqi.ai.Heuristic;
 import org.game_api.GameApi.Container;
 import org.game_api.GameApi.Operation;
 import org.game_api.GameApi.Set;
@@ -83,6 +86,7 @@ public class BanqiPresenter {
   private final View view;
   private final Container container;
   /** A viewer doesn't have a color. */
+  boolean hasAiMakeMove = false;
   private Optional<Color> myColor;
   private BanqiState banqiState;
   private List<Integer> selectedCells;
@@ -147,21 +151,47 @@ public class BanqiPresenter {
     }
 
     if (updateUI.isAiPlayer()) {
-      // TODO: implement AI in a later HW!
-      // container.sendMakeMove(..);
+//      if (!hasAiMakeMove) {
+//        hasAiMakeMove = true;
+      if (banqiState.hasGameEnded()) {
+        // The game is over, send the endGame operation
+        endGame();
+      } else {
+        // The game is not over, make the move :)
+        Heuristic heuristic = new Heuristic();
+        AlphaBetaPruning ai = new AlphaBetaPruning(heuristic, banqiState);
+        // The move of the AI takes at most 0.75 second
+        DateTimer timer = new DateTimer(750);
+        // The depth is 4 though due to the time limit, it may not reach that deep
+        Move move = ai.findBestMove(4, timer);
+        
+        // AI make the move.
+        int selectedFromCoord = ((move.getFrom().getRow() - 1) * 8 + move.getFrom().getCol()) - 1;
+        int selectedToCoord = ((move.getTo().getRow() - 1) * 8 + move.getTo().getCol()) - 1;
+        if (move.getType() == Move.Type.CAPTURE) {
+          Set capturePiece = new Set(CAPTUREPIECE, ImmutableList.of("C"
+              + selectedFromCoord, "C" + selectedToCoord));
+          capturePiece(capturePiece);
+        } else if (move.getType() == Move.Type.MOVE) {
+          Set movePiece = new Set(MOVEPIECE, ImmutableList.of("C"
+              + selectedFromCoord, "C" + selectedToCoord));
+          movePiece(movePiece);
+        } else {
+          Set turnPiece = new Set(TURNPIECE, "C" + selectedFromCoord);
+          turnPiece(turnPiece);
+        }
+      }
+//      } 
       return;
     }
 
     // Must be a player!
 
-    boolean hasBlack = banqiState.hasRedOrBlackPieces(Color.B);
-    boolean hasRed = banqiState.hasRedOrBlackPieces(Color.R);
-    boolean hasFacingDownPieces = banqiState.hasFacingDownPiece();
-
     // Set the view
     view.setPlayerState(getAllCells(banqiState));
     if (isMyTurn()) {
-      if ((hasBlack ^ hasRed) && !hasFacingDownPieces) {
+//      hasAiMakeMove = false;
+      if (banqiState.hasGameEnded()) {
         // The game is over, send the endGame operation
         endGame();
       } else {
@@ -173,7 +203,7 @@ public class BanqiPresenter {
 
   /** Get all cells from the state. */
   List<Piece> getAllCells(BanqiState banqiState) {
-    ImmutableList<Optional<Piece>> cells = banqiState.getCells();
+    List<Optional<Piece>> cells = banqiState.getCells();
     List<Piece> newCells = Lists.newArrayList();
     for (int i = 0; i < 32; i++) {
       if (cells.get(i).isPresent()) {
@@ -211,13 +241,11 @@ public class BanqiPresenter {
         int selectedCoord = cellIndex;
         Set turnPiece = new Set(TURNPIECE, "C" + selectedCoord);
         // ************************* make move start *************************
-        // //
         // Set the arguments for the animation
         view.setAnimateArgs(cells, selectedCoord, selectedCoord, false, isDnd);
         // Make the turnPiece move
         turnPiece(turnPiece);
         // ************************** make move end **************************
-        // //
       } else if (cells.get(cellIndex).get().getKind() != Piece.Kind.EMPTY) {
         // The cell contains a face up piece
         if (cells.get(cellIndex).get().getPieceColor().name().substring(0, 1)
@@ -244,15 +272,13 @@ public class BanqiPresenter {
           if (banqiLogic.isMoveCoordLegal(selectedFromCoord, selectedToCoord)) {
             Set movePiece = new Set(MOVEPIECE, ImmutableList.of("C"
                 + selectedFromCoord, "C" + selectedToCoord));
-            // ************************* make move start
-            // ************************* //
+            // ************************* make move start *************************
             // Set the arguments for the animation
             view.setAnimateArgs(cells, selectedFromCoord, selectedToCoord,
                 false, isDnd);
             // Make the movePiece move
             movePiece(movePiece);
-            // ************************** make move end
-            // ************************** //
+            // ************************** make move end **************************
           } else {
             chooseNextCell();
           }
@@ -271,15 +297,13 @@ public class BanqiPresenter {
                 .canCapture(cells, selectedFromCoord, selectedToCoord)) {
               Set capturePiece = new Set(CAPTUREPIECE, ImmutableList.of("C"
                   + selectedFromCoord, "C" + selectedToCoord));
-              // ************************* make move start
-              // ************************* //
+              // ************************* make move start *************************
               // Set the arguments for the animation
               view.setAnimateArgs(cells, selectedFromCoord, selectedToCoord,
                   true, isDnd);
               // Make the capturePiece move
               capturePiece(capturePiece);
-              // ************************** make move end
-              // ************************** //
+              // ************************** make move end **************************
             } else {
               chooseNextCell();
             }

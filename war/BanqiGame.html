@@ -2,31 +2,32 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Banqi game</title>
   <style type="text/css" media="only screen and (max-device-width: 480px)">
     body > div {
       -webkit-transition: all 1s ease-in-out;
     }
   </style>
-  <script type="text/javascript" language="javascript"
-          src="banqi_game/banqi_game.nocache.js"></script>
-  <script
-      src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script type="text/javascript" language="javascript" src="banqi_game/banqi_game.nocache.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 </head>
+
 <body>
+<!-- Main div for the game -->
 <div id="mainDiv" style="height: 800px; width: 400px;"></div>
+
+<!-- Javascript -->
 <script>
+  var scale;
+  var gameWidth = 400;
+  var gameHeight = 800;
+
+  // Auto scale the body regarding the size of the broswer or its parent container.
   var scaleBody = function (myGameWidth, myGameHeight) {
-    /*console.log("Start scaling...");
-    console.log("Width: " + window.innerWidth);
-    console.log("Height: " + window.innerHeight);
-    console.log("Game width: " + $("#mainDiv").width());
-    console.log("Game height: " + $("#mainDiv").height());*/
     var scaleX = window.innerWidth / myGameWidth;
     var scaleY = window.innerHeight / myGameHeight;
-    var scale = Math.min(scaleX, scaleY);
+    scale = Math.min(scaleX, scaleY);
     var transformString = "scale(" + scale + "," + scale + ")";
     document.body.style.transform = transformString;
     document.body.style['-o-transform'] = transformString;
@@ -39,59 +40,51 @@
     document.body.style['-webkit-transform-origin'] = transformOriginString;
     document.body.style['-moz-transform-origin'] = transformOriginString;
     document.body.style['-ms-transform-origin'] = transformOriginString;
-    /*console.log("Game width: " + $("#mainDiv").width());
-    console.log("Game height: " + $("#mainDiv").height());
-    console.log("Scaled...");*/
   };
 
   $(document).ready(function () {
+    // Reorient the game to make sure it's played in landscape mode.
     function reorient(e) {
-      var mainDivWidth = $("#mainDiv").width();
-      var mainDivHeight = $("#mainDiv").height();
-      /*console.log("Game width: " + mainDivWidth);
-      console.log("Game height: " + mainDivHeight);*/
-      if (window.innerWidth < 800 || window.innerHeight < 400) {
-        //console.log("Start rotating...");
+      var mainDiv = $("#mainDiv");
+      var mainDivWidth = mainDiv.width();
+      var mainDivHeight = mainDiv.height();
+      // The game will only be reoriented in mobile device.
+      if (window.innerWidth < gameHeight || window.innerHeight < gameWidth) {
         var portrait = (window.orientation === 90 || window.orientation === 270);
-        $("#mainDiv").css("-webkit-transform",
+        // Reorienting
+        mainDiv.css("-webkit-transform",
             !portrait ? "rotate(90deg)" : "");
+        // If the game is reoriented, move the game to the right place
         if (!portrait) {
-          //console.log("Woking...");
-          var width = $("#mainDiv").width();
-          var height = $("#mainDiv").height();
-          var marginLeft = (width - height) / 2;
-          var marginTop = (width - height) / 2;
-          $("#mainDiv").css("margin-left",
+        	//console.log("********* Before scaled");
+        	//console.log(mainDiv.offset());
+          // Auto scale the game
+          scaleBody(gameWidth, gameHeight);
+          //console.log("********* After scaled");
+          //console.log(mainDiv.offset());
+          var width = mainDiv.width();
+          var height = mainDiv.height();
+          var marginLeft = ((width - height) / 2);
+          var marginTop = ((width - height) / 2) * scale;
+          // Moving
+          mainDiv.css("margin-left",
                   marginLeft + "px");
-          $("#mainDiv").css("margin-top",
+          mainDiv.css("margin-top",
                   marginTop + "px");
-          scaleBody(400, 800);
+          //console.log("********* After moved");
+          //console.log(mainDiv.offset());
         } else {
-          //console.log("Woking...");
-          var width = $("#mainDiv").width();
-          var height = $("#mainDiv").height();
-          var marginLeft = 0;
-          var marginTop = 0;
-          $("#mainDiv").css("margin-left",
-                  marginLeft + "px");
-          $("#mainDiv").css("margin-top",
-                  marginTop + "px");
-          scaleBody(800, 400);
+          // Auto scale the game
+          scaleBody(gameHeight, gameWidth);
         }
-        //console.log("Rotated...");
       } else {
-        scaleBody(800, 400);
+        // Auto scale the game
+        scaleBody(gameHeight, gameWidth);
       }
     }
-
-//    window.onresize = reorient;
+    // Everytime the orientation changes, check if it needs reorient
     window.onorientationchange = reorient;
     window.setTimeout(reorient, 0);
-
-//    window.onresize = scaleBody;
-//    //window.onorientationchange = scaleBody;
-//    document.addEventListener("orientationchange", reorient);
-//    scaleBody();
   });
 </script>
 </body>

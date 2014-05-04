@@ -1,21 +1,30 @@
 package org.banqi.client;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.base.Objects;
 
 public class Move {
+  public enum Type {
+    CAPTURE,
+    TURN,
+    MOVE
+  }
+  
   private Position from;
   private Position to;
+  private Type typeValue;
 
   // MovePiece and CapturePiece
-  public Move(Position from, Position to) {
+  public Move(Position from, Position to, Type typeValue) {
     this.from = checkNotNull(from);
     this.to = checkNotNull(to);
+    this.typeValue = typeValue;
   }
 
   // TurnPiece
   public Move(Position from) {
-    this(from, from);
+    this(from, from, Type.TURN);
   }
 
   public Position getFrom() {
@@ -24,6 +33,10 @@ public class Move {
 
   public Position getTo() {
     return to;
+  }
+  
+  public Type getType() {
+    return typeValue;
   }
 
   @Override

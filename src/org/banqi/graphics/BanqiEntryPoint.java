@@ -63,9 +63,9 @@ public class BanqiEntryPoint implements EntryPoint {
     BanqiGraphics banqiGraphics = new BanqiGraphics();
     banqiPresenter = new BanqiPresenter(banqiGraphics, container);
     
-    ///////////////////For test withou emulator//////////////////////
-    // Most of button codes copied from http://bit.ly/1i5W9M4
-    
+//    ///////////////////For test withou emulator//////////////////////
+//    // Most of button codes copied from http://bit.ly/1i5W9M4
+//    
 //    final HorizontalPanel buttonGroup = new HorizontalPanel();
 //    
 //    final ButtonCss buttonCss = MGWTStyle.getTheme().getMGWTClientBundle().getButtonCss();
@@ -136,7 +136,7 @@ public class BanqiEntryPoint implements EntryPoint {
 //    container.updateUi(container.getPlayerIds().get(0));
     ////////////////////////////////////////////////////////////////////////
     
-
+//
     RootPanel.get("mainDiv").add(banqiGraphics);
     container.sendGameReady();
     

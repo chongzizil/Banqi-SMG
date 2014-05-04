@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 
 public class StateExplorerImpl implements StateExplorer {
   BanqiLogic banqiLogic = new BanqiLogic();
@@ -31,11 +30,18 @@ public class StateExplorerImpl implements StateExplorer {
   public Set<Move> getPossibleMovesFromPosition(BanqiState state, Position start) {
     Set<Move> moves = new HashSet<Move>();
     Set<Position> possibleMoveFromPosition = new HashSet<Position>();
-    ImmutableList<Optional<Piece>> cells = state.getCells();
+    List<Optional<Piece>> cells = state.getCells();
     int startRow = start.getRow();
     int startCol = start.getCol();
     int endRow = 0;
     int endCol = 0;
+    // If the piece is facing down, then there's only one move for that piece.
+    if (!cells.get(convertToIndex(startRow, startCol)).isPresent()) {
+      Move move = new Move(new Position(startRow, startCol));
+      moves.add(move);
+      return moves;
+    }
+
     Piece piece = cells.get(convertToIndex(startRow, startCol)).get();
     /*
      * Get all possible end position for the piece can verify each of them. If
@@ -173,8 +179,18 @@ public class StateExplorerImpl implements StateExplorer {
       }
     }
     for (Position pos : possibleMoveFromPosition) {
-      Move move = new Move(new Position(startRow, startCol), new Position(
-          pos.getRow(), pos.getCol()));
+      Move move = null;
+      Optional<Piece> targetPiece = state.getCells().get(
+          convertToIndex(pos.getRow(), pos.getCol()));
+      if (targetPiece.isPresent()
+          && targetPiece.get().getKind() != Piece.Kind.EMPTY) {
+        move = new Move(new Position(startRow, startCol), new Position(
+            pos.getRow(), pos.getCol()), Move.Type.CAPTURE);
+      } else if (targetPiece.isPresent()
+          && targetPiece.get().getKind() == Piece.Kind.EMPTY) {
+        move = new Move(new Position(startRow, startCol), new Position(
+            pos.getRow(), pos.getCol()), Move.Type.MOVE);
+      }
       moves.add(move);
     }
     return moves;
@@ -183,36 +199,38 @@ public class StateExplorerImpl implements StateExplorer {
   @Override
   public Set<Position> getPossibleStartPositions(BanqiState state) {
     Set<Position> startPositions = new HashSet<Position>();
-    ImmutableList<Optional<Piece>> cells = state.getCells();
+    List<Optional<Piece>> cells = state.getCells();
     Color turnOfColor = state.getTurn();
     // Check all pieces on the board
     for (int i = 0; i < 32; i++) {
+      int row = (i / 8) + 1;
+      int col = (i % 8) + 1;
+      Position currentPos = new Position(row, col);
       Optional<Piece> cell = cells.get(i);
+
       if (cell.isPresent() && cell.get().getKind() != Piece.Kind.EMPTY) {
         Piece piece = cell.get();
         if (piece.getPieceColor().name().substring(0, 1)
             .equals(turnOfColor.toString())) {
-          int row = (i / 8) + 1;
-          int col = (i % 8) + 1;
-          Position currentPos = new Position(row, col);
           if (!getPossibleMovesFromPosition(state, currentPos).isEmpty()) {
             startPositions.add(currentPos);
           }
         }
+      } else if (!cell.isPresent()) {
+        startPositions.add(currentPos);
       }
     }
 
     return startPositions;
   }
 
-  //Convert the gameApi coodinate(0-31) to row(1-4)/col(1-8) coordinate
-   public Position convertToCoord(int cellIndex) {
-     int row = cellIndex / 8 + 1;
-     int col = cellIndex % 8 + 1;
-     return new Position(row, col);
-   }
+  // Convert the gameApi coodinate(0-31) to row(1-4)/col(1-8) coordinate
+  public Position convertToCoord(int cellIndex) {
+    int row = cellIndex / 8 + 1;
+    int col = cellIndex % 8 + 1;
+    return new Position(row, col);
+  }
 
-  
   // Convert the row(1-4)/col(1-8) coordinate to gameApi coodinate(0-31)
   public int convertToIndex(int row, int col) {
     return ((row - 1) * 8 + col) - 1;

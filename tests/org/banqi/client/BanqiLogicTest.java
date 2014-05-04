@@ -67,6 +67,7 @@ public class BanqiLogicTest {
       String emptyCell = "eemp";
       emptyBoardState.put(cell, emptyCell);
     }
+    emptyBoardState.put("O", ImmutableList.of());
     return emptyBoardState;
   }
   
@@ -121,6 +122,7 @@ public class BanqiLogicTest {
     state.put("C0", null);
     state.put("C30", "rsol");
     state.put("C31", "bsol");
+    state.put("O", ImmutableList.of());
     return state;
   }
   
@@ -191,6 +193,7 @@ public class BanqiLogicTest {
     state.put("S23", "bsol");
     state.put("S30", null);
     state.put("S31", "bsol");
+    state.put("O", ImmutableList.of());
     return state;
   }
   
@@ -296,6 +299,7 @@ public class BanqiLogicTest {
     state.put("C9",   "rgen");
     state.put("C10",   null);
     state.put("C17",  "bgen");
+    state.put("O", ImmutableList.of());
     return state;
   }
   
@@ -308,7 +312,8 @@ public class BanqiLogicTest {
         new SetTurn(bId),
         new Set(CAPTUREPIECE, ImmutableList.of("C9", "C1")),
         new Set("C9", "eemp"),
-        new Set("C1", "rgen"));
+        new Set("C1", "rgen"),
+        new Set("O", ImmutableList.of("badv")));
 
     assertMoveOk(move(rId, state, operations));
   }
@@ -322,7 +327,8 @@ public class BanqiLogicTest {
         new SetTurn(bId),
         new Set(CAPTUREPIECE, ImmutableList.of("C9", "C1")),
         new Set("C9", "eemp"),
-        new Set("C1", "rgen"));
+        new Set("C1", "rgen"),
+        new Set("O", ImmutableList.of("bele")));
 
     assertMoveOk(move(rId, state, operations));
   }
@@ -336,7 +342,8 @@ public class BanqiLogicTest {
         new SetTurn(bId),
         new Set(CAPTUREPIECE, ImmutableList.of("C9", "C1")),
         new Set("C9", "eemp"),
-        new Set("C1", "rgen"));
+        new Set("C1", "rgen"),
+        new Set("O", ImmutableList.of("bcha")));
 
     assertMoveOk(move(rId, state, operations));
   }
@@ -350,7 +357,8 @@ public class BanqiLogicTest {
         new SetTurn(bId),
         new Set(CAPTUREPIECE, ImmutableList.of("C9", "C1")),
         new Set("C9", "eemp"),
-        new Set("C1", "rgen"));
+        new Set("C1", "rgen"),
+        new Set("O", ImmutableList.of("bhor")));
 
     assertMoveOk(move(rId, state, operations));
   }
@@ -364,7 +372,8 @@ public class BanqiLogicTest {
         new SetTurn(bId),
         new Set(CAPTUREPIECE, ImmutableList.of("C9", "C1")),
         new Set("C9", "eemp"),
-        new Set("C1", "rgen"));
+        new Set("C1", "rgen"),
+        new Set("O", ImmutableList.of("bcan")));
 
     assertMoveOk(move(rId, state, operations));
   }
@@ -378,7 +387,8 @@ public class BanqiLogicTest {
         new SetTurn(bId),
         new Set(CAPTUREPIECE, ImmutableList.of("C9", "C1")),
         new Set("C9", "eemp"),
-        new Set("C1", "rgen"));
+        new Set("C1", "rgen"),
+        new Set("O", ImmutableList.of("bgen")));
 
     assertMoveOk(move(rId, state, operations));
   }
@@ -394,9 +404,10 @@ public class BanqiLogicTest {
         new SetTurn(bId),
         new Set(CAPTUREPIECE, ImmutableList.of("C9", "C17")),
         new Set("C9", "eemp"),
-        new Set("C17", "rgen"));
+        new Set("C17", "rgen"),
+        new Set("O", ImmutableList.of("rsol")));
 
-    assertMoveOk(move(rId, state, operations));
+    assertHacker(move(rId, state, operations));
   }
 
   @Test
@@ -421,7 +432,8 @@ public class BanqiLogicTest {
         new SetTurn(rId),
         new Set(CAPTUREPIECE, ImmutableList.of("C8", "C9")),
         new Set("C8", "eemp"),
-        new Set("C9", "bsol"));
+        new Set("C9", "bsol"),
+        new Set("O", ImmutableList.of("rgen")));
 
     assertMoveOk(move(bId, state, operations));
   }
@@ -519,6 +531,7 @@ public class BanqiLogicTest {
     state.put("C3",   "bsol");
     state.put("C8",   null);
     state.put("C24",  "bsol");
+    state.put("O", ImmutableList.of());
     return state;
   }
   
@@ -530,7 +543,8 @@ public class BanqiLogicTest {
         new SetTurn(bId),
         new Set(CAPTUREPIECE, ImmutableList.of("C0", "C2")),
         new Set("C0", "eemp"),
-        new Set("C2", "rcan"));
+        new Set("C2", "rcan"),
+        new Set("O", ImmutableList.of("bsol")));
 
     assertMoveOk(move(rId, state, operations));
   }
@@ -543,7 +557,8 @@ public class BanqiLogicTest {
         new SetTurn(bId),
         new Set(CAPTUREPIECE, ImmutableList.of("C0", "C24")),
         new Set("C0", "eemp"),
-        new Set("C24", "rcan"));
+        new Set("C24", "rcan"),
+        new Set("O", ImmutableList.of("bsol")));
 
     assertMoveOk(move(rId, state, operations));
   }

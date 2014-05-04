@@ -2,6 +2,7 @@ package org.banqi.client;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.util.HashMap;
@@ -44,7 +45,7 @@ public class StateExplorerTest {
    * {C0 |   |   |   |   |   |   |   }
    * {   |C9 |   |   |   |   |   |   }
    * {   |   |   |   |   |   |   |   }
-   * {C23|C24|   |   |   |   |   |C31}
+   * {C24|C25|   |   |   |   |   |C31}
    */
 
   /*
@@ -56,9 +57,10 @@ public class StateExplorerTest {
     Map<String, Object> gameApiState = getEmptyBoardState();
     gameApiState.put("C0", "rgen");
     gameApiState.put("C9", "radv");
-    gameApiState.put("C23", null);
-    gameApiState.put("C24", "bgen");
+    gameApiState.put("C24", null);
+    gameApiState.put("C25", "bgen");
     gameApiState.put("C31", "rsol");
+    gameApiState.put("O", ImmutableList.of());
 
     BanqiState state = banqiLogic.gameApiStateToBanqiState(gameApiState,
         turnOfColor, playerIds);
@@ -67,6 +69,7 @@ public class StateExplorerTest {
     possibleStartPositions.add(new Position(1, 1));
     possibleStartPositions.add(new Position(2, 2));
     possibleStartPositions.add(new Position(4, 8));
+    possibleStartPositions.add(new Position(4, 1));
     assertEquals(stateExplorer.getPossibleStartPositions(state),
         possibleStartPositions);
   }
@@ -94,6 +97,7 @@ public class StateExplorerTest {
     gameApiState.put("C16", "bsol");
     gameApiState.put("C24", "radv");
     gameApiState.put("C25", "bsol");
+    gameApiState.put("O", ImmutableList.of());
 
     BanqiState state = banqiLogic.gameApiStateToBanqiState(gameApiState,
         turnOfColor, playerIds);
@@ -126,6 +130,7 @@ public class StateExplorerTest {
     gameApiState.put("C9", "rgen");
     gameApiState.put("C1", "badv");
     gameApiState.put("C31", "bsol");
+    gameApiState.put("O", ImmutableList.of());
 
     BanqiState state = banqiLogic.gameApiStateToBanqiState(gameApiState,
         turnOfColor, playerIds);
@@ -157,6 +162,7 @@ public class StateExplorerTest {
     Map<String, Object> gameApiState = getEmptyBoardState();
     gameApiState.put("C1", "rcan");
     gameApiState.put("C31", "bsol");
+    gameApiState.put("O", ImmutableList.of());
 
     BanqiState state = banqiLogic.gameApiStateToBanqiState(gameApiState,
         turnOfColor, playerIds);
@@ -198,11 +204,21 @@ public class StateExplorerTest {
     gameApiState.put("C10", null);
     gameApiState.put("C16", null);
     gameApiState.put("C24", null);
+    gameApiState.put("O", ImmutableList.of());
 
     BanqiState state = banqiLogic.gameApiStateToBanqiState(gameApiState,
         turnOfColor, playerIds);
 
     Set<Position> possibleStartPositions = new HashSet<Position>();
+    possibleStartPositions.add(new Position(1, 3));
+    possibleStartPositions.add(new Position(1, 5));
+    possibleStartPositions.add(new Position(1, 6));
+    possibleStartPositions.add(new Position(1, 7));
+    possibleStartPositions.add(new Position(1, 8));
+    possibleStartPositions.add(new Position(2, 1));
+    possibleStartPositions.add(new Position(2, 3));
+    possibleStartPositions.add(new Position(3, 1));
+    possibleStartPositions.add(new Position(4, 1));
     assertEquals(stateExplorer.getPossibleStartPositions(state),
         possibleStartPositions);
 
@@ -228,12 +244,22 @@ public class StateExplorerTest {
     gameApiState.put("C10", null);
     gameApiState.put("C16", null);
     gameApiState.put("C24", null);
+    gameApiState.put("O", ImmutableList.of());
 
     BanqiState state = banqiLogic.gameApiStateToBanqiState(gameApiState,
         turnOfColor, playerIds);
 
     Set<Position> possibleStartPositions = new HashSet<Position>();
     possibleStartPositions.add(new Position(1, 1));
+    possibleStartPositions.add(new Position(1, 4));
+    possibleStartPositions.add(new Position(1, 5));
+    possibleStartPositions.add(new Position(1, 6));
+    possibleStartPositions.add(new Position(1, 7));
+    possibleStartPositions.add(new Position(1, 8));
+    possibleStartPositions.add(new Position(2, 1));
+    possibleStartPositions.add(new Position(2, 3));
+    possibleStartPositions.add(new Position(3, 1));
+    possibleStartPositions.add(new Position(4, 1));
     assertEquals(stateExplorer.getPossibleStartPositions(state),
         possibleStartPositions);
 
@@ -269,12 +295,19 @@ public class StateExplorerTest {
     gameApiState.put("C18", null);
     gameApiState.put("C16", null);
     gameApiState.put("C24", null);
+    gameApiState.put("O", ImmutableList.of());
 
     BanqiState state = banqiLogic.gameApiStateToBanqiState(gameApiState,
         turnOfColor, playerIds);
 
     Set<Position> possibleStartPositions = new HashSet<Position>();
     possibleStartPositions.add(new Position(1, 8));
+    possibleStartPositions.add(new Position(1, 3));
+    possibleStartPositions.add(new Position(2, 3));
+    possibleStartPositions.add(new Position(3, 1));
+    possibleStartPositions.add(new Position(3, 2));
+    possibleStartPositions.add(new Position(3, 3));
+    possibleStartPositions.add(new Position(4, 1));
     assertEquals(stateExplorer.getPossibleStartPositions(state),
         possibleStartPositions);
 
