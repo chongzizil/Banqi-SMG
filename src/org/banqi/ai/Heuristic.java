@@ -80,8 +80,8 @@ public class Heuristic {
       }
     }
     
-//    int stateValue = faceDownPiecesValue + faceUpPiecesValue;
-    int stateValue = faceUpPiecesValue;
+    int stateValue = faceDownPiecesValue + faceUpPiecesValue;
+//    int stateValue = faceUpPiecesValue;
     return stateValue;
   }
 
