@@ -18,34 +18,30 @@
 package org.banqi.ai;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
+import org.banqi.client.BanqiState;
 import org.banqi.client.Color;
 import org.banqi.client.Move;
-import org.banqi.client.BanqiState;
 import org.banqi.client.Piece;
 import org.banqi.client.StateExplorerImpl;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 public class Heuristic {
   private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
   // Basic value of each kind of piece, note that although cannon is vunlunrable to most pieces,
   // it also can capture all kinds of pieces, so it's value for now is 5
   private static final int VALUEOFSOLDIER = 1;
-  private static final int VALUEOFHORSE = 6;
-  private static final int VALUEOFCHARIOT = 13;
-  private static final int VALUEOFELEPHANT = 27;
-  private static final int VALUEOFCANNON = 27;
-  private static final int VALUEOFADVISOR = 55;
-  private static final int VALUEOFGENERAL = 111;
+  private static final int VALUEOFHORSE = 3;
+  private static final int VALUEOFCHARIOT = 7;
+  private static final int VALUEOFELEPHANT = 15;
+  private static final int VALUEOFCANNON = 16;
+  private static final int VALUEOFADVISOR = 33;
+  private static final int VALUEOFGENERAL = 67;
   
   public Heuristic() {
   }
@@ -280,13 +276,13 @@ public class Heuristic {
     Map<String, Integer> faceDownPiecesNum = getFaceDownPiecesNum(state);
     
     int valueOfFaceDownPiece =
-        (faceDownPiecesNum.get("rsolNum") - faceDownPiecesNum.get("bsolNum")) * VALUEOFSOLDIER
-        + (faceDownPiecesNum.get("rhorNum") - faceDownPiecesNum.get("bhorNum")) * VALUEOFHORSE
-        + (faceDownPiecesNum.get("rchaNum") - faceDownPiecesNum.get("bchaNum")) * VALUEOFCHARIOT
-        + (faceDownPiecesNum.get("releNum") - faceDownPiecesNum.get("beleNum")) * VALUEOFELEPHANT
-        + (faceDownPiecesNum.get("rcanNum") - faceDownPiecesNum.get("bcanNum")) * VALUEOFCANNON
-        + (faceDownPiecesNum.get("radvNum") - faceDownPiecesNum.get("badvNum")) * VALUEOFADVISOR
-        + (faceDownPiecesNum.get("rgenNum") - faceDownPiecesNum.get("bgenNum")) * VALUEOFGENERAL;
+        (faceDownPiecesNum.get("bsolNum") - faceDownPiecesNum.get("rsolNum")) * VALUEOFSOLDIER
+        + (faceDownPiecesNum.get("bhorNum") - faceDownPiecesNum.get("rhorNum")) * VALUEOFHORSE
+        + (faceDownPiecesNum.get("bchaNum") - faceDownPiecesNum.get("rchaNum")) * VALUEOFCHARIOT
+        + (faceDownPiecesNum.get("beleNum") - faceDownPiecesNum.get("releNum")) * VALUEOFELEPHANT
+        + (faceDownPiecesNum.get("bcanNum") - faceDownPiecesNum.get("rcanNum")) * VALUEOFCANNON
+        + (faceDownPiecesNum.get("badvNum") - faceDownPiecesNum.get("radvNum")) * VALUEOFADVISOR
+        + (faceDownPiecesNum.get("bgenNum") - faceDownPiecesNum.get("rgenNum")) * VALUEOFGENERAL;
     
     return valueOfFaceDownPiece;
   }
@@ -304,6 +300,6 @@ public class Heuristic {
       : piece.getKind() == Piece.Kind.ELEPHANT ? VALUEOFELEPHANT
       : piece.getKind() == Piece.Kind.CANNON ? VALUEOFCANNON
       : piece.getKind() == Piece.Kind.ADVISOR ? VALUEOFADVISOR : VALUEOFGENERAL;
-    return piece.getPieceColor() == Piece.PieceColor.RED ? value : -value;
+    return piece.getPieceColor() == Piece.PieceColor.RED ? -value : value;
   }
 }

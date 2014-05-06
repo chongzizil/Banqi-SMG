@@ -164,7 +164,7 @@ public class BanqiPresenter {
           AlphaBetaPruning ai = new AlphaBetaPruning(heuristic, banqiState);
           
           // The move of the AI takes at most 0.8 second
-          DateTimer timer = new DateTimer(800);
+          DateTimer timer = new DateTimer(2000);
           
           // The depth is 50 though due to the time limit, it may not reach that deep
           Move move = ai.findBestMove(50, timer);

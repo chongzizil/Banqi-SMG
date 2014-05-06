@@ -95,13 +95,13 @@ public class AlphaBetaPruning {
       score.move = move;
       score.score = Integer.MIN_VALUE;
       scores.add(score);
-      states.add(state.copy());
+//      states.add(state.copy());
     }
 
     try {
       for (int i = 0; i < depth; i++) {
         for (int j = 0; j < scores.size(); j++) {
-          BanqiState state = states.get(j);
+//          BanqiState state = states.get(j);
           Move move = null;
           MoveScore<Move> moveScore = scores.get(j);
           move = moveScore.move;
@@ -323,7 +323,7 @@ public class AlphaBetaPruning {
     List<Optional<Piece>> cells = state.getCells();
     List<Piece> capturedPieces = state.getCapturedPieces();
     Position from = move.getFrom();
-    Position to = move.getFrom();
+    Position to = move.getTo();
 
     // Change the state according to the move and "fullState".
     if (move.getType() == Move.Type.CAPTURE) {
