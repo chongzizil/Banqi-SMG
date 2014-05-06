@@ -21,11 +21,13 @@ public class BanqiState {
    */
   private ImmutableList<Optional<Piece>> cells;
   private ImmutableList<Piece> capturedPieces;
+  private ImmutableList<String> playerIds;
   private Color turn;
-  private final ImmutableList<String> playerIds;
 
-  public BanqiState(Color turn, ImmutableList<String> playerIds,
-      ImmutableList<Optional<Piece>> cells, ImmutableList<Piece> capturedPieces) {
+  public BanqiState(Color turn,
+      ImmutableList<String> playerIds,
+      ImmutableList<Optional<Piece>> cells,
+      ImmutableList<Piece> capturedPieces) {
     super();
     this.turn = checkNotNull(turn);
     this.playerIds = checkNotNull(playerIds);
@@ -67,9 +69,8 @@ public class BanqiState {
   public boolean hasGameEnded() {
     boolean hasBlack = hasRedOrBlackPieces(Color.B);
     boolean hasRed = hasRedOrBlackPieces(Color.R);
-    boolean hasFacingDownPieces = hasFacingDownPiece();
 
-    return (hasBlack ^ hasRed) && !hasFacingDownPieces;
+    return (hasBlack ^ hasRed) && !hasFacingDownPiece();
   }
 
   public Color getTurn() {
@@ -89,24 +90,22 @@ public class BanqiState {
   }
 
   public List<Optional<Piece>> getCells() {
-    List<Optional<Piece>> cellsTmp = new ArrayList<Optional<Piece>>();
-    cellsTmp.addAll(this.cells);
-    return cellsTmp;
+    return new ArrayList<Optional<Piece>>(this.cells);
   }
 
   public void setCells(List<Optional<Piece>> cells) {
-    ImmutableList<Optional<Piece>> newCells = ImmutableList.copyOf(cells);
-    this.cells = newCells;
+    this.cells = ImmutableList.copyOf(cells);
   }
 
   public List<Piece> getCapturedPieces() {
-    List<Piece> capturedPiecesTmp = new ArrayList<Piece>();
-    capturedPiecesTmp.addAll(this.capturedPieces);
-    return capturedPiecesTmp;
+    return new ArrayList<Piece>(this.capturedPieces);
   }
 
   public void setCapturedPieces(List<Piece> capturedPieces) {
-    ImmutableList<Piece> newCapturedPieces = ImmutableList.copyOf(capturedPieces);
-    this.capturedPieces = newCapturedPieces;
+    this.capturedPieces = ImmutableList.copyOf(capturedPieces);
+  }
+  
+  public BanqiState copy() {
+    return new BanqiState(this.turn, this.playerIds, this.cells, this.capturedPieces);
   }
 }

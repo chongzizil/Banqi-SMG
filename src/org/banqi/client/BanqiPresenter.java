@@ -145,54 +145,62 @@ public class BanqiPresenter {
     banqiState = banqiLogic.gameApiStateToBanqiState(updateUI.getState(),
         turnOfColor, playerIds);
 
+    // Set the view
+    view.setPlayerState(getAllCells(banqiState));
+    
     if (updateUI.isViewer()) {
-      view.setViewerState(getAllCells(banqiState));
       return;
     }
 
     if (updateUI.isAiPlayer()) {
-//      if (!hasAiMakeMove) {
-//        hasAiMakeMove = true;
-      if (banqiState.hasGameEnded()) {
-        // The game is over, send the endGame operation
-        endGame();
-      } else {
-        // The game is not over, make the move :)
-        Heuristic heuristic = new Heuristic();
-        AlphaBetaPruning ai = new AlphaBetaPruning(heuristic, banqiState);
-        
-        // The move of the AI takes at most 0.5 second
-        DateTimer timer = new DateTimer(500);
-        
-        // The depth is 4 though due to the time limit, it may not reach that deep
-        Move move = ai.findBestMove(4, timer);
-        
-        // AI make the move.
-        int selectedFromCoord = ((move.getFrom().getRow() - 1) * 8 + move.getFrom().getCol()) - 1;
-        int selectedToCoord = ((move.getTo().getRow() - 1) * 8 + move.getTo().getCol()) - 1;
-        if (move.getType() == Move.Type.CAPTURE) {
-          Set capturePiece = new Set(CAPTUREPIECE, ImmutableList.of("C"
-              + selectedFromCoord, "C" + selectedToCoord));
-          capturePiece(capturePiece);
-        } else if (move.getType() == Move.Type.MOVE) {
-          Set movePiece = new Set(MOVEPIECE, ImmutableList.of("C"
-              + selectedFromCoord, "C" + selectedToCoord));
-          movePiece(movePiece);
+      if (!hasAiMakeMove) {
+        hasAiMakeMove = true;
+        if (banqiState.hasGameEnded()) {
+          // The game is over, send the endGame operation
+          endGame();
         } else {
-          Set turnPiece = new Set(TURNPIECE, "C" + selectedFromCoord);
-          turnPiece(turnPiece);
+          // The game is not over, make the move :)
+          Heuristic heuristic = new Heuristic();
+          AlphaBetaPruning ai = new AlphaBetaPruning(heuristic, banqiState);
+          
+          // The move of the AI takes at most 0.8 second
+          DateTimer timer = new DateTimer(800);
+          
+          // The depth is 50 though due to the time limit, it may not reach that deep
+          Move move = ai.findBestMove(50, timer);
+          
+          // AI make the move.
+          int selectedFromCoord = ((move.getFrom().getRow() - 1) * 8 + move.getFrom().getCol()) - 1;
+          int selectedToCoord = ((move.getTo().getRow() - 1) * 8 + move.getTo().getCol()) - 1;
+          if (move.getType() == Move.Type.CAPTURE) {
+            
+            Set capturePiece = new Set(CAPTUREPIECE, ImmutableList.of("C"
+                + selectedFromCoord, "C" + selectedToCoord));
+            view.setAnimateArgs(banqiState.getCells(), selectedFromCoord, selectedToCoord,
+                true, false);
+            capturePiece(capturePiece);
+          } else if (move.getType() == Move.Type.MOVE) {
+            
+            Set movePiece = new Set(MOVEPIECE, ImmutableList.of("C"
+                + selectedFromCoord, "C" + selectedToCoord));
+            view.setAnimateArgs(banqiState.getCells(), selectedFromCoord, selectedToCoord,
+                false, false);
+            movePiece(movePiece);
+          } else {
+            
+            Set turnPiece = new Set(TURNPIECE, "C" + selectedFromCoord);
+            view.setAnimateArgs(banqiState.getCells(), selectedFromCoord, selectedFromCoord,
+                false, false);
+            turnPiece(turnPiece);
+          }
         }
-      }
-//      } 
+      } 
       return;
     }
 
     // Must be a player!
-
-    // Set the view
-    view.setPlayerState(getAllCells(banqiState));
     if (isMyTurn()) {
-//      hasAiMakeMove = false;
+      hasAiMakeMove = false;
       if (banqiState.hasGameEnded()) {
         // The game is over, send the endGame operation
         endGame();

@@ -73,15 +73,9 @@ public class AlphaBetaPruning {
 
   public AlphaBetaPruning(Heuristic heuristic, BanqiState banqiState) {
     this.heuristic = heuristic;
-    this.state = new BanqiState(banqiState.getTurn(),
-        banqiState.getPlayerIds(), 
-        ImmutableList.copyOf(banqiState.getCells()),
-        ImmutableList.copyOf(banqiState.getCapturedPieces()));
+    this.state = banqiState.copy();
     // Get the fullState
-    this.fullState = getFullState(new BanqiState(banqiState.getTurn(),
-        banqiState.getPlayerIds(), 
-        ImmutableList.copyOf(banqiState.getCells()),
-        ImmutableList.copyOf(banqiState.getCapturedPieces())));
+    this.fullState = getFullState(banqiState.copy());
   }
 
   public Move findBestMove(int depth, Timer timer) {
@@ -101,11 +95,7 @@ public class AlphaBetaPruning {
       score.move = move;
       score.score = Integer.MIN_VALUE;
       scores.add(score);
-      states.add(
-          new BanqiState(state.getTurn(),
-          state.getPlayerIds(), 
-          ImmutableList.copyOf(state.getCells()),
-          ImmutableList.copyOf(state.getCapturedPieces())));
+      states.add(state.copy());
     }
 
     try {
@@ -152,10 +142,7 @@ public class AlphaBetaPruning {
   private int findMoveScore(final BanqiState banqiState, boolean isCapture,
       int depth, int alpha, int beta, Timer timer) throws TimeoutException {
     
-    BanqiState state = new BanqiState(banqiState.getTurn(),
-        banqiState.getPlayerIds(), 
-        ImmutableList.copyOf(banqiState.getCells()),
-        ImmutableList.copyOf(banqiState.getCapturedPieces()));
+    BanqiState state = banqiState.copy();
     
     if (timer.didTimeout()) {
       throw new TimeoutException();
@@ -207,10 +194,7 @@ public class AlphaBetaPruning {
    */
   public BanqiState getFullState(BanqiState banqiState) {
     
-    BanqiState state = new BanqiState(banqiState.getTurn(),
-        banqiState.getPlayerIds(), 
-        ImmutableList.copyOf(banqiState.getCells()),
-        ImmutableList.copyOf(banqiState.getCapturedPieces()));
+    BanqiState state = banqiState.copy();
     
     List<Optional<Piece>> cells = state.getCells();
 
@@ -334,10 +318,7 @@ public class AlphaBetaPruning {
    * @return state The state after the move.
    */
   public BanqiState makeMove(final BanqiState banqiState, Move move) {
-    BanqiState state = new BanqiState(banqiState.getTurn(),
-        banqiState.getPlayerIds(), 
-        ImmutableList.copyOf(banqiState.getCells()),
-        ImmutableList.copyOf(banqiState.getCapturedPieces()));
+    BanqiState state = banqiState.copy();
     
     List<Optional<Piece>> cells = state.getCells();
     List<Piece> capturedPieces = state.getCapturedPieces();

@@ -18,9 +18,11 @@
 package org.banqi.ai;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.banqi.client.Color;
@@ -31,18 +33,19 @@ import org.banqi.client.StateExplorerImpl;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 public class Heuristic {
   private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
   // Basic value of each kind of piece, note that although cannon is vunlunrable to most pieces,
   // it also can capture all kinds of pieces, so it's value for now is 5
   private static final int VALUEOFSOLDIER = 1;
-  private static final int VALUEOFHORSE = 2;
-  private static final int VALUEOFCHARIOT = 3;
-  private static final int VALUEOFELEPHANT = 4;
-  private static final int VALUEOFCANNON = 5;
-  private static final int VALUEOFADVISOR = 6;
-  private static final int VALUEOFGENERAL = 7;
+  private static final int VALUEOFHORSE = 6;
+  private static final int VALUEOFCHARIOT = 13;
+  private static final int VALUEOFELEPHANT = 27;
+  private static final int VALUEOFCANNON = 27;
+  private static final int VALUEOFADVISOR = 55;
+  private static final int VALUEOFGENERAL = 111;
   
   public Heuristic() {
   }
@@ -54,10 +57,7 @@ public class Heuristic {
    * @return stateValue The value of the state.
    */
   public int getStateValue(final BanqiState banqiState) {
-    BanqiState state = new BanqiState(banqiState.getTurn(),
-        banqiState.getPlayerIds(), 
-        ImmutableList.copyOf(banqiState.getCells()),
-        ImmutableList.copyOf(banqiState.getCapturedPieces()));
+    BanqiState state = banqiState.copy();
     int faceDownPiecesValue = 0;
     int faceUpPiecesValue = 0;
     
@@ -80,9 +80,7 @@ public class Heuristic {
       }
     }
     
-    int stateValue = faceDownPiecesValue + faceUpPiecesValue;
-//    int stateValue = faceUpPiecesValue;
-    return stateValue;
+    return faceUpPiecesValue + faceDownPiecesValue;
   }
 
   /**
@@ -95,34 +93,48 @@ public class Heuristic {
    * @param banqiState The current state.
    * @return orderedMoves The ordered all possible moves.
    */
-  public Iterable<Move> getOrderedMoves(final BanqiState banqiState) {
-    BanqiState state = new BanqiState(banqiState.getTurn(),
-        banqiState.getPlayerIds(), 
-        ImmutableList.copyOf(banqiState.getCells()),
-        ImmutableList.copyOf(banqiState.getCapturedPieces()));
-    
+  public Iterable<Move> getOrderedMoves(final BanqiState banqiState) {    
     List<Move> orderedMoves = new ArrayList<Move>();
     List<Move> captureMoves = new ArrayList<Move>();
     List<Move> turnMoves = new ArrayList<Move>();
     List<Move> moveMoves = new ArrayList<Move>();
+    List<Move> otherMoves = new ArrayList<Move>();
     
     // Get all possible moves
-    Set<Move> allPossibleMoves = stateExplorer.getPossibleMoves(state);
+    Set<Move> allPossibleMoves = stateExplorer.getPossibleMoves(banqiState);
+    
+//    for (Move move : allPossibleMoves) {
+//      if (move.getType() == Move.Type.CAPTURE) {
+//        captureMoves.add(move);
+//      } else if (move.getType() == Move.Type.TURN) {
+//        turnMoves.add(move);
+//      } else {
+//        moveMoves.add(move);
+//      }
+//    }
     
     for (Move move : allPossibleMoves) {
       if (move.getType() == Move.Type.CAPTURE) {
         captureMoves.add(move);
-      } else if (move.getType() == Move.Type.TURN) {
-        turnMoves.add(move);
       } else {
-        moveMoves.add(move);
+        otherMoves.add(move);
       }
     }
     
+//    // Shuffle
+//    Random rnd = new Random();
+//    List<Move> shuffledOtherMoves = Lists.newArrayList();
+//    while (!otherMoves.isEmpty()) {
+//      int index = rnd.nextInt(otherMoves.size());
+//      shuffledOtherMoves.add(otherMoves.remove(index));
+//    }
+    
     // According to the type of the move, reorder all the moves
     orderedMoves.addAll(captureMoves);
-    orderedMoves.addAll(turnMoves);
-    orderedMoves.addAll(moveMoves);
+    orderedMoves.addAll(otherMoves);
+//    orderedMoves.addAll(moveMoves);
+//    orderedMoves.addAll(turnMoves);
+//    orderedMoves.addAll(shuffledOtherMoves);
     return orderedMoves;
   }
   
