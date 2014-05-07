@@ -166,49 +166,70 @@ public class Heuristic {
       if (piece.isPresent() && piece.get().getKind() != Piece.Kind.EMPTY) {
         Piece.Kind kind = piece.get().getKind();
         Piece.PieceColor pieceColor = piece.get().getPieceColor();
-        if (kind == Piece.Kind.SOLDIER) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("rsolNum", faceDownPiecesNum.get("rsolNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("bsolNum", faceDownPiecesNum.get("bsolNum") - 1);
-          }
-        } else if (kind == Piece.Kind.CANNON) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("rcanNum", faceDownPiecesNum.get("rcanNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("bcanNum", faceDownPiecesNum.get("bcanNum") - 1);
-          }
-        } else if (kind == Piece.Kind.HORSE) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("rhorNum", faceDownPiecesNum.get("rhorNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("bhorNum", faceDownPiecesNum.get("bhorNum") - 1);
-          }
-        } else if (kind == Piece.Kind.CHARIOT) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("rchaNum", faceDownPiecesNum.get("rchaNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("bchaNum", faceDownPiecesNum.get("bchaNum") - 1);
-          }
-        } else if (kind == Piece.Kind.ELEPHANT) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("releNum", faceDownPiecesNum.get("releNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("beleNum", faceDownPiecesNum.get("beleNum") - 1);
-          }
-        } else if (kind == Piece.Kind.ADVISOR) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("radvNum", faceDownPiecesNum.get("radvNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("badvNum", faceDownPiecesNum.get("badvNum") - 1);
-          }
-        } else if (kind == Piece.Kind.GENERAL) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("rgenNum", faceDownPiecesNum.get("rgenNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("bgenNum", faceDownPiecesNum.get("bgenNum") - 1);
-          }
+        String key = "";
+        
+        switch(kind) {
+          case SOLDIER: key = "solNum"; break;
+          case CANNON: key = "canNum"; break;
+          case HORSE: key = "horNum"; break;
+          case CHARIOT: key = "chaNum"; break;
+          case ELEPHANT: key = "eleNum"; break;
+          case ADVISOR: key = "advNum"; break;
+          case GENERAL: key = "genNum"; break;
+          default: key = "solNum"; break;
         }
+        
+        switch(pieceColor) {
+          case RED: key = "r" + key; break;
+          case BLACK: key = "b" + key; break;
+          default: key = "r" + key; break;
+        }
+        
+        faceDownPiecesNum.put(key, faceDownPiecesNum.get(key) - 1);
+        
+//        if (kind == Piece.Kind.SOLDIER) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("rsolNum", faceDownPiecesNum.get("rsolNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("bsolNum", faceDownPiecesNum.get("bsolNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.CANNON) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("rcanNum", faceDownPiecesNum.get("rcanNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("bcanNum", faceDownPiecesNum.get("bcanNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.HORSE) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("rhorNum", faceDownPiecesNum.get("rhorNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("bhorNum", faceDownPiecesNum.get("bhorNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.CHARIOT) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("rchaNum", faceDownPiecesNum.get("rchaNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("bchaNum", faceDownPiecesNum.get("bchaNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.ELEPHANT) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("releNum", faceDownPiecesNum.get("releNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("beleNum", faceDownPiecesNum.get("beleNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.ADVISOR) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("radvNum", faceDownPiecesNum.get("radvNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("badvNum", faceDownPiecesNum.get("badvNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.GENERAL) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("rgenNum", faceDownPiecesNum.get("rgenNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("bgenNum", faceDownPiecesNum.get("bgenNum") - 1);
+//          }
+//        }
       }
     }
     
@@ -217,49 +238,70 @@ public class Heuristic {
       if (piece.getKind() != Piece.Kind.EMPTY) {
         Piece.Kind kind = piece.getKind();
         Piece.PieceColor pieceColor = piece.getPieceColor();
-        if (kind == Piece.Kind.SOLDIER) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("rsolNum", faceDownPiecesNum.get("rsolNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("bsolNum", faceDownPiecesNum.get("bsolNum") - 1);
-          }
-        } else if (kind == Piece.Kind.CANNON) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("rcanNum", faceDownPiecesNum.get("rcanNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("bcanNum", faceDownPiecesNum.get("bcanNum") - 1);
-          }
-        } else if (kind == Piece.Kind.HORSE) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("rhorNum", faceDownPiecesNum.get("rhorNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("bhorNum", faceDownPiecesNum.get("bhorNum") - 1);
-          }
-        } else if (kind == Piece.Kind.CHARIOT) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("rchaNum", faceDownPiecesNum.get("rchaNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("bchaNum", faceDownPiecesNum.get("bchaNum") - 1);
-          }
-        } else if (kind == Piece.Kind.ELEPHANT) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("releNum", faceDownPiecesNum.get("releNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("beleNum", faceDownPiecesNum.get("beleNum") - 1);
-          }
-        } else if (kind == Piece.Kind.ADVISOR) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("radvNum", faceDownPiecesNum.get("radvNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("badvNum", faceDownPiecesNum.get("badvNum") - 1);
-          }
-        } else if (kind == Piece.Kind.GENERAL) {
-          if (pieceColor == Piece.PieceColor.RED) {
-            faceDownPiecesNum.put("rgenNum", faceDownPiecesNum.get("rgenNum") - 1);
-          } else if (pieceColor == Piece.PieceColor.BLACK) {
-            faceDownPiecesNum.put("bgenNum", faceDownPiecesNum.get("bgenNum") - 1);
-          }
+        String key = "";
+        
+        switch(kind) {
+          case SOLDIER: key = "solNum"; break;
+          case CANNON: key = "canNum"; break;
+          case HORSE: key = "horNum"; break;
+          case CHARIOT: key = "chaNum"; break;
+          case ELEPHANT: key = "eleNum"; break;
+          case ADVISOR: key = "advNum"; break;
+          case GENERAL: key = "genNum"; break;
+          default: key = "solNum"; break;
         }
+      
+        switch(pieceColor) {
+          case RED: key = "r" + key; break;
+          case BLACK: key = "b" + key; break;
+          default: key = "r" + key; break;
+        }
+        
+        faceDownPiecesNum.put(key, faceDownPiecesNum.get(key) - 1);
+        
+//        if (kind == Piece.Kind.SOLDIER) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("rsolNum", faceDownPiecesNum.get("rsolNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("bsolNum", faceDownPiecesNum.get("bsolNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.CANNON) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("rcanNum", faceDownPiecesNum.get("rcanNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("bcanNum", faceDownPiecesNum.get("bcanNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.HORSE) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("rhorNum", faceDownPiecesNum.get("rhorNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("bhorNum", faceDownPiecesNum.get("bhorNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.CHARIOT) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("rchaNum", faceDownPiecesNum.get("rchaNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("bchaNum", faceDownPiecesNum.get("bchaNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.ELEPHANT) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("releNum", faceDownPiecesNum.get("releNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("beleNum", faceDownPiecesNum.get("beleNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.ADVISOR) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("radvNum", faceDownPiecesNum.get("radvNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("badvNum", faceDownPiecesNum.get("badvNum") - 1);
+//          }
+//        } else if (kind == Piece.Kind.GENERAL) {
+//          if (pieceColor == Piece.PieceColor.RED) {
+//            faceDownPiecesNum.put("rgenNum", faceDownPiecesNum.get("rgenNum") - 1);
+//          } else if (pieceColor == Piece.PieceColor.BLACK) {
+//            faceDownPiecesNum.put("bgenNum", faceDownPiecesNum.get("bgenNum") - 1);
+//          }
+//        }
       }
     }
     

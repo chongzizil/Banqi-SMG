@@ -218,76 +218,170 @@ public class AlphaBetaPruning {
 
     // Get all face down pieces
     for (Map.Entry<String, Integer> entry : faceDownPiecesNum.entrySet()) {
-      if (entry.getKey() == "rsolNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces
-              .add(new Piece(Piece.Kind.SOLDIER, Piece.PieceColor.RED));
-        }
-      } else if (entry.getKey() == "bsolNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces.add(new Piece(Piece.Kind.SOLDIER,
-              Piece.PieceColor.BLACK));
-        }
-      } else if (entry.getKey() == "rcanNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces
-              .add(new Piece(Piece.Kind.CANNON, Piece.PieceColor.RED));
-        }
-      } else if (entry.getKey() == "bcanNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces.add(new Piece(Piece.Kind.CANNON,
-              Piece.PieceColor.BLACK));
-        }
-      } else if (entry.getKey() == "rhorNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces.add(new Piece(Piece.Kind.HORSE, Piece.PieceColor.RED));
-        }
-      } else if (entry.getKey() == "bhorNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces
-              .add(new Piece(Piece.Kind.HORSE, Piece.PieceColor.BLACK));
-        }
-      } else if (entry.getKey() == "rchaNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces
-              .add(new Piece(Piece.Kind.CHARIOT, Piece.PieceColor.RED));
-        }
-      } else if (entry.getKey() == "bchaNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces.add(new Piece(Piece.Kind.CHARIOT,
-              Piece.PieceColor.BLACK));
-        }
-      } else if (entry.getKey() == "releNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces.add(new Piece(Piece.Kind.ELEPHANT,
-              Piece.PieceColor.RED));
-        }
-      } else if (entry.getKey() == "beleNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces.add(new Piece(Piece.Kind.ELEPHANT,
-              Piece.PieceColor.BLACK));
-        }
-      } else if (entry.getKey() == "radvNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces
-              .add(new Piece(Piece.Kind.ADVISOR, Piece.PieceColor.RED));
-        }
-      } else if (entry.getKey() == "badvNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces.add(new Piece(Piece.Kind.ADVISOR,
-              Piece.PieceColor.BLACK));
-        }
-      } else if (entry.getKey() == "rgenNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces
-              .add(new Piece(Piece.Kind.GENERAL, Piece.PieceColor.RED));
-        }
-      } else if (entry.getKey() == "bgenNum") {
-        for (int i = 0; i < entry.getValue(); i++) {
-          faceDownPieces.add(new Piece(Piece.Kind.GENERAL,
-              Piece.PieceColor.BLACK));
-        }
+      switch(entry.getKey()) {
+        case "rsolNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.SOLDIER, Piece.PieceColor.RED));
+          }
+          break;
+        case "bsolNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.SOLDIER, Piece.PieceColor.BLACK));
+          }
+          break;
+        case "rcanNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.CANNON, Piece.PieceColor.RED));
+          }
+          break;
+        case "bcanNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.CANNON, Piece.PieceColor.BLACK));
+          }
+          break;
+        case "rhorNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.HORSE, Piece.PieceColor.RED));
+          }
+          break;
+        case "bhorNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.HORSE, Piece.PieceColor.BLACK));
+          }
+          break;
+        case "rchaNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.CHARIOT, Piece.PieceColor.RED));
+          }
+          break;
+        case "bchaNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.CHARIOT, Piece.PieceColor.BLACK));
+          }
+          break;
+        case "releNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.ELEPHANT, Piece.PieceColor.RED));
+          }
+          break;
+        case "beleNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.ELEPHANT, Piece.PieceColor.BLACK));
+          }
+          break;
+        case "radvNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.ADVISOR, Piece.PieceColor.RED));
+          }
+          break;
+        case "badvNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.ADVISOR, Piece.PieceColor.BLACK));
+          }
+          break;
+        case "rgenNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.GENERAL, Piece.PieceColor.RED));
+          }
+          break;
+        case "bgenNum": 
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.GENERAL, Piece.PieceColor.BLACK));
+          }
+          break;
+        default:  
+          for (int i = 0; i < entry.getValue(); i++) {
+            faceDownPieces
+                .add(new Piece(Piece.Kind.SOLDIER, Piece.PieceColor.RED));
+          }
+          break;
       }
+      
+      
+//      if (entry.getKey() == "rsolNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces
+//              .add(new Piece(Piece.Kind.SOLDIER, Piece.PieceColor.RED));
+//        }
+//      } else if (entry.getKey() == "bsolNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces.add(new Piece(Piece.Kind.SOLDIER,
+//              Piece.PieceColor.BLACK));
+//        }
+//      } else if (entry.getKey() == "rcanNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces
+//              .add(new Piece(Piece.Kind.CANNON, Piece.PieceColor.RED));
+//        }
+//      } else if (entry.getKey() == "bcanNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces.add(new Piece(Piece.Kind.CANNON,
+//              Piece.PieceColor.BLACK));
+//        }
+//      } else if (entry.getKey() == "rhorNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces.add(new Piece(Piece.Kind.HORSE, Piece.PieceColor.RED));
+//        }
+//      } else if (entry.getKey() == "bhorNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces
+//              .add(new Piece(Piece.Kind.HORSE, Piece.PieceColor.BLACK));
+//        }
+//      } else if (entry.getKey() == "rchaNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces
+//              .add(new Piece(Piece.Kind.CHARIOT, Piece.PieceColor.RED));
+//        }
+//      } else if (entry.getKey() == "bchaNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces.add(new Piece(Piece.Kind.CHARIOT,
+//              Piece.PieceColor.BLACK));
+//        }
+//      } else if (entry.getKey() == "releNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces.add(new Piece(Piece.Kind.ELEPHANT,
+//              Piece.PieceColor.RED));
+//        }
+//      } else if (entry.getKey() == "beleNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces.add(new Piece(Piece.Kind.ELEPHANT,
+//              Piece.PieceColor.BLACK));
+//        }
+//      } else if (entry.getKey() == "radvNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces
+//              .add(new Piece(Piece.Kind.ADVISOR, Piece.PieceColor.RED));
+//        }
+//      } else if (entry.getKey() == "badvNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces.add(new Piece(Piece.Kind.ADVISOR,
+//              Piece.PieceColor.BLACK));
+//        }
+//      } else if (entry.getKey() == "rgenNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces
+//              .add(new Piece(Piece.Kind.GENERAL, Piece.PieceColor.RED));
+//        }
+//      } else if (entry.getKey() == "bgenNum") {
+//        for (int i = 0; i < entry.getValue(); i++) {
+//          faceDownPieces.add(new Piece(Piece.Kind.GENERAL,
+//              Piece.PieceColor.BLACK));
+//        }
+//      }
     }
 
     // Shuffle the face down pieces.

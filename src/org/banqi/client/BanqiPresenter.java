@@ -210,13 +210,18 @@ public class BanqiPresenter {
     // Must be a player!
     if (isMyTurn()) {
       hasAiMakeMove = false;
-      if (banqiState.hasGameEnded()) {
-        // The game is over, send the endGame operation
-        endGame();
-      } else {
-        // Choose the cell only if the game is not over
-        chooseNextCell();
-      }
+      Timer playerTimer = new Timer() {
+        public void run() {
+          if (banqiState.hasGameEnded()) {
+            // The game is over, send the endGame operation
+            endGame();
+          } else {
+            // Choose the cell only if the game is not over
+            chooseNextCell();
+          }
+        }
+      };
+      playerTimer.schedule(800);
     }
   }
 
