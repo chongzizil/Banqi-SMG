@@ -49,14 +49,13 @@ The description and rules of this game can be found at [wikipedia] (http://en.wi
 
 ### [3.0] (http://3.banqi-smg.appspot.com/)
 - HW10 (AI Part...)
-- DND is deleted due to its bug when implementing the auto scale.
-- The response time of the AI is 0.5s.
-- The depth is 4. (It will at least reach depth 2, yet due to time limit, it may not reach depth 4.)
+- DND is disabled due to its bug when implementing the auto scale.
+- The response time of the AI is 1.75s.
+- The depth is 50. (It will at least reach depth 2, yet due to time limit, it will never reach that deep... But no harm to set it larger :) )
 - Since it's a imperfect game, each time before the AI caculates the move, it first will caculate a full (perfect) state for following caculation. (So the AI also have to guess...)
-- Problem
-  - Since the AI caculates the move base on a fake full state, at first it will always do a turn move instead of do a capture or simply move a piece. I manually force it to choose a move of capture if the state value is not too bad...
-- Known bugs:
-  - Same as previous...
+- I tested the AI serveral times and it's smart :) Though the game relies heavily on luck, but every move it makes makes sense.
+- Bug
+  - No sound in mobile device.
 
 
 ## Instruction
@@ -72,11 +71,7 @@ For the version later than 1.2.0, you need either the emulator or the container 
 Warning: The animation can not be properly performed in the latest version (V4 & V3) of GWT-Emulator.
 
 #### Use the website 
-- [Login Page] (http://7.smg-server.appspot.com/login.html)
-
-#### Use the container 
-- [GWT-Container] (http://smg-gwt-container.appspot.com/demo.html)
-- [AngularJS-Container] (http://smg-angularjs-container.appspot.com/#/) (My SMG team project, check [here] (https://github.com/chongzizil/SMG-AngularJS-Container) :) )
+- [Login Page] (http://smg-server.appspot.com/login.html)
 
 ## Thanks
 - Professor Yoav
