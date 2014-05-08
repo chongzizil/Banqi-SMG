@@ -156,19 +156,18 @@ public class BanqiPresenter {
     if (updateUI.isAiPlayer()) {
       if (!hasAiMakeMove) {
         hasAiMakeMove = true;
-        if (banqiState.hasGameEnded()) {
-          // The game is over, send the endGame operation
-          endGame();
-        } else {
-          
-          Timer aiTimer = new Timer() {
-            public void run() {
+        Timer aiTimer = new Timer() {
+          public void run() {
+            if (banqiState.hasGameEnded()) {
+              // The game is over, send the endGame operation
+              endGame();
+            } else {
               // The game is not over, make the move :)
               Heuristic heuristic = new Heuristic();
               AlphaBetaPruning ai = new AlphaBetaPruning(heuristic, banqiState);
               
-              // The move of the AI takes at most 1.75 second
-              DateTimer timer = new DateTimer(1750);
+              // The move of the AI takes at most 0.8 second
+              DateTimer timer = new DateTimer(800);
               
               // The depth is 50 though due to the time limit, it may not reach that deep
               Move move = ai.findBestMove(50, timer);
@@ -200,10 +199,10 @@ public class BanqiPresenter {
                 turnPiece(turnPiece);
               }
             }
-          };
-          aiTimer.schedule(800);
-        }
-      } 
+          }
+        };
+        aiTimer.schedule(550);
+      }
       return;
     }
 
@@ -221,7 +220,7 @@ public class BanqiPresenter {
           }
         }
       };
-      playerTimer.schedule(800);
+      playerTimer.schedule(450);
     }
   }
 

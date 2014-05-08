@@ -51,7 +51,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   private boolean enableClicks = false;
   private final BanqiImageSupplier banqiImageSupplier;
   private BanqiPresenter presenter;
-  private static final int ANIMATION_NORMAL_DURATION = 600;
+  private static final int ANIMATION_NORMAL_DURATION = 500;
   private static final int ANIMATION_ZERO_DURATION = 0;
   // private static final int ANIMATION_DURATION_OFFSET = 100;
 

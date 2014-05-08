@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, maximum-scale=1, user-scalable=no">
   <title>Banqi game</title>
   <style type="text/css" media="only screen and (max-device-width: 480px)">
     body > div {
@@ -13,7 +13,7 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 </head>
 
-<body>
+<body style="width: auto; height: auto;">
 <!-- Main div for the game -->
 <div id="mainDiv" style="height: 800px; width: 400px;"></div>
 
@@ -22,12 +22,16 @@
   var scale;
   var gameWidth = 400;
   var gameHeight = 800;
+  var isRotated = false;
 
   // Auto scale the body regarding the size of the broswer or its parent container.
   var scaleBody = function (myGameWidth, myGameHeight) {
     var scaleX = window.innerWidth / myGameWidth;
     var scaleY = window.innerHeight / myGameHeight;
     scale = Math.min(scaleX, scaleY);
+    //if(scale > 1) {
+    //	scale = 1;
+    //}
     var transformString = "scale(" + scale + "," + scale + ")";
     document.body.style.transform = transformString;
     document.body.style['-o-transform'] = transformString;
@@ -49,11 +53,12 @@
       var mainDivWidth = mainDiv.width();
       var mainDivHeight = mainDiv.height();
       // The game will only be reoriented in mobile device.
-      if (window.innerWidth < gameHeight || window.innerHeight < gameWidth) {
+      if ((window.innerWidth < gameHeight || window.innerHeight < gameWidth) && window.innerHeight > window.innerWidth * 2) {
         var portrait = (window.orientation === 90 || window.orientation === 270);
         // Reorienting
         mainDiv.css("-webkit-transform",
             !portrait ? "rotate(90deg)" : "");
+        isRotated = true;
         // If the game is reoriented, move the game to the right place
         if (!portrait) {
         	//console.log("********* Before scaled");
@@ -71,6 +76,7 @@
                   marginLeft + "px");
           mainDiv.css("margin-top",
                   marginTop + "px");
+          console.log("Rotated to landscape mode.");
           //console.log("********* After moved");
           //console.log(mainDiv.offset());
         } else {
@@ -80,9 +86,19 @@
       } else {
         // Auto scale the game
         scaleBody(gameHeight, gameWidth);
+        if (isRotated) {
+            mainDiv.css("-webkit-transform", "");
+                // Moving
+                mainDiv.css("margin-left",
+                        0 + "px");
+                mainDiv.css("margin-top",
+                        0 + "px");
+                console.log("Rotated back")
+          }
       }
     }
     // Everytime the orientation changes, check if it needs reorient
+    window.onresize = reorient;
     window.onorientationchange = reorient;
     window.setTimeout(reorient, 0);
   });
