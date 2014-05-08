@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.banqi.client.BanqiState;
-import org.banqi.client.Color;
+//import org.banqi.client.BanqiState;
+//import org.banqi.client.Color;
 import org.banqi.client.Move;
 import org.banqi.client.Piece;
 import org.banqi.client.BanqiPresenter;
@@ -13,12 +13,12 @@ import org.banqi.client.Position;
 import org.banqi.client.StateExplorerImpl;
 import org.banqi.sounds.GameSounds;
 
-import com.allen_sauer.gwt.dnd.client.DragContext;
+//import com.allen_sauer.gwt.dnd.client.DragContext;
 //import com.allen_sauer.gwt.dnd.client.DragEndEvent;
-import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
-import com.allen_sauer.gwt.dnd.client.DragStartEvent;
-import com.allen_sauer.gwt.dnd.client.PickupDragController;
-import com.allen_sauer.gwt.dnd.client.drop.SimpleDropController;
+//import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
+//import com.allen_sauer.gwt.dnd.client.DragStartEvent;
+//import com.allen_sauer.gwt.dnd.client.PickupDragController;
+//import com.allen_sauer.gwt.dnd.client.drop.SimpleDropController;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.shared.GWT;
@@ -51,7 +51,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   private boolean enableClicks = false;
   private final BanqiImageSupplier banqiImageSupplier;
   private BanqiPresenter presenter;
-  private static final int ANIMATION_NORMAL_DURATION = 500;
+  private static final int ANIMATION_NORMAL_DURATION = 400;
   private static final int ANIMATION_ZERO_DURATION = 0;
   // private static final int ANIMATION_DURATION_OFFSET = 100;
 
@@ -64,6 +64,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   private boolean isCaptureOfAnimation;
   private boolean isDndOfAnimation;
   private boolean hasAnimation = false;
+  private boolean isAiPlayer;
   private List<Optional<Piece>> cellsOfAnimation;
   private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
   List<Image> allImages;
@@ -166,7 +167,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
       image.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          if (enableClicks) {
+          if (enableClicks && !isAiPlayer) {
             presenter.cellSelected(imgFinal.cellId, false);
           }
         }
@@ -277,10 +278,10 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
     });*/
 
     // Get all possible start positions
-    Set<Position> possibleStartPositions = stateExplorer
-        .getPossibleStartPositions(presenter.getState());
+//    Set<Position> possibleStartPositions = stateExplorer
+//        .getPossibleStartPositions(presenter.getState());
     // Get all possible start cell indexes
-    List<Integer> possibleStartIndexOfSquare = convertFromPosToIndex(possibleStartPositions);
+//    List<Integer> possibleStartIndexOfSquare = convertFromPosToIndex(possibleStartPositions);
 
     // Place all 32 cell images
     for (int i = 0; i < 32; i++) {
@@ -289,11 +290,11 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
 
       board.add(images.get(i), xCoord, yCoord);
       // Get the state
-      BanqiState state = presenter.getState();
+//      BanqiState state = presenter.getState();
       // Get the current turn color
-      Color turnColor = state.getTurn();
+//      Color turnColor = state.getTurn();
       // Get the color of the player
-      Color myColor = presenter.getMyColor();
+//      Color myColor = presenter.getMyColor();
       // If it's the player's turn, add the possible start position's
       // piece to drag controller so the player can perform drag on the valid
       // pieces only.
@@ -302,7 +303,7 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
           dragCtrl.makeDraggable(images.get(i));
         }
       }*/
-      final Image image = images.get(i);
+//      final Image image = images.get(i);
       /*SimpleDropController dropController = new SimpleDropController(image) {
 
         @Override
@@ -409,7 +410,9 @@ public class BanqiGraphics extends Composite implements BanqiPresenter.View {
   }
 
   @Override
-  public void setPlayerState(final List<Piece> cells) {
+  public void setPlayerState(final List<Piece> cells, boolean isAiPlayer) {
+    this.isAiPlayer = isAiPlayer;
+    
     // Set up a timer, the board will only get updated after the animation is
     // performed
     Timer animationTimer = new Timer() {

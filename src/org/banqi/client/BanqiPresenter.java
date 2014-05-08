@@ -59,7 +59,7 @@ public class BanqiPresenter {
     void setViewerState(List<Piece> cells);
 
     /** Sets the state for a player (whether the player has the turn or not). */
-    void setPlayerState(List<Piece> cells);
+    void setPlayerState(List<Piece> cells, boolean isAiPlayer);
 
     /** Set the argument of the animation. */
     void setAnimateArgs(List<Optional<Piece>> cells,
@@ -147,7 +147,7 @@ public class BanqiPresenter {
         turnOfColor, playerIds);
 
     // Set the view
-    view.setPlayerState(getAllCells(banqiState));
+    view.setPlayerState(getAllCells(banqiState), updateUI.isAiPlayer());
     
     if (updateUI.isViewer()) {
       return;
@@ -166,8 +166,8 @@ public class BanqiPresenter {
               Heuristic heuristic = new Heuristic();
               AlphaBetaPruning ai = new AlphaBetaPruning(heuristic, banqiState);
               
-              // The move of the AI takes at most 0.8 second
-              DateTimer timer = new DateTimer(800);
+              // The move of the AI takes at most 1.234 second
+              DateTimer timer = new DateTimer(1234);
               
               // The depth is 50 though due to the time limit, it may not reach that deep
               Move move = ai.findBestMove(50, timer);
@@ -201,7 +201,7 @@ public class BanqiPresenter {
             }
           }
         };
-        aiTimer.schedule(550);
+        aiTimer.schedule(450);
       }
       return;
     }

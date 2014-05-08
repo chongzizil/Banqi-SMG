@@ -181,7 +181,7 @@ public class BanqiPresenterTest {
         updateUI.getState(), Color.R, playerIds);
     banqiPresenter.updateUI(createUpdateUI(rId, rId, testGameOverState));
 
-    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState));
+    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState), true);
     verify(mockContainer).sendMakeMove(
         banqiLogic.getEndGameOperation(banqiState));
   }
@@ -193,7 +193,7 @@ public class BanqiPresenterTest {
         updateUI.getState(), Color.B, playerIds);
     banqiPresenter.updateUI(createUpdateUI(bId, bId, testGameOverState));
 
-    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState));
+    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState), true);
     verify(mockContainer).sendMakeMove(
         banqiLogic.getEndGameOperation(banqiState));
   }
@@ -217,7 +217,7 @@ public class BanqiPresenterTest {
     banqiPresenter.updateUI(updateUI);
     banqiPresenter.cellSelected(0, false);
 
-    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState));
+    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState), true);
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
         new ArrayList<Integer>());
     verify(mockContainer).sendMakeMove(
@@ -233,7 +233,7 @@ public class BanqiPresenterTest {
     banqiPresenter.updateUI(updateUI);
     banqiPresenter.cellSelected(0, false);
 
-    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState));
+    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState), true);
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
         new ArrayList<Integer>());
     verify(mockContainer).sendMakeMove(
@@ -250,7 +250,7 @@ public class BanqiPresenterTest {
     banqiPresenter.cellSelected(0, false);
     banqiPresenter.cellSelected(1, false);
 
-    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState));
+    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState), true);
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
         new ArrayList<Integer>());
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
@@ -270,7 +270,7 @@ public class BanqiPresenterTest {
     banqiPresenter.cellSelected(31, false);
     banqiPresenter.cellSelected(30, false);
 
-    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState));
+    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState), true);
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
         new ArrayList<Integer>());
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
@@ -292,7 +292,7 @@ public class BanqiPresenterTest {
     banqiPresenter.cellSelected(31, false);
     banqiPresenter.cellSelected(30, false);
 
-    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState));
+    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState), true);
     verify(mockView, times(2)).chooseNextCell(
         banqiPresenter.getAllCells(banqiState), new ArrayList<Integer>());
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
@@ -314,7 +314,7 @@ public class BanqiPresenterTest {
     banqiPresenter.cellSelected(0, false);
     banqiPresenter.cellSelected(8, false);
 
-    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState));
+    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState), true);
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
         new ArrayList<Integer>());
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
@@ -334,7 +334,7 @@ public class BanqiPresenterTest {
     banqiPresenter.cellSelected(10, false);
     banqiPresenter.cellSelected(8, false);
 
-    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState));
+    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState), true);
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
         new ArrayList<Integer>());
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
@@ -354,7 +354,7 @@ public class BanqiPresenterTest {
     banqiPresenter.cellSelected(8, false);
     banqiPresenter.cellSelected(9, false);
 
-    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState));
+    verify(mockView).setPlayerState(banqiPresenter.getAllCells(banqiState), true);
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
         new ArrayList<Integer>());
     verify(mockView).chooseNextCell(banqiPresenter.getAllCells(banqiState),
