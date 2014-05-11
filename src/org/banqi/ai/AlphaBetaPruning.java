@@ -32,7 +32,6 @@ import org.banqi.client.Piece;
 import org.banqi.client.Position;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -55,6 +54,9 @@ public class AlphaBetaPruning {
   private BanqiState fullState;
   private BanqiState state;
   private Heuristic heuristic;
+  private static int moveCount = 0;
+  private static int winCaseCount = 0;
+  private static int loseCaseCount = 0;
 
   static class TimeoutException extends RuntimeException {
     private static final long serialVersionUID = 1L;
@@ -74,16 +76,10 @@ public class AlphaBetaPruning {
   public AlphaBetaPruning(Heuristic heuristic, BanqiState banqiState) {
     this.heuristic = heuristic;
     this.state = banqiState.copy();
-    // Get the fullState
-    this.fullState = getFullState(banqiState.copy());
   }
 
   public Move findBestMove(int depth, Timer timer) {
-    
-    boolean isBlack = state.getTurn().isBlack();
-
-    // For each move, there's a state for it
-    List<BanqiState> states = new ArrayList<BanqiState>();
+    boolean isBlack = state.getTurn().isBlack();    
     
     // Do iterative deepening (A*), and slow get better heuristic values for the
     // states.
@@ -95,17 +91,19 @@ public class AlphaBetaPruning {
       score.move = move;
       score.score = Integer.MIN_VALUE;
       scores.add(score);
-//      states.add(state.copy());
     }
 
     try {
+//      long startTime = System.currentTimeMillis();
       for (int i = 0; i < depth; i++) {
+        // Get the fullState    
+        this.fullState = getFullState(state.copy());
+//        console("Depth " + i + " start's at " + (System.currentTimeMillis() - startTime));
         for (int j = 0; j < scores.size(); j++) {
-//          BanqiState state = states.get(j);
           Move move = null;
           MoveScore<Move> moveScore = scores.get(j);
           move = moveScore.move;
-          int score = findMoveScore(makeMove(state, move), move.getType() == Move.Type.CAPTURE,
+          int score = findMoveScore(makeMove(state, move),
               i, Integer.MIN_VALUE, Integer.MAX_VALUE, timer);
           if (!isBlack) {
             // the scores are from the point of view of the black, so for white
@@ -125,13 +123,9 @@ public class AlphaBetaPruning {
     
     Move bestMove = scores.get(0).move;
     
-//    // Choose a capture move first if it's not too bad...
-//    for (MoveScore<Move> ms : scores) {
-//      if (ms.move.getType() == Move.Type.CAPTURE && scores.get(0).score - ms.score < 6) {
-//        bestMove = ms.move;
-//        break;
-//      }
-//    }
+//    console("Total move count: " + moveCount);
+//    console("Win case count: " + winCaseCount);
+//    console("Lose case count: " + loseCaseCount);
     
     return bestMove;
   }
@@ -139,25 +133,21 @@ public class AlphaBetaPruning {
   /**
    * If we get a timeout, then the score is invalid.
    */
-  private int findMoveScore(final BanqiState banqiState, boolean isCapture,
+  private int findMoveScore(final BanqiState banqiState,
       int depth, int alpha, int beta, Timer timer) throws TimeoutException {
-    
     BanqiState state = banqiState.copy();
     
     if (timer.didTimeout()) {
       throw new TimeoutException();
     }
 
-    if (depth == 0 || state.hasGameEnded()) {
-      // The weight of a capture move should be much more than other moves otherwise the AI
-      // will always assume turn is the best move based on a random full state.
-//      if (isCapture) {
-//        if (Color.B == state.getTurn()) {
-//          return heuristic.getStateValue(state) - 8;
-//        } else {
-//          return heuristic.getStateValue(state) + 8;
-//        }
-//      }
+    if (depth == 0 || state.getWinner() != Color.N) {
+      if (state.getWinner() == Color.R) {
+        loseCaseCount++;
+      } else if (state.getWinner() == Color.B) {
+        winCaseCount++;
+      }
+
       return heuristic.getStateValue(state);
     }
 
@@ -167,8 +157,7 @@ public class AlphaBetaPruning {
     Iterable<Move> possibleMoves = heuristic.getOrderedMoves(state);
     for (Move move : possibleMoves) {
       count++;
-      int childScore = findMoveScore(makeMove(state, move),  move.getType() == Move.Type.CAPTURE,
-          depth - 1, alpha, beta, timer);
+      int childScore = findMoveScore(makeMove(state, move), depth - 1, alpha, beta, timer);
       if (color == null) {
         scoreSum += childScore;
       } else if (color.isBlack()) {
@@ -193,9 +182,7 @@ public class AlphaBetaPruning {
    * @return state The full state.
    */
   public BanqiState getFullState(BanqiState banqiState) {
-    
     BanqiState state = banqiState.copy();
-    
     List<Optional<Piece>> cells = state.getCells();
 
     // All face down pieces waiting to be shuffled
@@ -310,78 +297,6 @@ public class AlphaBetaPruning {
           }
           break;
       }
-      
-      
-//      if (entry.getKey() == "rsolNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces
-//              .add(new Piece(Piece.Kind.SOLDIER, Piece.PieceColor.RED));
-//        }
-//      } else if (entry.getKey() == "bsolNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces.add(new Piece(Piece.Kind.SOLDIER,
-//              Piece.PieceColor.BLACK));
-//        }
-//      } else if (entry.getKey() == "rcanNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces
-//              .add(new Piece(Piece.Kind.CANNON, Piece.PieceColor.RED));
-//        }
-//      } else if (entry.getKey() == "bcanNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces.add(new Piece(Piece.Kind.CANNON,
-//              Piece.PieceColor.BLACK));
-//        }
-//      } else if (entry.getKey() == "rhorNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces.add(new Piece(Piece.Kind.HORSE, Piece.PieceColor.RED));
-//        }
-//      } else if (entry.getKey() == "bhorNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces
-//              .add(new Piece(Piece.Kind.HORSE, Piece.PieceColor.BLACK));
-//        }
-//      } else if (entry.getKey() == "rchaNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces
-//              .add(new Piece(Piece.Kind.CHARIOT, Piece.PieceColor.RED));
-//        }
-//      } else if (entry.getKey() == "bchaNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces.add(new Piece(Piece.Kind.CHARIOT,
-//              Piece.PieceColor.BLACK));
-//        }
-//      } else if (entry.getKey() == "releNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces.add(new Piece(Piece.Kind.ELEPHANT,
-//              Piece.PieceColor.RED));
-//        }
-//      } else if (entry.getKey() == "beleNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces.add(new Piece(Piece.Kind.ELEPHANT,
-//              Piece.PieceColor.BLACK));
-//        }
-//      } else if (entry.getKey() == "radvNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces
-//              .add(new Piece(Piece.Kind.ADVISOR, Piece.PieceColor.RED));
-//        }
-//      } else if (entry.getKey() == "badvNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces.add(new Piece(Piece.Kind.ADVISOR,
-//              Piece.PieceColor.BLACK));
-//        }
-//      } else if (entry.getKey() == "rgenNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces
-//              .add(new Piece(Piece.Kind.GENERAL, Piece.PieceColor.RED));
-//        }
-//      } else if (entry.getKey() == "bgenNum") {
-//        for (int i = 0; i < entry.getValue(); i++) {
-//          faceDownPieces.add(new Piece(Piece.Kind.GENERAL,
-//              Piece.PieceColor.BLACK));
-//        }
-//      }
     }
 
     // Shuffle the face down pieces.
@@ -412,6 +327,9 @@ public class AlphaBetaPruning {
    * @return state The state after the move.
    */
   public BanqiState makeMove(final BanqiState banqiState, Move move) {
+    
+    moveCount++;
+    
     BanqiState state = banqiState.copy();
     
     List<Optional<Piece>> cells = state.getCells();
@@ -455,6 +373,7 @@ public class AlphaBetaPruning {
     
     // Set the turn to the next player
     state.setNextTurn();
+    
     return state;
   };
 
@@ -462,5 +381,10 @@ public class AlphaBetaPruning {
   public int convertToIndex(int row, int col) {
     return ((row - 1) * 8 + col) - 1;
   }
-
+  
+  /** Print debug info in the console. */
+  public static native void console(String text)
+  /*-{
+      console.log(text);
+  }-*/;
 }

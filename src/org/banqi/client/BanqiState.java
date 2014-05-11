@@ -20,6 +20,7 @@ public class BanqiState {
    * there's no piece in the cell, then the kind of the piece will be EMPTY.
    */
   private ImmutableList<Optional<Piece>> cells;
+  // A list of all captured pieces
   private ImmutableList<Piece> capturedPieces;
   private ImmutableList<String> playerIds;
   private Color turn;
@@ -35,43 +36,88 @@ public class BanqiState {
     this.capturedPieces = capturedPieces;
   }
 
-  public boolean hasFacingDownPiece() {
-    // Traverse every square of the board and check if there is at least one
-    // facing-down piece
+  /**
+   * Get the winner, if the end is not ended, return null.
+   * 
+   * @return Color Return the winner's color or null if the game is not over yet.
+   */
+  public Color getWinner() {
+    boolean hasRed = false;
+    boolean hasBlack = false;
+    
+    // Traverse every cell of the board
     for (Optional<Piece> piece : cells) {
-      // Check if there is a face down piece
       if (!piece.isPresent()) {
-        return true; // At least one facing-down piece on the board
-      }
-    }
-    return false; // There's no facing-down piece on the board
-  }
+        // At least one facing-down piece on the board, so no winner
+        return Color.N;
+      } else if (piece.get().getKind() != Piece.Kind.EMPTY) {
+        // If there's at least one piece for each color, no winner
+        if (hasRed && hasBlack) {
+          return Color.N;
+        }
 
-  public boolean hasRedOrBlackPieces(Color color) {
-    // Traverse every square of the board and check if all the pieces left have
-    // the same color
-    for (Optional<Piece> piece : cells) {
-      // Check if there the piece is facing up
-      if (piece.isPresent()) {
-        // Check the piece is not empty
-        if (piece.get().getKind() != Piece.Kind.EMPTY) {
-          // Check the color of the piece.
-          if (piece.get().getPieceColor().name().substring(0, 1)
-              .equals(color.name())) {
-            return true; // At least one piece of that color is on the board
-          }
+        switch(piece.get().getPieceColor().name().substring(0, 1)) {
+          case "R": hasRed = true; break;
+          case "B": hasBlack = true; break;
+          default: hasRed = true; break;
         }
       }
     }
-    return false; // There's no piece of that color on the board
+    
+    if (hasRed && !hasBlack) {
+      return Color.R;
+    } else if (!hasRed && hasBlack) {
+      return Color.B;
+    }
+    
+    return Color.N;
   }
   
-  public boolean hasGameEnded() {
-    boolean hasBlack = hasRedOrBlackPieces(Color.B);
-    boolean hasRed = hasRedOrBlackPieces(Color.R);
+//  /**
+//   * Check if there's at least one face down piece.
+//   * 
+//   * @return boolean Wether the at least one face down piece exists in the board.
+//   */
+//  public boolean hasFacingDownPiece() {
+//    // Traverse every square of the board and check if there is at least one
+//    // facing-down piece
+//    for (Optional<Piece> piece : cells) {
+//      // Check if there is a face down piece
+//      if (!piece.isPresent()) {
+//        return true; // At least one facing-down piece on the board
+//      }
+//    }
+//    return false; // There's no facing-down piece on the board
+//  }
 
-    return (hasBlack ^ hasRed) && !hasFacingDownPiece();
-  }
+//  /**
+//   * Check if there's any pieces of a specific color.
+//   * 
+//   * @param color The color of pieces need to be check
+//   * @return boolean True if at least one piece of that color exists
+//   */
+//  public boolean hasRedOrBlackPieces(Color color) {
+//    // Traverse every square of the board and check if all the pieces left have
+//    // the same color
+//    for (Optional<Piece> piece : cells) {
+//      // Check if the piece is facing up and not empty 
+//      if (piece.isPresent() && piece.get().getKind() != Piece.Kind.EMPTY) {
+//        // Check the color of the piece.
+//        if (piece.get().getPieceColor().name().substring(0, 1)
+//            .equals(color.name())) {
+//          return true; // At least one piece of that color is on the board
+//        }
+//      }
+//    }
+//    return false; // There's no piece of that color on the board
+//  }
+  
+//  public boolean hasGameEnded() {
+//    boolean hasBlack = hasRedOrBlackPieces(Color.B);
+//    boolean hasRed = hasRedOrBlackPieces(Color.R);
+//
+//    return (hasBlack ^ hasRed) && !hasFacingDownPiece();
+//  }
 
   public Color getTurn() {
     return turn;

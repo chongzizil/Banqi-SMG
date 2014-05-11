@@ -279,29 +279,30 @@ public class BanqiLogic {
     return expectedOperations;
   }
   
-  /** Return the winner color if the game ends properly. */
-  Color whoWinTheGame(BanqiState state) {
-    boolean hasBlack = state.hasRedOrBlackPieces(Color.B);
-    boolean hasRed = state.hasRedOrBlackPieces(Color.R);
-    //Returning the winner's color
-    if (state.hasFacingDownPiece()) {
-      return null;
-    } else if (hasBlack && !hasRed) {
-      return Color.B;
-    } else if (!hasBlack && hasRed) {
-      return Color.R;
-    } else {
-      return null;
-    }
-  }
+//  /** Return the winner color if the game ends properly. */
+//  Color whoWinTheGame(BanqiState state) {
+//    boolean hasBlack = state.hasRedOrBlackPieces(Color.B);
+//    boolean hasRed = state.hasRedOrBlackPieces(Color.R);
+//    //Returning the winner's color
+//    if (state.hasFacingDownPiece()) {
+//      return null;
+//    } else if (hasBlack && !hasRed) {
+//      return Color.B;
+//    } else if (!hasBlack && hasRed) {
+//      return Color.R;
+//    } else {
+//      return null;
+//    }
+//  }
   
   /** Returns the operations for ending the game. */
   List<Operation> getEndGameOperation(BanqiState state) {
     List<Operation> expectedOperations = Lists.newArrayList();
     Color turnOfColor = state.getTurn();
     
-    Color winnerColor = whoWinTheGame(state);
-    check(winnerColor != null);
+    Color winnerColor = state.getWinner();
+    
+    check(winnerColor != Color.N);
     if (winnerColor == turnOfColor) {
       expectedOperations.add(new SetTurn(state.getPlayerId(winnerColor.getOppositeColor())));
       expectedOperations.add(new EndGame(state.getPlayerId(winnerColor)));

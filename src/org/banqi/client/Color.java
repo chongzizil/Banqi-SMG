@@ -1,7 +1,7 @@
 package org.banqi.client;
 
 public enum Color {
-  R, B;
+  R, B, N;
 
   public boolean isRed() {
     return this == R;

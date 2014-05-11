@@ -53,7 +53,7 @@
       var mainDivWidth = mainDiv.width();
       var mainDivHeight = mainDiv.height();
       // The game will only be reoriented in mobile device.
-      if ((window.innerWidth < gameHeight || window.innerHeight < gameWidth) && window.innerHeight > window.innerWidth * 2) {
+      if ((window.innerWidth < gameHeight || window.innerHeight < gameWidth) && window.innerHeight > window.innerWidth) {
         var portrait = (window.orientation === 90 || window.orientation === 270);
         // Reorienting
         mainDiv.css("-webkit-transform",

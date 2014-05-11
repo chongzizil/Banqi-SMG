@@ -153,56 +153,60 @@ public class BanqiPresenter {
       return;
     }
 
-    if (updateUI.isAiPlayer()) {
-      if (!hasAiMakeMove) {
-        hasAiMakeMove = true;
-        Timer aiTimer = new Timer() {
-          public void run() {
-            if (banqiState.hasGameEnded()) {
-              // The game is over, send the endGame operation
-              endGame();
-            } else {
-              // The game is not over, make the move :)
-              Heuristic heuristic = new Heuristic();
-              AlphaBetaPruning ai = new AlphaBetaPruning(heuristic, banqiState);
-              
-              // The move of the AI takes at most 1.234 second
-              DateTimer timer = new DateTimer(1234);
-              
-              // The depth is 50 though due to the time limit, it may not reach that deep
-              Move move = ai.findBestMove(50, timer);
-              
-              // AI make the move.
-              int selectedFromCoord = ((move.getFrom().getRow() - 1) * 8
-                  + move.getFrom().getCol()) - 1;
-              int selectedToCoord = ((move.getTo().getRow() - 1) * 8
-                  + move.getTo().getCol()) - 1;
-              if (move.getType() == Move.Type.CAPTURE) {
-                
-                Set capturePiece = new Set(CAPTUREPIECE, ImmutableList.of("C"
-                    + selectedFromCoord, "C" + selectedToCoord));
-                view.setAnimateArgs(banqiState.getCells(), selectedFromCoord, selectedToCoord,
-                    true, false);
-                capturePiece(capturePiece);
-              } else if (move.getType() == Move.Type.MOVE) {
-                
-                Set movePiece = new Set(MOVEPIECE, ImmutableList.of("C"
-                    + selectedFromCoord, "C" + selectedToCoord));
-                view.setAnimateArgs(banqiState.getCells(), selectedFromCoord, selectedToCoord,
-                    false, false);
-                movePiece(movePiece);
-              } else {
-                
-                Set turnPiece = new Set(TURNPIECE, "C" + selectedFromCoord);
-                view.setAnimateArgs(banqiState.getCells(), selectedFromCoord, selectedFromCoord,
-                    false, false);
-                turnPiece(turnPiece);
-              }
+    if (updateUI.isAiPlayer() && !hasAiMakeMove) {
+      hasAiMakeMove = true;
+        
+      Timer aiTimer = new Timer() {
+        public void run() {
+          if (banqiState.getWinner() != Color.N) {
+            // The game is over, send the end Game operation
+            endGame();
+          } else {
+            // The game is not over, make the move :)
+            Heuristic heuristic = new Heuristic();
+            AlphaBetaPruning ai = new AlphaBetaPruning(heuristic, banqiState);
+            
+            // The move of the AI takes at most 1.75 second
+            DateTimer timer = new DateTimer((int) (1.75 * 1000));
+            
+            // The depth is 50 though due to the time limit, it may not reach that deep
+            Move bestMove = ai.findBestMove(50, timer);
+            
+            // AI make the move.
+            int selectedFromCoord = ((bestMove.getFrom().getRow() - 1) * 8
+                + bestMove.getFrom().getCol()) - 1;
+            int selectedToCoord = ((bestMove.getTo().getRow() - 1) * 8
+                + bestMove.getTo().getCol()) - 1;
+            
+            switch(bestMove.getType()) {
+            case CAPTURE: 
+              Set capturePiece = new Set(CAPTUREPIECE, ImmutableList.of("C"
+                  + selectedFromCoord, "C" + selectedToCoord));
+              view.setAnimateArgs(banqiState.getCells(), selectedFromCoord, selectedToCoord,
+                  true, false);
+              capturePiece(capturePiece);
+              break;
+            case MOVE: 
+              Set movePiece = new Set(MOVEPIECE, ImmutableList.of("C"
+                  + selectedFromCoord, "C" + selectedToCoord));
+              view.setAnimateArgs(banqiState.getCells(), selectedFromCoord, selectedToCoord,
+                  false, false);
+              movePiece(movePiece);
+              break;
+            case TURN: 
+              Set turnPiece = new Set(TURNPIECE, "C" + selectedFromCoord);
+              view.setAnimateArgs(banqiState.getCells(), selectedFromCoord, selectedFromCoord,
+                  false, false);
+              turnPiece(turnPiece);
+              break;
+            default:
+              break;
             }
           }
-        };
-        aiTimer.schedule(450);
-      }
+        }
+      };
+      aiTimer.schedule(450);
+
       return;
     }
 
@@ -211,7 +215,7 @@ public class BanqiPresenter {
       hasAiMakeMove = false;
       Timer playerTimer = new Timer() {
         public void run() {
-          if (banqiState.hasGameEnded()) {
+          if (banqiState.getWinner() != Color.N) {
             // The game is over, send the endGame operation
             endGame();
           } else {

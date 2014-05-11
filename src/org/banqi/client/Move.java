@@ -19,7 +19,7 @@ public class Move {
   public Move(Position from, Position to, Type typeValue) {
     this.from = checkNotNull(from);
     this.to = checkNotNull(to);
-    this.typeValue = typeValue;
+    this.typeValue = checkNotNull(typeValue);
   }
 
   // TurnPiece

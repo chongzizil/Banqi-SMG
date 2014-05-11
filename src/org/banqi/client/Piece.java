@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class Piece extends Equality {
   /**
-   * There're totally 9 kinds which 7 of them are normal kinds of pieces and 1 kind:
+   * There're totally 8 kinds which 7 of them are normal kinds of pieces and 1 kind:
    * EMPTY refers to nonexists piece in a cell.
    */
   public enum Kind {

@@ -18,7 +18,6 @@
 package org.banqi.ai;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,19 +29,38 @@ import org.banqi.client.Piece;
 import org.banqi.client.StateExplorerImpl;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 public class Heuristic {
   private final StateExplorerImpl stateExplorer = new StateExplorerImpl();
   // Basic value of each kind of piece, note that although cannon is vunlunrable to most pieces,
-  // it also can capture all kinds of pieces, so it's value for now is 5
+  // it also can capture all kinds of pieces, so it has a relatively high value.
   private static final int VALUEOFSOLDIER = 1;
-  private static final int VALUEOFHORSE = 3;
-  private static final int VALUEOFCHARIOT = 7;
-  private static final int VALUEOFELEPHANT = 15;
-  private static final int VALUEOFCANNON = 16;
-  private static final int VALUEOFADVISOR = 33;
-  private static final int VALUEOFGENERAL = 67;
-  
+  private static final int VALUEOFHORSE = 6;
+  private static final int VALUEOFCHARIOT = 13;
+  private static final int VALUEOFELEPHANT = 27;
+  private static final int VALUEOFCANNON = 55;
+  private static final int VALUEOFADVISOR = 55;
+  private static final int VALUEOFGENERAL = 111;
+  private static final Map<String, Integer> FACEDOWNPIECESNUMBER =
+      ImmutableMap.<String, Integer>builder()
+      .put("rsolNum", 5)
+      .put("bsolNum", 5)
+      .put("rcanNum", 2)
+      .put("bcanNum", 2)
+      .put("rhorNum", 2)
+      .put("bhorNum", 2)
+      .put("rchaNum", 2)
+      .put("bchaNum", 2)
+      .put("releNum", 2)
+      .put("beleNum", 2)
+      .put("radvNum", 2)
+      .put("badvNum", 2)
+      .put("rgenNum", 1)
+      .put("bgenNum", 1)
+      .build();
+      
   public Heuristic() {
   }
   
@@ -52,18 +70,16 @@ public class Heuristic {
    * @param banqiState The state for evaluation.
    * @return stateValue The value of the state.
    */
-  public int getStateValue(final BanqiState banqiState) {
-    BanqiState state = banqiState.copy();
+  public int getStateValue(final BanqiState state) {
     int faceDownPiecesValue = 0;
     int faceUpPiecesValue = 0;
     
     // The game is over
-    if (state.hasGameEnded()) {
-      if (state.hasRedOrBlackPieces(Color.R)) {
-        return Integer.MIN_VALUE;
-      } else {
-        return Integer.MAX_VALUE;
-      }
+    Color winnerColor = state.getWinner();
+    if (winnerColor == Color.R) {
+      return Integer.MIN_VALUE;
+    } else if (winnerColor == Color.B) {
+      return Integer.MAX_VALUE;
     }
     
     // Get the total value of all face down pieces
@@ -76,7 +92,7 @@ public class Heuristic {
       }
     }
     
-    return faceUpPiecesValue + faceDownPiecesValue;
+    return (int) (faceUpPiecesValue + faceDownPiecesValue * 1.05);
   }
 
   /**
@@ -92,45 +108,26 @@ public class Heuristic {
   public Iterable<Move> getOrderedMoves(final BanqiState banqiState) {    
     List<Move> orderedMoves = new ArrayList<Move>();
     List<Move> captureMoves = new ArrayList<Move>();
-    List<Move> turnMoves = new ArrayList<Move>();
     List<Move> moveMoves = new ArrayList<Move>();
-    List<Move> otherMoves = new ArrayList<Move>();
+    List<Move> turnMoves = new ArrayList<Move>();
     
     // Get all possible moves
     Set<Move> allPossibleMoves = stateExplorer.getPossibleMoves(banqiState);
     
-//    for (Move move : allPossibleMoves) {
-//      if (move.getType() == Move.Type.CAPTURE) {
-//        captureMoves.add(move);
-//      } else if (move.getType() == Move.Type.TURN) {
-//        turnMoves.add(move);
-//      } else {
-//        moveMoves.add(move);
-//      }
-//    }
-    
     for (Move move : allPossibleMoves) {
-      if (move.getType() == Move.Type.CAPTURE) {
-        captureMoves.add(move);
-      } else {
-        otherMoves.add(move);
+      switch(move.getType()) {
+        case CAPTURE: captureMoves.add(move); break;
+        case TURN: turnMoves.add(move); break;
+        case MOVE: moveMoves.add(move); break;
+        default: captureMoves.add(move); break;
       }
     }
     
-//    // Shuffle
-//    Random rnd = new Random();
-//    List<Move> shuffledOtherMoves = Lists.newArrayList();
-//    while (!otherMoves.isEmpty()) {
-//      int index = rnd.nextInt(otherMoves.size());
-//      shuffledOtherMoves.add(otherMoves.remove(index));
-//    }
-    
     // According to the type of the move, reorder all the moves
     orderedMoves.addAll(captureMoves);
-    orderedMoves.addAll(otherMoves);
-//    orderedMoves.addAll(moveMoves);
-//    orderedMoves.addAll(turnMoves);
-//    orderedMoves.addAll(shuffledOtherMoves);
+    orderedMoves.addAll(moveMoves);
+    orderedMoves.addAll(turnMoves);
+    
     return orderedMoves;
   }
   
@@ -141,28 +138,14 @@ public class Heuristic {
    * @return faceDownPiecesNum The number of each piece of each kind and color.
    */
   public Map<String, Integer> getFaceDownPiecesNum(BanqiState state) {
+    List<Optional<Piece>> cells = state.getCells();
     List<Piece> capturedPieces = state.getCapturedPieces();
-    Map<String, Integer> faceDownPiecesNum = new HashMap<String, Integer>();
-    
-    // Initial number of each kind of pieces
-    faceDownPiecesNum.put("rsolNum", 5);
-    faceDownPiecesNum.put("bsolNum", 5);
-    faceDownPiecesNum.put("rcanNum", 2);
-    faceDownPiecesNum.put("bcanNum", 2);
-    faceDownPiecesNum.put("rhorNum", 2);
-    faceDownPiecesNum.put("bhorNum", 2);
-    faceDownPiecesNum.put("rchaNum", 2);
-    faceDownPiecesNum.put("bchaNum", 2);
-    faceDownPiecesNum.put("releNum", 2);
-    faceDownPiecesNum.put("beleNum", 2);
-    faceDownPiecesNum.put("radvNum", 2);
-    faceDownPiecesNum.put("badvNum", 2);
-    faceDownPiecesNum.put("rgenNum", 1);
-    faceDownPiecesNum.put("bgenNum", 1);
-    
+    Map<String, Integer> faceDownPiecesNum = Maps.newHashMap();
+    faceDownPiecesNum.putAll(FACEDOWNPIECESNUMBER);
+
     // Caculate all face up pieces of the state to determine the number of each
     // pieces facing down of the state.
-    for (Optional<Piece> piece : state.getCells()) {
+    for (Optional<Piece> piece : cells) {
       if (piece.isPresent() && piece.get().getKind() != Piece.Kind.EMPTY) {
         Piece.Kind kind = piece.get().getKind();
         Piece.PieceColor pieceColor = piece.get().getPieceColor();
@@ -186,50 +169,6 @@ public class Heuristic {
         }
         
         faceDownPiecesNum.put(key, faceDownPiecesNum.get(key) - 1);
-        
-//        if (kind == Piece.Kind.SOLDIER) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("rsolNum", faceDownPiecesNum.get("rsolNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("bsolNum", faceDownPiecesNum.get("bsolNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.CANNON) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("rcanNum", faceDownPiecesNum.get("rcanNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("bcanNum", faceDownPiecesNum.get("bcanNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.HORSE) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("rhorNum", faceDownPiecesNum.get("rhorNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("bhorNum", faceDownPiecesNum.get("bhorNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.CHARIOT) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("rchaNum", faceDownPiecesNum.get("rchaNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("bchaNum", faceDownPiecesNum.get("bchaNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.ELEPHANT) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("releNum", faceDownPiecesNum.get("releNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("beleNum", faceDownPiecesNum.get("beleNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.ADVISOR) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("radvNum", faceDownPiecesNum.get("radvNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("badvNum", faceDownPiecesNum.get("badvNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.GENERAL) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("rgenNum", faceDownPiecesNum.get("rgenNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("bgenNum", faceDownPiecesNum.get("bgenNum") - 1);
-//          }
-//        }
       }
     }
     
@@ -258,50 +197,6 @@ public class Heuristic {
         }
         
         faceDownPiecesNum.put(key, faceDownPiecesNum.get(key) - 1);
-        
-//        if (kind == Piece.Kind.SOLDIER) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("rsolNum", faceDownPiecesNum.get("rsolNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("bsolNum", faceDownPiecesNum.get("bsolNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.CANNON) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("rcanNum", faceDownPiecesNum.get("rcanNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("bcanNum", faceDownPiecesNum.get("bcanNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.HORSE) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("rhorNum", faceDownPiecesNum.get("rhorNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("bhorNum", faceDownPiecesNum.get("bhorNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.CHARIOT) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("rchaNum", faceDownPiecesNum.get("rchaNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("bchaNum", faceDownPiecesNum.get("bchaNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.ELEPHANT) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("releNum", faceDownPiecesNum.get("releNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("beleNum", faceDownPiecesNum.get("beleNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.ADVISOR) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("radvNum", faceDownPiecesNum.get("radvNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("badvNum", faceDownPiecesNum.get("badvNum") - 1);
-//          }
-//        } else if (kind == Piece.Kind.GENERAL) {
-//          if (pieceColor == Piece.PieceColor.RED) {
-//            faceDownPiecesNum.put("rgenNum", faceDownPiecesNum.get("rgenNum") - 1);
-//          } else if (pieceColor == Piece.PieceColor.BLACK) {
-//            faceDownPiecesNum.put("bgenNum", faceDownPiecesNum.get("bgenNum") - 1);
-//          }
-//        }
       }
     }
     
@@ -336,12 +231,19 @@ public class Heuristic {
    * @return value The value of a face up piece.
    */
   public int getFaceUpPieceValue(Piece piece) {
-    int value = piece.getKind() == Piece.Kind.SOLDIER ? VALUEOFSOLDIER
-      : piece.getKind() == Piece.Kind.HORSE ? VALUEOFHORSE
-      : piece.getKind() == Piece.Kind.CHARIOT ? VALUEOFCHARIOT
-      : piece.getKind() == Piece.Kind.ELEPHANT ? VALUEOFELEPHANT
-      : piece.getKind() == Piece.Kind.CANNON ? VALUEOFCANNON
-      : piece.getKind() == Piece.Kind.ADVISOR ? VALUEOFADVISOR : VALUEOFGENERAL;
+    int value = 0;
+    
+    switch(piece.getKind()) {
+      case SOLDIER: value = VALUEOFSOLDIER; break;
+      case HORSE: value = VALUEOFHORSE; break;
+      case CHARIOT: value = VALUEOFCHARIOT; break;
+      case ELEPHANT: value = VALUEOFELEPHANT; break;
+      case CANNON: value = VALUEOFCANNON; break;
+      case ADVISOR: value = VALUEOFADVISOR; break;
+      case GENERAL: value = VALUEOFGENERAL; break;
+      default: value = VALUEOFSOLDIER; break;
+    }
+
     return piece.getPieceColor() == Piece.PieceColor.RED ? -value : value;
   }
 }
