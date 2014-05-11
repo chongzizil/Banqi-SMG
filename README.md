@@ -57,6 +57,11 @@ The description and rules of this game can be found at [wikipedia] (http://en.wi
 - Bug
   - No sound in mobile device.
 
+### [3.1] (http://3-1.banqi-smg.appspot.com/)
+- Final HW
+- Clean up the codes and add some comments
+- About AI
+  - According to my test, the AI algorithm can reach to depth 3 (not complete) at the beginning and later 4 and 5, it may reach to depth 6 at the last.
 
 ## Instruction
 
