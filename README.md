@@ -69,13 +69,11 @@ The description and rules of this game can be found at [wikipedia] (http://en.wi
 
 For the version later than 1.2.0, you need either the emulator or the container to start play.
 
-#### Use the emulator
+#### Use the emulator (simplest)
 - [GWT-Emulator] (http://smg-gwt-emulator.appspot.com/GwtEmulator.html)
 - [AngularJS-Emulator] (http://smg-angularjs-emulator.appspot.com/)
 
-Warning: The animation can not be properly performed in the latest version (V4 & V3) of GWT-Emulator.
-
-#### Use the website 
+#### Use the platform 
 - [Login Page] (http://smg-server.appspot.com/login.html)
 
 ## Thanks
