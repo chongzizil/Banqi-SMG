@@ -63,13 +63,26 @@ The description and rules of this game can be found at [wikipedia] (http://en.wi
 - About AI
   - According to my test, the AI algorithm can reach to depth 3 (not complete) at the beginning and later 4 and 5, it may reach to depth 6 at the last.
 
+### [3.2] (http://3-2.banqi-smg.appspot.com/) (Default)
+- Support standalone play without emulator or container.
+  - [Pass and Play] (http://banqi-smg.appspot.com?PassAndPlay)
+  - [Play against AI] (http://banqi-smg.appspot.com?PlayAgainstTheComputer)
+- Minor adjustment to the AI's codes...
+  - Response time is 1.5s now... (= .= Don't like wait for too long...)
+
 ## Instruction
 
 ### How to play
 
 For the version later than 1.2.0, you need either the emulator or the container to start play.
+For the version equal or later then 3.2, you can player with or without the emulator and the container.
 
-#### Use the emulator (simplest)
+#### Play directorly (simplest)
+- [Pass and Play] (http://banqi-smg.appspot.com?PassAndPlay)
+- [Play against AI] (http://banqi-smg.appspot.com?PlayAgainstTheComputer)
+
+
+#### Use the emulator
 - [GWT-Emulator] (http://smg-gwt-emulator.appspot.com/GwtEmulator.html)
 - [AngularJS-Emulator] (http://smg-angularjs-emulator.appspot.com/)
 
