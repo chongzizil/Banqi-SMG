@@ -37,14 +37,15 @@ public class BanqiLogicTest {
   }
 
   /*
-   * The entries used in the cheat game are: movePiece, turnPiece, capturePiece,
-   * P0...P31, S0...P31 When we send operations on these keys, it will always be
-   * in the above order.
+   * The entries used in the banqi game are: turnPiece, movePiece, capturePiece,
+   * C0...C31
    */
-  private static final String C = "C";
-
-  private static final String TURNPIECE = "turnPiece";
+  private static final String C = "C"; // Cell i
+  // A move has the form: [from, to]
   private static final String MOVEPIECE = "movePiece";
+  // A turn has the form: [coordinate]
+  private static final String TURNPIECE = "turnPiece";
+  // A capture has the form: [from, to]
   private static final String CAPTUREPIECE = "capturePiece";
   
   private static final String PLAYER_ID = "playerId";
@@ -56,7 +57,10 @@ public class BanqiLogicTest {
       .<String, Object> of(PLAYER_ID, bId);
   private final List<Map<String, Object>> playersInfo = ImmutableList
       .of(rInfo, bInfo);
-  private final Map<String, Object> emptyState = ImmutableMap.<String, Object>of();
+  
+  /* The interesting states that I'll test. */
+  private final ImmutableMap<String, Object> emptyState = ImmutableMap
+      .<String, Object> of();
   private final Map<String, Object> nonEmptyState = ImmutableMap
       .<String, Object> of("k", "v");
 

@@ -92,7 +92,7 @@ public class Heuristic {
       }
     }
     
-    return (int) (faceUpPiecesValue + faceDownPiecesValue * 1.05);
+    return faceUpPiecesValue + faceDownPiecesValue;
   }
 
   /**

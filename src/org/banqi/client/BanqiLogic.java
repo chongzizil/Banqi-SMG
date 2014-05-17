@@ -27,7 +27,7 @@ public class BanqiLogic {
 
   private static final String C = "C";
   private static final String O = "O";
-  private static final List<Integer> INVISIBLE = new ArrayList<Integer>();
+  private static final List<String> INVISIBLE = new ArrayList<String>();
   private static final String EMPTYCELL = "eemp";
   private static final String TURNPIECE = "turnPiece";
   private static final String MOVEPIECE = "movePiece";

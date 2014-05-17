@@ -54,6 +54,7 @@ public class AlphaBetaPruning {
   private BanqiState fullState;
   private BanqiState state;
   private Heuristic heuristic;
+  private static int turnCount = 0;
   private static int moveCount = 0;
   private static int winCaseCount = 0;
   private static int loseCaseCount = 0;
@@ -103,6 +104,8 @@ public class AlphaBetaPruning {
           Move move = null;
           MoveScore<Move> moveScore = scores.get(j);
           move = moveScore.move;
+          // Initial the turnCount.
+          turnCount = 0;
           int score = findMoveScore(makeMove(state, move),
               i, Integer.MIN_VALUE, Integer.MAX_VALUE, timer);
           if (!isBlack) {
@@ -147,8 +150,8 @@ public class AlphaBetaPruning {
       } else if (state.getWinner() == Color.B) {
         winCaseCount++;
       }
-
-      return heuristic.getStateValue(state);
+      
+      return (int) (heuristic.getStateValue(state) * (Math.pow(0.98, turnCount)));
     }
 
     Color color = state.getTurn();
@@ -353,6 +356,7 @@ public class AlphaBetaPruning {
       capturedPieces.add(toPiece.get());
       state.setCapturedPieces(capturedPieces);
     } else if (move.getType() == Move.Type.TURN) {
+      turnCount++;
       int index = convertToIndex(from.getRow(), from.getCol());
       List<Optional<Piece>> fullCells = fullState.getCells();
       

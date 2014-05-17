@@ -149,7 +149,7 @@ public class BanqiPresenter {
     // Set the view
     view.setPlayerState(getAllCells(banqiState), updateUI.isAiPlayer());
     
-    if (updateUI.isViewer()) {
+    if (updateUI.isViewer()) {   
       return;
     }
 
@@ -166,8 +166,8 @@ public class BanqiPresenter {
             Heuristic heuristic = new Heuristic();
             AlphaBetaPruning ai = new AlphaBetaPruning(heuristic, banqiState);
             
-            // The move of the AI takes at most 1.75 second
-            DateTimer timer = new DateTimer((int) (1.75 * 1000));
+            // The move of the AI takes at most 1.5 second
+            DateTimer timer = new DateTimer((int) (1.5 * 1000));
             
             // The depth is 50 though due to the time limit, it may not reach that deep
             Move bestMove = ai.findBestMove(50, timer);

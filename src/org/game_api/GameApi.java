@@ -71,7 +71,9 @@ public final class GameApi {
     }
 
     public static native void postMessageToParent(String message) /*-{
-      $wnd.parent.postMessage(JSON.parse(message), "*");
+      var msg = JSON.parse(message);
+      console.log('Message to container', msg);
+      $wnd.platform.gotMessage(msg);
     }-*/;
 
     public void eventListner(String message) {
@@ -85,10 +87,16 @@ public final class GameApi {
 
     private native void injectEventListener(ContainerConnector containerConnector) /*-{
       function postMessageListener(e) {
-        var str = JSON.stringify(e.data);
+        passMessage(e.data);
+      }
+      function passMessage(message) {
+        console.log('Message from container', message);
+        var str = JSON.stringify(message);
         var c = containerConnector;
         c.@org.game_api.GameApi.ContainerConnector::eventListner(Ljava/lang/String;)(str);
       }
+      $wnd.passMessage = passMessage;
+      console.log('Setting passMessage');
       $wnd.addEventListener("message", postMessageListener, false);
     }-*/;
 
@@ -111,7 +119,7 @@ public final class GameApi {
       this.game = game;
       List<String> playerIds = Lists.newArrayList();
       for (int i = 0; i < numberOfPlayers; i++) {
-        String playerId = String.valueOf(i == 0 ? 1 : 0);
+        String playerId = String.valueOf(42 + i);
         playerIds.add(playerId);
         playersInfo.add(ImmutableMap.<String, Object>of(PLAYER_ID, playerId));
       }
@@ -532,7 +540,7 @@ public final class GameApi {
       this(key, (Object) visibleToPlayerIds);
     }
 
-    public SetVisibility(String key, Object visibleToPlayerIds) {
+    private SetVisibility(String key, Object visibleToPlayerIds) {
       this.key = key;
       this.visibleToPlayerIds = checkHasJsonSupportedType(visibleToPlayerIds);
     }
@@ -981,7 +989,7 @@ public final class GameApi {
    * or the object is a Map and the keys are String and the values have JSON-supported data types.
    * @return the given object.
    */
-  public static <T> T checkHasJsonSupportedType(T object) {
+  static <T> T checkHasJsonSupportedType(T object) {
     if (object == null) {
       return object;
     }
